@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "SantexPro",
+    "slug": "santexpro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/sp_icon.jpg",
+    "scheme": "tempapp",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "icon": "./assets/expo.icon"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#C8102E",
+        "foregroundImage": "./assets/images/sp_icon.jpg",
+        "backgroundImage": "./assets/images/sp_icon.jpg",
+        "monochromeImage": "./assets/images/sp_icon.jpg"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.mirobid2011.santexpro"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/sp_icon.jpg"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#208AEF",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ],
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3621b372-4322-4732-95e0-d36d4daf9486"
+      }
+    }
+  }
+}
