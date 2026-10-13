@@ -1,27 +1,44 @@
-export type Category = string;
-
-export interface Movement {
-  id: string;
-  productId: string;
-  tur: 'kirim' | 'chiqim';
-  miqdor: number;
-  sana: string; // ISO string
-  tannarx?: number;
-  taminotchi?: string;
-  izoh?: string;
-}
-
 export interface Product {
   id: string;
-  nom: string;
-  category: Category;
-  rasm: string; // We'll use a lucide icon name as a placeholder rasm instead of an image URL as requested
-  sotuvNarxi: number;
-  tannarx: number;
-  birlik: 'dona' | 'metr' | 'kg' | 'komplekt' | 'litr';
-  joriyQoldiq: number;
-  minimalQoldiq: number;
-  qoshilganSana: string;
-  oxirgiKirimSana: string;
-  movements?: Movement[];
+  name: string;
+  price: number;
+  unit: string;
+  category: string;
+  image: string;
+  stock: number;
+  minStock?: number;
+  artikul?: string;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+export type PaymentMethod = 'naqd' | 'karta' | 'transfer' | 'nasiya';
+
+export interface SaleItem {
+  productId: string;
+  productName: string;
+  category?: string;
+  quantity: number;
+  price: number;
+  unit: string;
+  total: number;
+  artikul?: string;
+}
+
+export interface SaleRecord {
+  id: string;
+  saleNumber: string;
+  createdAt: string;
+  items: SaleItem[];
+  total: number;
+  paymentMethod: PaymentMethod;
+  customerName?: string;
+  customerPhone?: string;
+  discount?: number;
+  receivedAmount?: number;
+  changeAmount?: number;
+  note?: string;
 }
