@@ -327,7 +327,7 @@ export function KassaPage() {
   };
 
   return (
-    <div className="h-full flex flex-col xl:flex-row bg-slate-50 relative">
+    <div className="h-full flex flex-col xl:flex-row bg-slate-50 dark:bg-slate-950 relative">
       {/* Toast Notification */}
       {toastNotification && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-sm font-semibold px-4 py-2.5 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -341,7 +341,7 @@ export function KassaPage() {
         <h1 className="sr-only">ProSant — Santexnika Mahsulotlari Kassa va POS Tizimi</h1>
         
         {/* Search & Categories Area */}
-        <div className="bg-white p-3.5 sm:p-4 border-b border-slate-200/80 z-10 flex flex-col gap-3 shrink-0 shadow-xs">
+        <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-4 border-b border-slate-200/80 dark:border-slate-800 z-10 flex flex-col gap-3 shrink-0 shadow-xs">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="flex-1 relative">
               <label htmlFor="product-search-input" className="sr-only">
@@ -354,7 +354,7 @@ export function KassaPage() {
                 name="search"
                 aria-label="Mahsulot qidirish"
                 autoComplete="off"
-                className="w-full bg-slate-100 rounded-xl sm:rounded-2xl py-3 sm:py-3.5 pl-11 sm:pl-12 pr-14 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white transition-all font-medium border border-transparent focus:border-brand/30"
+                className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-xl sm:rounded-2xl py-3 sm:py-3.5 pl-11 sm:pl-12 pr-14 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white dark:focus:bg-slate-800 transition-all font-medium border border-transparent focus:border-brand/30"
                 placeholder="Mahsulot qidirish (Masalan: tr 20)"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
@@ -371,13 +371,13 @@ export function KassaPage() {
 
             {/* Cart Toggle (Shown on mobile & tablets, hidden on desktop POS where cart is permanently pinned) */}
             <button 
-              className="xl:hidden relative p-3 sm:p-3.5 bg-white border border-slate-200 text-slate-800 rounded-xl sm:rounded-2xl active:scale-95 transition-all shadow-xs hover:bg-slate-50 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="xl:hidden relative p-3 sm:p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl sm:rounded-2xl active:scale-95 transition-all shadow-xs hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={() => setIsCartOpen(true)}
               aria-label="Savatchani ochish"
             >
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-slate-700" />
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-slate-700 dark:text-slate-300" />
               {cart.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-xs font-black px-1.5 py-0.5 rounded-full border-2 border-white min-w-[22px] flex items-center justify-center shadow-xs">
+                <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-xs font-black px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 min-w-[22px] flex items-center justify-center shadow-xs">
                   {cart.length}
                 </span>
               )}
@@ -393,7 +393,7 @@ export function KassaPage() {
                 className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer min-h-[40px] flex items-center justify-center ${
                   selectedCategory === cat
                     ? 'bg-brand text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {cat}
@@ -429,10 +429,10 @@ export function KassaPage() {
               <button
                 type="button"
                 onClick={() => setVisibleCount(prev => prev + 24)}
-                className="px-6 py-2.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-2xl shadow-xs transition-all text-sm cursor-pointer active:scale-95 flex items-center gap-2"
+                className="px-6 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl shadow-xs transition-all text-sm cursor-pointer active:scale-95 flex items-center gap-2"
               >
                 <span>Yana 24 ta mahsulot ko'rsatish</span>
-                <span className="text-xs text-slate-400">({filteredProducts.length - visibleCount} ta qoldi)</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">({filteredProducts.length - visibleCount} ta qoldi)</span>
               </button>
             </div>
           )}
@@ -449,24 +449,24 @@ export function KassaPage() {
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl p-5 sm:p-6 shadow-2xl animate-in zoom-in-95 max-w-md w-full border border-slate-200 flex flex-col gap-4 my-auto"
+            className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 shadow-2xl animate-in zoom-in-95 max-w-md w-full border border-slate-200 dark:border-slate-800 flex flex-col gap-4 my-auto"
           >
             {/* Header */}
             <div className="flex justify-between items-start">
               <div className="pr-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-brand bg-brand/10 px-3 py-1 rounded-full inline-block mb-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-brand dark:text-blue-400 bg-brand/10 dark:bg-blue-900/30 px-3 py-1 rounded-full inline-block mb-1.5">
                   {editingCartProductId !== null ? "Miqdorni o'zgartirish" : "Savatga qo'shish"}
                 </span>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
                   {selectedProduct.name}
                 </h2>
-                <p className="text-sm font-semibold text-slate-500 mt-1">
-                  Narxi: <strong className="text-slate-800">{formatSum(selectedProduct.price)} UZS</strong> / {selectedProduct.unit}
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
+                  Narxi: <strong className="text-slate-800 dark:text-slate-200">{formatSum(selectedProduct.price)} UZS</strong> / {selectedProduct.unit}
                 </p>
               </div>
               <button 
                 onClick={closeQuantityModal}
-                className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-2xl text-slate-500 transition-colors cursor-pointer shrink-0 active:scale-95"
+                className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-slate-500 dark:text-slate-400 transition-colors cursor-pointer shrink-0 active:scale-95"
                 aria-label="Yopish"
               >
                 <X className="w-5 h-5" />
@@ -474,7 +474,7 @@ export function KassaPage() {
             </div>
             
             {/* Interactive Quantity Box with Stepper buttons */}
-            <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex flex-col gap-3 shadow-inner">
+            <div className="bg-slate-900 dark:bg-slate-950 text-white p-4 sm:p-5 rounded-2xl flex flex-col gap-3 shadow-inner border border-slate-800">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
                   Miqdori:
@@ -493,7 +493,7 @@ export function KassaPage() {
                     const next = Math.max(1, current - 1);
                     setQuantityStr(next.toString());
                   }}
-                  className="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 flex items-center justify-center transition-all cursor-pointer shrink-0 border border-slate-700"
+                  className="w-12 h-12 rounded-xl bg-slate-800 dark:bg-slate-900 hover:bg-slate-700 dark:hover:bg-slate-800 active:scale-95 text-slate-200 flex items-center justify-center transition-all cursor-pointer shrink-0 border border-slate-700 dark:border-slate-800"
                   aria-label="Kamaytirish"
                   title="1 ga kamaytirish"
                 >
@@ -539,7 +539,7 @@ export function KassaPage() {
                     const next = current + 1;
                     setQuantityStr(next.toString());
                   }}
-                  className="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 flex items-center justify-center transition-all cursor-pointer shrink-0 border border-slate-700"
+                  className="w-12 h-12 rounded-xl bg-slate-800 dark:bg-slate-900 hover:bg-slate-700 dark:hover:bg-slate-800 active:scale-95 text-slate-200 flex items-center justify-center transition-all cursor-pointer shrink-0 border border-slate-700 dark:border-slate-800"
                   aria-label="Ko'paytirish"
                   title="1 ga oshirish"
                 >
@@ -557,7 +557,7 @@ export function KassaPage() {
                   onClick={() => {
                     setQuantityStr(preset.toString());
                   }}
-                  className="py-2.5 rounded-xl bg-slate-100 hover:bg-brand/10 hover:text-brand border border-slate-200 font-black text-xs text-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                  className="py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand/10 dark:hover:bg-blue-900/30 hover:text-brand dark:hover:text-blue-400 border border-slate-200 dark:border-slate-700 font-black text-xs text-slate-700 dark:text-slate-300 active:scale-95 transition-all cursor-pointer select-none"
                 >
                   +{preset} {selectedProduct.unit}
                 </button>
@@ -565,11 +565,11 @@ export function KassaPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2.5 pt-2 border-t border-slate-100">
+            <div className="flex gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={closeQuantityModal}
-                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all cursor-pointer text-sm active:scale-95"
+                className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl transition-all cursor-pointer text-sm active:scale-95"
               >
                 Bekor qilish
               </button>
@@ -596,22 +596,22 @@ export function KassaPage() {
 
       {/* RIGHT PANEL: CART (Embedded on desktop xl+, Flyout drawer on mobile/tablet) */}
       <div 
-        className={`fixed xl:relative inset-y-0 right-0 w-[92%] sm:w-[420px] xl:w-[380px] 2xl:w-[420px] max-w-full bg-white border-l border-slate-200/90 flex flex-col z-50 xl:z-20 transition-transform duration-300 ease-in-out shadow-2xl xl:shadow-none shrink-0 ${isCartOpen ? 'translate-x-0' : 'translate-x-full xl:translate-x-0'}`}
+        className={`fixed xl:relative inset-y-0 right-0 w-[92%] sm:w-[420px] xl:w-[380px] 2xl:w-[420px] max-w-full bg-white dark:bg-slate-900 border-l border-slate-200/90 dark:border-slate-800 flex flex-col z-50 xl:z-20 transition-transform duration-300 ease-in-out shadow-2xl xl:shadow-none shrink-0 ${isCartOpen ? 'translate-x-0' : 'translate-x-full xl:translate-x-0'}`}
       >
-        <div className="p-4 border-b border-slate-200/80 flex justify-between items-center bg-white text-slate-900 shrink-0">
+        <div className="p-4 border-b border-slate-200/80 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 text-slate-900 dark:text-white shrink-0">
           <h2 className="text-lg sm:text-xl font-black flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-brand" /> 
+            <ShoppingCart className="w-5 h-5 text-brand dark:text-blue-400" /> 
             <span>Savatcha</span>
-            <span className="bg-slate-100 text-slate-700 text-xs font-black px-2.5 py-0.5 rounded-full ml-1 border border-slate-200">
+            <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-black px-2.5 py-0.5 rounded-full ml-1 border border-slate-200 dark:border-slate-700">
               {cart.length}
             </span>
           </h2>
           <button 
-            className="xl:hidden p-2 bg-slate-100 hover:bg-slate-200 rounded-xl active:scale-95 transition-colors cursor-pointer"
+            className="xl:hidden p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl active:scale-95 transition-colors cursor-pointer"
             onClick={() => setIsCartOpen(false)}
             aria-label="Savatchani yopish"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
@@ -620,19 +620,19 @@ export function KassaPage() {
           {cart.map(item => (
             <div 
               key={item.product.id}
-              className="p-3 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex flex-col gap-2 hover:border-slate-300 transition-all shadow-2xs"
+              className="p-3 bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl flex flex-col gap-2 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-2xs"
             >
               <div className="flex justify-between items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <h4 className="font-extrabold text-slate-900 text-sm leading-snug line-clamp-2">
+                  <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm leading-snug line-clamp-2">
                     {item.product.name}
                   </h4>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-slate-500 font-mono">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                       {formatSum(item.product.price)} UZS
                     </span>
                     {item.product.artikul && (
-                      <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono font-semibold">
+                      <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-mono font-semibold">
                         {item.product.artikul}
                       </span>
                     )}
@@ -640,7 +640,7 @@ export function KassaPage() {
                 </div>
                 <button 
                   onClick={() => removeCartItem(item.product.id)}
-                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer shrink-0"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer shrink-0"
                   aria-label="Mahsulotni savatdan o'chirish"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -648,58 +648,58 @@ export function KassaPage() {
               </div>
 
               {/* Quantity Controller */}
-              <div className="flex justify-between items-center pt-2 border-t border-slate-200/60 mt-0.5">
-                <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
+              <div className="flex justify-between items-center pt-2 border-t border-slate-200/60 dark:border-slate-700/60 mt-0.5">
+                <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-2xs">
                   <button 
                     onClick={() => updateCartItemQuantity(item.product.id, -1)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 active:scale-95 transition-all cursor-pointer font-bold"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-95 transition-all cursor-pointer font-bold"
                     aria-label="Bitta kamaytirish"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => openCartItemEdit(item)}
-                    className="px-2 font-mono font-black text-sm text-slate-800 hover:text-brand cursor-pointer select-none"
+                    className="px-2 font-mono font-black text-sm text-slate-800 dark:text-slate-100 hover:text-brand dark:hover:text-blue-400 cursor-pointer select-none"
                     title="Miqdorni kiritish"
                   >
-                    {formatSum(item.quantity)} <span className="text-[11px] font-sans font-medium text-slate-500">{item.product.unit}</span>
+                    {formatSum(item.quantity)} <span className="text-[11px] font-sans font-medium text-slate-500 dark:text-slate-400">{item.product.unit}</span>
                   </button>
                   <button 
                     onClick={() => updateCartItemQuantity(item.product.id, 1)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 active:scale-95 transition-all cursor-pointer font-bold"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-95 transition-all cursor-pointer font-bold"
                     aria-label="Bitta ko'paytirish"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="text-right font-mono font-black text-sm text-slate-900">
-                  {formatSum(item.product.price * item.quantity)} <span className="text-[10px] font-sans font-medium text-slate-500">UZS</span>
+                <div className="text-right font-mono font-black text-sm text-slate-900 dark:text-white">
+                  {formatSum(item.product.price * item.quantity)} <span className="text-[10px] font-sans font-medium text-slate-500 dark:text-slate-400">UZS</span>
                 </div>
               </div>
             </div>
           ))}
 
           {cart.length === 0 && (
-            <div className="h-full min-h-[250px] flex flex-col items-center justify-center text-slate-400 p-6 text-center">
+            <div className="h-full min-h-[250px] flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 p-6 text-center">
               <ShoppingCart className="w-14 h-14 mb-3 opacity-25" />
-              <p className="font-bold text-slate-600 text-base">Savatcha bo'sh</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-[200px]">Mahsulotlarni qo'shish uchun chap tomondagi kartochkalarni bosing</p>
+              <p className="font-bold text-slate-600 dark:text-slate-300 text-base">Savatcha bo'sh</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-[200px]">Mahsulotlarni qo'shish uchun chap tomondagi kartochkalarni bosing</p>
             </div>
           )}
         </div>
 
         {/* Cart Bottom Summary & Checkout Button */}
-        <div className="p-4 bg-slate-50/95 border-t border-slate-200/90 flex flex-col gap-3 shrink-0 shadow-lg xl:shadow-none">
+        <div className="p-4 bg-slate-50/95 dark:bg-slate-900/95 border-t border-slate-200/90 dark:border-slate-800 flex flex-col gap-3 shrink-0 shadow-lg xl:shadow-none">
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center text-xs text-slate-500 font-semibold">
+            <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 font-semibold">
               <span>Mahsulot turlari:</span>
-              <span className="font-mono text-slate-700">{cart.length} xil</span>
+              <span className="font-mono text-slate-700 dark:text-slate-300">{cart.length} xil</span>
             </div>
-            <div className="flex justify-between items-baseline pt-1 border-t border-slate-200/60">
-              <span className="text-sm font-extrabold text-slate-700 uppercase tracking-wider">Jami to'lov:</span>
-              <span className="text-2xl font-black text-brand font-mono tracking-tight">
-                {formatSum(totalCartSum)} <span className="text-xs font-sans font-bold text-slate-500">UZS</span>
+            <div className="flex justify-between items-baseline pt-1 border-t border-slate-200/60 dark:border-slate-800">
+              <span className="text-sm font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Jami to'lov:</span>
+              <span className="text-2xl font-black text-brand dark:text-blue-400 font-mono tracking-tight">
+                {formatSum(totalCartSum)} <span className="text-xs font-sans font-bold text-slate-500 dark:text-slate-400">UZS</span>
               </span>
             </div>
           </div>
@@ -709,7 +709,7 @@ export function KassaPage() {
               type="button"
               disabled={cart.length === 0}
               onClick={clearCart}
-              className="py-3 px-3 bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-600 font-bold rounded-2xl active:scale-95 transition-all text-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+              className="py-3 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-200 dark:hover:border-rose-800 hover:text-rose-600 dark:hover:text-rose-400 text-slate-600 dark:text-slate-300 font-bold rounded-2xl active:scale-95 transition-all text-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
             >
               <Trash2 className="w-4 h-4" />
               <span>Tozalash</span>
@@ -734,7 +734,7 @@ export function KassaPage() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-3xl w-full max-w-xl max-h-[94vh] shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 my-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-xl max-h-[94vh] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 my-auto">
             
             {/* Top Bar */}
             <div className="px-5 py-3.5 bg-slate-900 text-white flex justify-between items-center rounded-t-3xl shrink-0 border-b border-slate-800">
@@ -771,10 +771,10 @@ export function KassaPage() {
             </div>
 
             {/* Modal Body Form */}
-            <div className="p-5 sm:p-6 overflow-y-auto flex flex-col gap-4 bg-slate-50/60">
+            <div className="p-5 sm:p-6 overflow-y-auto flex flex-col gap-4 bg-slate-50/60 dark:bg-slate-950/60">
               
               {/* 1. Order Summary Card */}
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-sm flex items-center justify-between shrink-0">
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-sm flex items-center justify-between shrink-0 border border-slate-800">
                 <div>
                   <div className="text-xs font-medium text-slate-400">
                     Savat: <span className="text-white font-bold">{cart.length} xil mahsulot</span>
@@ -792,15 +792,15 @@ export function KassaPage() {
 
               {/* 2. Payment Method Tabs */}
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider mb-1.5">
+                <label className="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-1.5">
                   To'lov turi:
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { id: 'naqd' as const, label: 'Naqd', icon: Banknote, color: 'text-emerald-600' },
-                    { id: 'karta' as const, label: 'Karta', icon: CreditCard, color: 'text-blue-600' },
-                    { id: 'transfer' as const, label: 'O\'tkazma', icon: Building2, color: 'text-purple-600' },
-                    { id: 'nasiya' as const, label: 'Nasiya', icon: FileText, color: 'text-amber-600' },
+                    { id: 'naqd' as const, label: 'Naqd', icon: Banknote, color: 'text-emerald-600 dark:text-emerald-400' },
+                    { id: 'karta' as const, label: 'Karta', icon: CreditCard, color: 'text-blue-600 dark:text-blue-400' },
+                    { id: 'transfer' as const, label: 'O\'tkazma', icon: Building2, color: 'text-purple-600 dark:text-purple-400' },
+                    { id: 'nasiya' as const, label: 'Nasiya', icon: FileText, color: 'text-amber-600 dark:text-amber-400' },
                   ].map(tab => {
                     const Icon = tab.icon;
                     const isActive = paymentMethod === tab.id;
@@ -811,8 +811,8 @@ export function KassaPage() {
                         onClick={() => handlePaymentMethodSelect(tab.id)}
                         className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all font-bold text-xs gap-1.5 cursor-pointer active:scale-95 ${
                           isActive
-                            ? 'border-brand bg-brand/10 text-slate-900 shadow-sm ring-2 ring-brand/20'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white'
+                            ? 'border-brand dark:border-blue-500 bg-brand/10 dark:bg-blue-500/15 text-slate-900 dark:text-white shadow-sm ring-2 ring-brand/20'
+                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900'
                         }`}
                       >
                         <Icon className={`w-5 h-5 ${tab.color}`} />
@@ -825,10 +825,10 @@ export function KassaPage() {
 
               {/* 3. Cash Section (When Naqd) */}
               {paymentMethod === 'naqd' && (
-                <div className="p-3.5 rounded-2xl border-2 border-emerald-500 bg-emerald-50/70 shadow-sm">
+                <div className="p-3.5 rounded-2xl border-2 border-emerald-500/70 bg-emerald-50/70 dark:bg-emerald-950/30 shadow-sm">
                   <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-xs font-bold uppercase text-emerald-900 tracking-wider flex items-center gap-1.5">
-                      <Banknote className="w-4 h-4 text-emerald-600" />
+                    <label className="text-xs font-bold uppercase text-emerald-900 dark:text-emerald-300 tracking-wider flex items-center gap-1.5">
+                      <Banknote className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       Mijoz bergan pul:
                     </label>
                     <button
@@ -837,15 +837,15 @@ export function KassaPage() {
                         setReceivedCashStr(formatSum(totalCartSum));
                         cashInputRef.current?.focus();
                       }}
-                      className="text-[11px] font-black text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer active:scale-95"
+                      className="text-[11px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 hover:bg-emerald-200 dark:hover:bg-emerald-900/80 px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer active:scale-95"
                       title="Aniq hisoblangan summani kiritish"
                     >
                       Aniq summa
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-emerald-300 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20">
-                    <span className="text-xs text-slate-400 font-semibold shrink-0 mr-2 select-none">Berilgan:</span>
+                  <div className="flex items-center justify-between bg-white dark:bg-slate-900 px-3 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20">
+                    <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold shrink-0 mr-2 select-none">Berilgan:</span>
                     <FormattedNumberInput
                       ref={cashInputRef}
                       value={receivedCashStr}
@@ -861,23 +861,23 @@ export function KassaPage() {
                         }
                       }}
                       placeholder="0"
-                      className="w-full text-right text-2xl font-black text-slate-900 font-mono tracking-wide focus:outline-none bg-transparent"
+                      className="w-full text-right text-2xl font-black text-slate-900 dark:text-white font-mono tracking-wide focus:outline-none bg-transparent"
                     />
-                    <span className="text-xs font-sans font-bold text-slate-500 ml-2 shrink-0 select-none">UZS</span>
+                    <span className="text-xs font-sans font-bold text-slate-500 dark:text-slate-400 ml-2 shrink-0 select-none">UZS</span>
                   </div>
 
                   {/* Change Display */}
                   {parseFormattedNumber(receivedCashStr) >= totalCartSum ? (
-                    <div className="mt-2.5 pt-2 border-t border-emerald-200 flex justify-between items-center text-emerald-900 font-bold">
+                    <div className="mt-2.5 pt-2 border-t border-emerald-200 dark:border-emerald-800 flex justify-between items-center text-emerald-900 dark:text-emerald-300 font-bold">
                       <span className="text-xs uppercase tracking-wider">Qaytim:</span>
-                      <span className="text-xl font-black text-emerald-700 font-mono">
+                      <span className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
                         {formatSum(parseFormattedNumber(receivedCashStr) - totalCartSum)} <span className="text-xs font-sans">UZS</span>
                       </span>
                     </div>
                   ) : parseFormattedNumber(receivedCashStr) > 0 ? (
-                    <div className="mt-2.5 pt-2 border-t border-amber-200 flex justify-between items-center text-amber-800 font-bold text-xs">
+                    <div className="mt-2.5 pt-2 border-t border-amber-200 dark:border-amber-800 flex justify-between items-center text-amber-800 dark:text-amber-300 font-bold text-xs">
                       <span>Yetarli emas:</span>
-                      <span className="font-mono text-amber-700 text-sm font-black">
+                      <span className="font-mono text-amber-700 dark:text-amber-400 text-sm font-black">
                         {formatSum(totalCartSum - parseFormattedNumber(receivedCashStr))} UZS
                       </span>
                     </div>
@@ -886,13 +886,13 @@ export function KassaPage() {
               )}
 
               {/* 4. Customer Phone (+998 Mask) */}
-              <div className="p-3.5 rounded-2xl border-2 border-slate-200 bg-white">
-                <label className="text-xs font-bold uppercase text-slate-600 tracking-wider flex items-center gap-1.5 mb-1.5">
+              <div className="p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-300 tracking-wider flex items-center gap-1.5 mb-1.5">
                   <Phone className="w-4 h-4 text-blue-500" />
                   Telefon raqami (ixtiyoriy):
                 </label>
-                <div className="flex items-center bg-white rounded-xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 overflow-hidden shadow-xs">
-                  <span className="px-3.5 py-2.5 bg-slate-100 text-slate-700 font-black text-sm border-r border-slate-200 select-none font-mono shrink-0">
+                <div className="flex items-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 overflow-hidden shadow-xs">
+                  <span className="px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-black text-sm border-r border-slate-200 dark:border-slate-700 select-none font-mono shrink-0">
                     +998
                   </span>
                   <input
@@ -915,14 +915,14 @@ export function KassaPage() {
                         }
                       }
                     }}
-                    className="w-full px-3.5 py-2.5 text-slate-900 font-black text-base font-mono focus:outline-none bg-transparent"
+                    className="w-full px-3.5 py-2.5 text-slate-900 dark:text-white font-black text-base font-mono focus:outline-none bg-transparent placeholder-slate-400 dark:placeholder-slate-500"
                   />
                 </div>
               </div>
 
               {/* 5. Customer Name */}
-              <div className="p-3.5 rounded-2xl border-2 border-slate-200 bg-white">
-                <label className="text-xs font-bold uppercase text-slate-600 tracking-wider flex items-center gap-1.5 mb-1.5">
+              <div className="p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-300 tracking-wider flex items-center gap-1.5 mb-1.5">
                   <span>Mijoz ismi (ixtiyoriy):</span>
                 </label>
                 <input
@@ -941,14 +941,14 @@ export function KassaPage() {
                       }
                     }
                   }}
-                  className="w-full bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-900 text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 shadow-xs"
+                  className="w-full bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white text-sm focus:outline-none focus:border-brand dark:focus:border-blue-500 focus:ring-2 focus:ring-brand/20 dark:placeholder-slate-500 shadow-xs"
                 />
               </div>
 
               {/* 6. Note */}
-              <div className="p-3.5 rounded-2xl border-2 border-slate-200 bg-white">
-                <label className="text-xs font-bold uppercase text-slate-600 tracking-wider flex items-center gap-1.5 mb-1.5">
-                  <FileText className="w-4 h-4 text-slate-500" />
+              <div className="p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-300 tracking-wider flex items-center gap-1.5 mb-1.5">
+                  <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   Izoh / Qayd:
                 </label>
                 <input
@@ -963,30 +963,30 @@ export function KassaPage() {
                       handleCompleteSale();
                     }
                   }}
-                  className="w-full bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 font-medium text-slate-900 text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 shadow-xs"
+                  className="w-full bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-medium text-slate-900 dark:text-white text-sm focus:outline-none focus:border-brand dark:focus:border-blue-500 focus:ring-2 focus:ring-brand/20 dark:placeholder-slate-500 shadow-xs"
                 />
               </div>
 
               {/* 7. Print Receipt Checkbox */}
-              <label className="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 cursor-pointer hover:bg-slate-100/80 transition-colors">
+              <label className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-colors">
                 <input 
                   type="checkbox"
                   checked={autoPrintAfterSale}
                   onChange={e => setAutoPrintAfterSale(e.target.checked)}
                   className="w-5 h-5 text-brand rounded focus:ring-brand cursor-pointer"
                 />
-                <span className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-2 select-none">
-                  <Printer className="w-4 h-4 text-slate-500" />
+                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 select-none">
+                  <Printer className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   Sotuvdan so'ng chekni avtomatik chop etish
                 </span>
               </label>
 
               {/* 8. Action Buttons */}
-              <div className="pt-2 mt-auto border-t border-slate-200 flex gap-2.5 shrink-0 sticky bottom-0 bg-slate-50/95 backdrop-blur-sm pb-1">
+              <div className="pt-2 mt-auto border-t border-slate-200 dark:border-slate-800 flex gap-2.5 shrink-0 sticky bottom-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-sm pb-1">
                 <button 
                   type="button"
                   onClick={() => setIsCheckoutOpen(false)}
-                  className="flex-1 py-3.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-2xl transition-all cursor-pointer text-sm active:scale-95"
+                  className="flex-1 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl transition-all cursor-pointer text-sm active:scale-95"
                 >
                   Bekor qilish
                 </button>

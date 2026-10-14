@@ -18,6 +18,18 @@
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     </noscript>
     <title>ProSant - Santexnika Mahsulotlari | Kassa & POS</title>
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('prosant_theme');
+          if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root">

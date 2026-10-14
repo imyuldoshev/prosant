@@ -97,7 +97,7 @@ export const ProductImageSection = memo(function ProductImageSection({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-xs sm:text-sm font-bold text-slate-700">
+      <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
         Mahsulot rasmi:
       </label>
 
@@ -148,7 +148,7 @@ export const ProductImageSection = memo(function ProductImageSection({
           </div>
         </div>
       ) : (
-        <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center gap-3">
+        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row items-center gap-3">
           {/* Image Preview */}
           <div className="relative group shrink-0">
             <img 
@@ -156,7 +156,7 @@ export const ProductImageSection = memo(function ProductImageSection({
               alt="Tovar rasmi" 
               width={96}
               height={96}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-slate-200 shadow-xs bg-white"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-700 shadow-xs bg-white dark:bg-slate-800"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = defaultImage;
               }}
@@ -181,10 +181,10 @@ export const ProductImageSection = memo(function ProductImageSection({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="min-h-[46px] px-3 py-2 bg-white hover:bg-slate-100 active:scale-95 text-slate-800 font-bold rounded-xl border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
+                className="min-h-[46px] px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 text-slate-800 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
                 title="Qurilmadan fayl yuklash"
               >
-                <Upload className="w-4 h-4 text-brand shrink-0" />
+                <Upload className="w-4 h-4 text-brand-light shrink-0" />
                 <span>Fayldan yuklash</span>
               </button>
 
@@ -192,15 +192,15 @@ export const ProductImageSection = memo(function ProductImageSection({
               <button
                 type="button"
                 onClick={startCamera}
-                className="min-h-[46px] px-3 py-2 bg-white hover:bg-slate-100 active:scale-95 text-slate-800 font-bold rounded-xl border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
+                className="min-h-[46px] px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 text-slate-800 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
                 title="Kamera orqali suratga olish"
               >
-                <Camera className="w-4 h-4 text-emerald-600 shrink-0" />
+                <Camera className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>Kameradan olish</span>
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-400 font-medium leading-tight">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium leading-tight">
               Telefonda bo'lsa galereya yoki kameradan, kompyuterda bo'lsa fayllardan yoki veb-kameradan rasm yuklashingiz mumkin.
             </p>
           </div>

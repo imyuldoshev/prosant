@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { LayoutDashboard, Package, History, X, LogIn, LogOut } from 'lucide-react';
 import { MenuButton } from './MenuButton';
+import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '../context/AuthContext';
 import logoMobile from '../assets/logo/logo-mobile.webp';
 
@@ -124,6 +125,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             to="/tarix" 
             onClick={onClose} 
           />
+          <div className="mt-2 pt-2 border-t border-white/10">
+            <ThemeToggle showLabel className="w-full justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border-white/10 text-white rounded-2xl" />
+          </div>
         </div>
 
         {/* Bottom Auth Section */}

@@ -198,7 +198,7 @@ export function ProductFormModal({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden flex flex-col my-auto max-h-[96vh] animate-in zoom-in-95 duration-200"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-xl overflow-hidden flex flex-col my-auto max-h-[96vh] animate-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -234,10 +234,10 @@ export function ProductFormModal({
           
           {/* 1. Name & Duplicate Check Alert */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="prod-name-input" className="text-xs sm:text-sm font-bold text-slate-700 flex justify-between items-center">
+            <label htmlFor="prod-name-input" className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 flex justify-between items-center">
               <span>Mahsulot nomi: <span className="text-rose-500">*</span></span>
               {name.trim() && !duplicateMatch && (
-                <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" /> Nomi to'g'ri
                 </span>
               )}
@@ -255,20 +255,20 @@ export function ProductFormModal({
               placeholder="Masalan: Truba 20 lik PPR, Smesitel vanna..."
               className={`w-full min-h-[46px] sm:min-h-[50px] px-4 rounded-2xl border-2 text-sm sm:text-base font-bold transition-all focus:outline-none ${
                 duplicateMatch 
-                  ? 'border-amber-400 bg-amber-50/50 text-slate-900 focus:ring-2 focus:ring-amber-400/20' 
-                  : 'border-slate-200 focus:border-brand focus:ring-2 focus:ring-brand/20 bg-slate-50 focus:bg-white text-slate-900'
+                  ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-950/30 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-400/20' 
+                  : 'border-slate-200 dark:border-slate-700 focus:border-brand dark:focus:border-blue-500 focus:ring-2 focus:ring-brand/20 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500'
               }`}
             />
 
             {/* Inline Duplicate Alert Banner */}
             {duplicateMatch && (
-              <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl flex flex-col gap-1 text-xs animate-in fade-in duration-150">
-                <div className="flex items-center gap-1.5 font-extrabold text-amber-900">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl flex flex-col gap-1 text-xs animate-in fade-in duration-150">
+                <div className="flex items-center gap-1.5 font-extrabold text-amber-900 dark:text-amber-200">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                   <span>Bunday nomli mahsulot bazada mavjud!</span>
                 </div>
-                <p className="text-slate-600 pl-5">
-                  Mavjud: <strong className="text-slate-900">{duplicateMatch.name}</strong> ({formatSum(duplicateMatch.stock)} {duplicateMatch.unit}, {formatSum(duplicateMatch.price)} UZS).
+                <p className="text-slate-600 dark:text-slate-300 pl-5">
+                  Mavjud: <strong className="text-slate-900 dark:text-white">{duplicateMatch.name}</strong> ({formatSum(duplicateMatch.stock)} {duplicateMatch.unit}, {formatSum(duplicateMatch.price)} UZS).
                 </p>
                 {onDuplicateAttempt && (
                   <button
@@ -292,14 +292,14 @@ export function ProductFormModal({
             {/* Category */}
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-center">
-                <label className="text-xs sm:text-sm font-bold text-slate-700">
+                <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
                   Kategoriya: <span className="text-rose-500">*</span>
                 </label>
                 {!isAddingNewCat && (
                   <button
                     type="button"
                     onClick={() => setIsAddingNewCat(true)}
-                    className="text-xs font-bold text-brand hover:text-brand-dark flex items-center gap-1 cursor-pointer transition-colors"
+                    className="text-xs font-bold text-brand dark:text-blue-400 hover:text-brand-dark flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <FolderPlus className="w-3.5 h-3.5" />
                     <span>Yangi kategoriya</span>
@@ -323,7 +323,7 @@ export function ProductFormModal({
                       }
                     }}
                     placeholder="Kategoriya nomi..."
-                    className="flex-1 min-h-[46px] px-3 rounded-2xl border-2 border-brand bg-white text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand/20"
+                    className="flex-1 min-h-[46px] px-3 rounded-2xl border-2 border-brand bg-white dark:bg-slate-800 text-xs sm:text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand/20 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
                   <button
                     type="button"
@@ -336,7 +336,7 @@ export function ProductFormModal({
                   <button
                     type="button"
                     onClick={() => setIsAddingNewCat(false)}
-                    className="min-h-[46px] px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-xs flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+                    className="min-h-[46px] px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-xs flex items-center justify-center cursor-pointer active:scale-95 transition-all"
                     title="Bekor qilish"
                   >
                     <X className="w-4 h-4" />
@@ -355,7 +355,7 @@ export function ProductFormModal({
 
             {/* Unit */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs sm:text-sm font-bold text-slate-700">
+              <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
                 O'lchov birligi: <span className="text-rose-500">*</span>
               </label>
               <div className="grid grid-cols-4 gap-1.5 min-h-[44px]">
@@ -367,7 +367,7 @@ export function ProductFormModal({
                     className={`min-h-[44px] rounded-xl text-xs sm:text-sm font-extrabold transition-all border cursor-pointer active:scale-95 ${
                       unit === u
                         ? 'bg-brand text-white border-brand shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750'
                     }`}
                   >
                     {u}
@@ -378,13 +378,13 @@ export function ProductFormModal({
           </div>
 
           {/* 3. Pricing Section (Cost price + Selling price) */}
-          <div className="p-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl flex flex-col gap-3">
+          <div className="p-3.5 bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700 rounded-2xl flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Narxlar va Foyda
               </span>
               {profitCalc && (
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
                   Foyda: +{formatSum(profitCalc.profit)} UZS ({profitCalc.percent}%)
                 </span>
               )}
@@ -395,22 +395,22 @@ export function ProductFormModal({
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-cost-price-input" 
-                  className="text-xs font-bold text-slate-600 flex items-center justify-between"
+                  className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center justify-between"
                 >
                   <span className="flex items-center gap-1">
                     <span>Asl narxi (kelish)</span>
-                    <span className="text-[10px] font-normal text-slate-400">(ixtiyoriy)</span>
+                    <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">(ixtiyoriy)</span>
                   </span>
                 </label>
-                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
+                <div className="flex items-center bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-700 focus-within:border-brand transition-all p-1.5">
                   <FormattedNumberInput
                     id="prod-cost-price-input"
                     value={costPrice}
                     onChangeValue={setCostPrice}
                     placeholder="Masalan: 8 000"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 dark:text-white bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
-                  <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">UZS</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 pr-2 shrink-0">UZS</span>
                 </div>
               </div>
 
@@ -418,27 +418,27 @@ export function ProductFormModal({
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-price-input" 
-                  className="text-xs font-bold text-slate-700"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300"
                 >
                   <span>Sotish narxi: <span className="text-rose-500">*</span></span>
                 </label>
-                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
+                <div className="flex items-center bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-700 focus-within:border-brand transition-all p-1.5">
                   <FormattedNumberInput
                     id="prod-price-input"
                     value={price}
                     onChangeValue={setPrice}
                     placeholder="Masalan: 12 000"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 dark:text-white bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
-                  <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">UZS</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 pr-2 shrink-0">UZS</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* 4. Stock Section */}
-          <div className="p-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl flex flex-col gap-3">
-            <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+          <div className="p-3.5 bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700 rounded-2xl flex flex-col gap-3">
+            <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Qoldiq va Ombor
             </span>
 
@@ -447,19 +447,19 @@ export function ProductFormModal({
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-stock-input" 
-                  className="text-xs font-bold text-slate-700"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300"
                 >
                   <span>{isEditing ? 'Hozirgi qoldiq' : 'Dastlabki kirim'}:</span>
                 </label>
-                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
+                <div className="flex items-center bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-700 focus-within:border-brand transition-all p-1.5">
                   <FormattedNumberInput
                     id="prod-stock-input"
                     value={stock}
                     onChangeValue={setStock}
                     placeholder="0"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 dark:text-white bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
-                  <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">{unit}</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 pr-2 shrink-0">{unit}</span>
                 </div>
               </div>
 
@@ -467,22 +467,22 @@ export function ProductFormModal({
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-min-stock-input" 
-                  className="text-xs font-bold text-slate-600"
+                  className="text-xs font-bold text-slate-600 dark:text-slate-300"
                 >
                   <span className="flex items-center gap-1">
                     <span>Eng kam qoldiq</span>
-                    <span className="text-[10px] font-normal text-slate-400">(ogohlantirish)</span>
+                    <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">(ogohlantirish)</span>
                   </span>
                 </label>
-                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
+                <div className="flex items-center bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-700 focus-within:border-brand transition-all p-1.5">
                   <FormattedNumberInput
                     id="prod-min-stock-input"
                     value={minStock}
                     onChangeValue={setMinStock}
                     placeholder="Masalan: 5"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 dark:text-white bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
-                  <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">{unit}</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 pr-2 shrink-0">{unit}</span>
                 </div>
               </div>
             </div>
@@ -496,18 +496,18 @@ export function ProductFormModal({
           />
 
           {error && (
-            <div className="flex items-center gap-2 text-rose-600 bg-rose-50 p-3 rounded-xl text-sm font-semibold shrink-0">
+            <div className="flex items-center gap-2 text-rose-600 bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl text-sm font-semibold shrink-0 border border-rose-200 dark:border-rose-900">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-1 shrink-0 border-t border-slate-100">
+          <div className="flex gap-3 pt-1 shrink-0 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 min-h-[48px] py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl active:scale-95 transition-all text-sm sm:text-base cursor-pointer"
+              className="flex-1 min-h-[48px] py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl active:scale-95 transition-all text-sm sm:text-base cursor-pointer"
             >
               Bekor qilish
             </button>
@@ -516,7 +516,7 @@ export function ProductFormModal({
               disabled={Boolean(duplicateMatch)}
               className={`flex-[2] min-h-[48px] py-3 px-6 font-extrabold rounded-2xl active:scale-95 transition-all text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer ${
                 duplicateMatch
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                   : 'bg-brand hover:bg-brand-dark text-white shadow-lg shadow-brand/25'
               }`}
             >

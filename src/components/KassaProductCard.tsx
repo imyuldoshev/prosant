@@ -25,14 +25,14 @@ export const KassaProductCard = memo(function KassaProductCard({
   return (
     <div
       onClick={() => onSelect(product)}
-      className={`group relative flex flex-col rounded-2xl border text-left cursor-pointer transition-all duration-150 select-none bg-white ${
+      className={`group relative flex flex-col rounded-2xl border text-left cursor-pointer transition-all duration-150 select-none bg-white dark:bg-slate-900 ${
         isSelected 
           ? 'border-brand shadow-md ring-2 ring-brand/30 scale-[0.98]' 
-          : 'border-slate-200/90 hover:border-brand/40 hover:shadow-md'
+          : 'border-slate-200/90 dark:border-slate-800 hover:border-brand/40 dark:hover:border-brand/50 hover:shadow-md'
       }`}
     >
       {/* Product Image Area */}
-      <div className="relative h-28 sm:h-32 md:h-36 w-full bg-slate-100 overflow-hidden rounded-t-2xl shrink-0">
+      <div className="relative h-28 sm:h-32 md:h-36 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden rounded-t-2xl shrink-0">
         <img 
           src={product.image || FALLBACK_IMAGE} 
           alt={product.name}
@@ -56,7 +56,7 @@ export const KassaProductCard = memo(function KassaProductCard({
           }}
           aria-label={`${product.name} ni bitta qo'shish`}
           title="1 ta qo'shish"
-          className="absolute top-2 right-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/95 backdrop-blur-md shadow-sm flex items-center justify-center text-brand font-black transition-all hover:scale-105 hover:bg-brand hover:text-white active:scale-90 cursor-pointer min-w-[36px] min-h-[36px]"
+          className="absolute top-2 right-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-sm flex items-center justify-center text-brand dark:text-blue-400 font-black transition-all hover:scale-105 hover:bg-brand dark:hover:bg-brand hover:text-white active:scale-90 cursor-pointer min-w-[36px] min-h-[36px]"
         >
           <Plus className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
         </button>
@@ -87,18 +87,18 @@ export const KassaProductCard = memo(function KassaProductCard({
             {product.category}
           </span>
           <h3 
-            className="font-bold text-slate-800 text-xs sm:text-sm leading-tight line-clamp-2 group-hover:text-brand transition-colors"
+            className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm leading-tight line-clamp-2 group-hover:text-brand dark:group-hover:text-blue-400 transition-colors"
             title={product.name}
           >
             {product.name}
           </h3>
         </div>
 
-        <div className="pt-1.5 mt-auto border-t border-slate-100 flex items-baseline justify-between gap-1">
-          <div className="text-brand font-black text-sm sm:text-base tracking-tight">
-            {formatSum(product.price)} <span className="text-[11px] font-bold text-slate-500">UZS</span>
+        <div className="pt-1.5 mt-auto border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between gap-1">
+          <div className="text-brand dark:text-blue-400 font-black text-sm sm:text-base tracking-tight">
+            {formatSum(product.price)} <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">UZS</span>
           </div>
-          <span className="text-[11px] font-semibold text-slate-400">
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
             /{product.unit}
           </span>
         </div>

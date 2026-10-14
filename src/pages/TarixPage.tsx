@@ -260,29 +260,29 @@ export function TarixPage() {
     switch (method) {
       case 'naqd':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-            <Banknote className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+            <Banknote className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             Naqd
           </span>
         );
       case 'karta':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
-            <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            <CreditCard className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             Karta
           </span>
         );
       case 'transfer':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
-            <Building2 className="w-3.5 h-3.5 text-purple-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+            <Building2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
             O'tkazma
           </span>
         );
       case 'nasiya':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
-            <FileText className="w-3.5 h-3.5 text-amber-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             Nasiya
           </span>
         );
@@ -324,22 +324,22 @@ export function TarixPage() {
   };
 
   return (
-    <div className="p-3 sm:p-6 lg:p-8 h-full overflow-y-auto space-y-4 sm:space-y-6 bg-slate-50">
+    <div className="p-3 sm:p-6 lg:p-8 h-full overflow-y-auto space-y-4 sm:space-y-6 bg-slate-50 dark:bg-slate-950">
       
       {/* 1. TOP HEADER & GLOBAL ACTIONS */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 bg-white p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 bg-white dark:bg-slate-900 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-10 h-10 sm:w-14 sm:h-14 bg-brand/10 text-brand rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+          <div className="w-10 h-10 sm:w-14 sm:h-14 bg-brand/10 dark:bg-blue-900/30 text-brand dark:text-blue-400 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
             <History className="w-5 h-5 sm:w-8 sm:h-8" />
           </div>
           <div>
             <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Sotuvlar Tarixi</h1>
-              <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-slate-100 text-slate-700 font-bold text-[10px] sm:text-xs rounded-full whitespace-nowrap">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Sotuvlar Tarixi</h1>
+              <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px] sm:text-xs rounded-full whitespace-nowrap border border-slate-200 dark:border-slate-700">
                 {sales.length} ta chek
               </span>
             </div>
-            <p className="text-slate-500 text-xs sm:text-sm mt-0.5 line-clamp-1 sm:line-clamp-none">
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-0.5 line-clamp-1 sm:line-clamp-none">
               Barcha amalga oshirilgan xaridlar, cheklar va moliyaviy hisobotlar
             </p>
           </div>
@@ -349,10 +349,10 @@ export function TarixPage() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm rounded-xl transition-all shadow-xs flex items-center gap-2 active:scale-95"
+            className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 font-bold text-sm rounded-xl transition-all shadow-xs flex items-center gap-2 active:scale-95 cursor-pointer"
             title="CSV formatda yuklab olish"
           >
-            <Download className="hidden sm:inline-block w-4 h-4 text-slate-500" />
+            <Download className="hidden sm:inline-block w-4 h-4 text-slate-500 dark:text-slate-400" />
             <span>Excel / CSV</span>
           </button>
 
@@ -360,7 +360,7 @@ export function TarixPage() {
             <button
               type="button"
               onClick={() => setIsConfirmClearOpen(true)}
-              className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-sm rounded-xl transition-all border border-rose-200/60 flex items-center gap-2 active:scale-95"
+              className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-sm rounded-xl transition-all border border-rose-200/60 dark:border-rose-800 flex items-center gap-2 active:scale-95 cursor-pointer"
               title="Barcha tarixni tozalash"
             >
               <Trash2 className="hidden sm:inline-block w-4 h-4" />
@@ -448,32 +448,32 @@ export function TarixPage() {
       </div>
 
       {/* TO'LOV TURLARI BO'YICHA TAQSIMOT (Filtrlangan sana bo'yicha) */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">
-          <CreditCard className="w-4 h-4 text-slate-400" />
+      <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">
+          <CreditCard className="w-4 h-4 text-slate-400 dark:text-slate-500" />
           <span>To'lov turlari bo'yicha tushum ({dateRangeBadgeText}):</span>
         </div>
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
-          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-900 border border-emerald-100 rounded-xl text-xs font-bold">
-            <span className="text-emerald-700 flex items-center gap-1">
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border border-emerald-100 dark:border-emerald-800 rounded-xl text-xs font-bold">
+            <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
               <Banknote className="w-3.5 h-3.5" /> Naqd:
             </span>
             <span className="font-black">{formatSum(stats.methods.naqd)} UZS</span>
           </div>
-          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-sky-50 text-sky-900 border border-sky-100 rounded-xl text-xs font-bold">
-            <span className="text-sky-700 flex items-center gap-1">
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-sky-50 dark:bg-sky-950/40 text-sky-900 dark:text-sky-200 border border-sky-100 dark:border-sky-800 rounded-xl text-xs font-bold">
+            <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1">
               <CreditCard className="w-3.5 h-3.5" /> Karta:
             </span>
             <span className="font-black">{formatSum(stats.methods.karta)} UZS</span>
           </div>
-          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-purple-50 text-purple-900 border border-purple-100 rounded-xl text-xs font-bold">
-            <span className="text-purple-700 flex items-center gap-1">
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-200 border border-purple-100 dark:border-purple-800 rounded-xl text-xs font-bold">
+            <span className="text-purple-700 dark:text-purple-400 flex items-center gap-1">
               <Building2 className="w-3.5 h-3.5" /> O'tkazma:
             </span>
             <span className="font-black">{formatSum(stats.methods.transfer)} UZS</span>
           </div>
-          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-100 rounded-xl text-xs font-bold">
-            <span className="text-amber-700 flex items-center gap-1">
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-100 dark:border-amber-800 rounded-xl text-xs font-bold">
+            <span className="text-amber-700 dark:text-amber-400 flex items-center gap-1">
               <FileText className="w-3.5 h-3.5" /> Nasiya:
             </span>
             <span className="font-black">{formatSum(stats.methods.nasiya)} UZS</span>
@@ -482,7 +482,7 @@ export function TarixPage() {
       </div>
 
       {/* 3. FILTERS & SEARCH TOOLBAR */}
-      <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-3 sm:space-y-4">
+      <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 sm:space-y-4">
         <div className="flex flex-col lg:flex-row gap-2.5 sm:gap-3">
           
           {/* Search box */}
@@ -496,7 +496,7 @@ export function TarixPage() {
               name="search"
               type="text" 
               aria-label="Sotuvlar tarixini qidirish"
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-12 pr-10 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white transition-all text-slate-800 placeholder:text-slate-400"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 pl-12 pr-10 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand dark:focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               placeholder="Qidiruv: Chek raqami (#1054), mijoz ismi, telefon, mahsulot..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -504,7 +504,7 @@ export function TarixPage() {
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 aria-label="Tozalash"
               >
                 <X className="w-4 h-4" />
@@ -531,10 +531,10 @@ export function TarixPage() {
                 onChange={val => setPaymentFilter(val)}
                 options={[
                   { value: 'all', label: "Barcha to'lovlar", icon: <CreditCard className="w-4 h-4 text-slate-400" /> },
-                  { value: 'naqd', label: "Naqd pul", icon: <Banknote className="w-4 h-4 text-emerald-600" /> },
-                  { value: 'karta', label: "Plastik karta", icon: <CreditCard className="w-4 h-4 text-sky-600" /> },
-                  { value: 'transfer', label: "O'tkazma", icon: <Building2 className="w-4 h-4 text-purple-600" /> },
-                  { value: 'nasiya', label: "Nasiya", icon: <FileText className="w-4 h-4 text-amber-600" /> },
+                  { value: 'naqd', label: "Naqd pul", icon: <Banknote className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
+                  { value: 'karta', label: "Plastik karta", icon: <CreditCard className="w-4 h-4 text-sky-600 dark:text-sky-400" /> },
+                  { value: 'transfer', label: "O'tkazma", icon: <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" /> },
+                  { value: 'nasiya', label: "Nasiya", icon: <FileText className="w-4 h-4 text-amber-600 dark:text-amber-400" /> },
                 ]}
                 ariaLabel="To'lov turi"
               />
@@ -545,10 +545,10 @@ export function TarixPage() {
                 value={sortOrder}
                 onChange={val => setSortOrder(val as SortOrderType)}
                 options={[
-                  { value: 'newest', label: "Eng yangi birinchi", icon: <Clock className="w-4 h-4 text-slate-500" /> },
+                  { value: 'newest', label: "Eng yangi birinchi", icon: <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" /> },
                   { value: 'oldest', label: "Eng eski birinchi", icon: <Clock className="w-4 h-4 text-slate-400" /> },
-                  { value: 'highest', label: "Eng katta summa", icon: <DollarSign className="w-4 h-4 text-emerald-600" /> },
-                  { value: 'lowest', label: "Eng kichik summa", icon: <TrendingUp className="w-4 h-4 text-rose-500" /> },
+                  { value: 'highest', label: "Eng katta summa", icon: <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
+                  { value: 'lowest', label: "Eng kichik summa", icon: <TrendingUp className="w-4 h-4 text-rose-500 dark:text-rose-400" /> },
                 ]}
                 ariaLabel="Saralash tartibi"
               />
@@ -557,8 +557,8 @@ export function TarixPage() {
         </div>
 
         {/* Quick Date Filters Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1 flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" /> Tezkor sana:
           </span>
           {[
@@ -572,10 +572,10 @@ export function TarixPage() {
               key={tab.id}
               type="button"
               onClick={() => handleQuickPreset(tab.id)}
-              className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                 currentPreset === tab.id
-                  ? 'bg-brand text-white shadow-sm shadow-brand/30 ring-1 ring-brand'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-brand dark:bg-blue-600 text-white shadow-sm shadow-brand/30 ring-1 ring-brand dark:ring-blue-500'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               {tab.label}
@@ -584,12 +584,12 @@ export function TarixPage() {
 
           {/* Active Custom Date Range Badge with clear button */}
           {startDate && endDate && currentPreset === 'custom' && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-brand/10 text-brand rounded-xl text-xs font-bold border border-brand/20 ml-auto animate-in fade-in">
+            <div className="flex items-center gap-2 px-3 py-1 bg-brand/10 dark:bg-blue-900/30 text-brand dark:text-blue-400 rounded-xl text-xs font-bold border border-brand/20 dark:border-blue-800 ml-auto animate-in fade-in">
               <span>{formatToDMY(startDate)} — {formatToDMY(endDate)}</span>
               <button
                 type="button"
                 onClick={() => handleDateRangeChange('', '')}
-                className="hover:bg-brand/20 p-0.5 rounded-md transition-colors"
+                className="hover:bg-brand/20 dark:hover:bg-blue-900/50 p-0.5 rounded-md transition-colors"
                 title="Oraliqni tozalash"
                 aria-label="Oraliqni tozalash"
               >
@@ -605,16 +605,16 @@ export function TarixPage() {
       {/* MOBILE VIEW (md:hidden): Compact Cards with Expandable Details (NO X-SCROLL!) */}
       <div className="md:hidden flex flex-col gap-3">
         {filteredSales.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 text-center border border-slate-200 shadow-xs">
-            <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
-              <Search className="w-7 h-7 text-slate-300" />
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
+              <Search className="w-7 h-7 text-slate-300 dark:text-slate-600" />
             </div>
-            <h3 className="font-bold text-slate-700 text-base">
+            <h3 className="font-bold text-slate-700 dark:text-slate-200 text-base">
               {startDate && endDate 
                 ? "Bu oraliqda sotuv topilmadi" 
                 : "Hech qanday sotuv topilmadi"}
             </h3>
-            <p className="text-slate-400 text-xs mt-1 max-w-xs mx-auto">
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-1 max-w-xs mx-auto">
               Qidiruv yoki sana parametrlarini o'zgartirib ko'ring yoki yangi sotuv amalga oshiring.
             </p>
             {sales.length === 0 ? (
@@ -637,16 +637,16 @@ export function TarixPage() {
               return (
                 <div 
                   key={sale.id}
-                  className="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-2xs flex flex-col gap-2.5 transition-all"
+                  className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/90 dark:border-slate-800 shadow-2xs flex flex-col gap-2.5 transition-all"
                 >
                   {/* 1. Header Row: Chek # + Date/Time + Payment Badge */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-xs font-black bg-slate-100 text-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/80">
+                      <span className="font-mono text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-2 py-0.5 rounded-lg border border-slate-200/80 dark:border-slate-700">
                         {sale.saleNumber}
                       </span>
-                      <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 truncate">
-                        <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate">
+                        <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
                         {formatDateTime(sale.createdAt)}
                       </span>
                     </div>
@@ -656,21 +656,21 @@ export function TarixPage() {
                   </div>
 
                   {/* 2. Middle Row: Summa + Mijoz + Tovar soni */}
-                  <div className="flex items-baseline justify-between gap-2 pt-1 border-t border-slate-100">
+                  <div className="flex items-baseline justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-xs text-slate-700 flex items-center gap-1.5 truncate">
-                        <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <div className="font-bold text-xs text-slate-700 dark:text-slate-200 flex items-center gap-1.5 truncate">
+                        <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                         <span className="truncate">
-                          {sale.customerName || <span className="text-slate-400 italic">Oddiy mijoz</span>}
+                          {sale.customerName || <span className="text-slate-400 dark:text-slate-500 italic">Oddiy mijoz</span>}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 font-medium mt-0.5">
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
                         {sale.items.length} xil tovar ({totalItemsCount} dona/metr)
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-black text-slate-900 text-base leading-tight">
-                        {formatSum(sale.total)} <span className="text-[10px] font-bold text-slate-400">UZS</span>
+                      <div className="font-black text-slate-900 dark:text-white text-base leading-tight">
+                        {formatSum(sale.total)} <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">UZS</span>
                       </div>
                       {sale.discount && sale.discount > 0 ? (
                         <div className="text-[10px] font-bold text-rose-500">
@@ -681,12 +681,12 @@ export function TarixPage() {
                   </div>
 
                   {/* 3. Actions Row: Chek, Chop, O'chirish, Ko'proq (More) toggle */}
-                  <div className="grid grid-cols-4 gap-1.5 sm:gap-2 pt-1 border-t border-slate-100">
+                  <div className="grid grid-cols-4 gap-1.5 sm:gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                     {/* Chek ko'rish button */}
                     <button
                       type="button"
                       onClick={() => setSelectedSale(sale)}
-                      className="min-h-[38px] px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-brand/10 hover:text-brand text-slate-700 font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                      className="min-h-[38px] px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand/10 dark:hover:bg-blue-900/30 hover:text-brand dark:hover:text-blue-400 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
                       title="Chekni ko'rish"
                       aria-label="Chekni ko'rish"
                     >
@@ -701,7 +701,7 @@ export function TarixPage() {
                         setSelectedSale(sale);
                         setShouldPrint(true);
                       }}
-                      className="min-h-[38px] px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                      className="min-h-[38px] px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
                       title="Chop etish"
                       aria-label="Chop etish"
                     >
@@ -713,7 +713,7 @@ export function TarixPage() {
                     <button
                       type="button"
                       onClick={() => setSaleToDelete(sale)}
-                      className="min-h-[38px] px-2 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                      className="min-h-[38px] px-2 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
                       title="Sotuvni o'chirish"
                       aria-label="Sotuvni o'chirish"
                     >
@@ -727,8 +727,8 @@ export function TarixPage() {
                       onClick={() => toggleExpand(sale.id)}
                       className={`min-h-[38px] px-2 py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer ${
                         isExpanded
-                          ? 'bg-brand text-white shadow-xs'
-                          : 'bg-brand/10 text-brand hover:bg-brand/15'
+                          ? 'bg-brand dark:bg-blue-600 text-white shadow-xs'
+                          : 'bg-brand/10 dark:bg-blue-900/30 text-brand dark:text-blue-400 hover:bg-brand/15 dark:hover:bg-blue-900/50'
                       }`}
                       title={isExpanded ? "Yashirish" : "Batafsil ma'lumot"}
                       aria-expanded={isExpanded}
@@ -740,23 +740,23 @@ export function TarixPage() {
 
                   {/* 4. EXPANDABLE SECTION (More bosilganda chiqadigan qism) */}
                   {isExpanded && (
-                    <div className="pt-2 border-t border-dashed border-slate-200 flex flex-col gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                        <ShoppingBag className="w-3 h-3 text-brand" /> Mahsulotlar tafsiloti:
+                    <div className="pt-2 border-t border-dashed border-slate-200 dark:border-slate-800 flex flex-col gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                        <ShoppingBag className="w-3 h-3 text-brand dark:text-blue-400" /> Mahsulotlar tafsiloti:
                       </div>
 
-                      <div className="bg-slate-50/80 rounded-xl p-2.5 space-y-2 border border-slate-100">
+                      <div className="bg-slate-50/80 dark:bg-slate-800/80 rounded-xl p-2.5 space-y-2 border border-slate-100 dark:border-slate-750">
                         {sale.items.map((item, idx) => (
                           <div key={idx} className="flex items-start justify-between gap-2 text-xs">
                             <div className="min-w-0 flex-1">
-                              <span className="font-bold text-slate-800 line-clamp-2 leading-snug">
+                              <span className="font-bold text-slate-800 dark:text-slate-200 line-clamp-2 leading-snug">
                                 {item.productName}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-medium">
+                              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                                 {formatSum(item.quantity)} {item.unit} × {formatSum(item.price)} UZS
                               </span>
                             </div>
-                            <span className="font-extrabold text-slate-900 shrink-0 text-xs">
+                            <span className="font-extrabold text-slate-900 dark:text-white shrink-0 text-xs">
                               {formatSum(item.quantity * item.price)} UZS
                             </span>
                           </div>
@@ -765,15 +765,15 @@ export function TarixPage() {
 
                       {/* Additional details if available (Phone, Note) */}
                       {(sale.customerPhone || sale.note) && (
-                        <div className="bg-slate-50 rounded-xl p-2.5 text-xs text-slate-600 space-y-1 border border-slate-100">
+                        <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5 text-xs text-slate-600 dark:text-slate-300 space-y-1 border border-slate-100 dark:border-slate-750">
                           {sale.customerPhone && (
-                            <div className="flex items-center gap-1.5 text-slate-700 font-medium">
-                              <Phone className="w-3 h-3 text-slate-400" />
+                            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                              <Phone className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                               <span>Tel: {sale.customerPhone}</span>
                             </div>
                           )}
                           {sale.note && (
-                            <div className="text-slate-500 italic text-[11px]">
+                            <div className="text-slate-500 dark:text-slate-400 italic text-[11px]">
                               Izoh: "{sale.note}"
                             </div>
                           )}
@@ -786,20 +786,20 @@ export function TarixPage() {
             })}
 
             {/* Mobile Summary bar at bottom */}
-            <div className="p-3.5 bg-white rounded-2xl border border-slate-200 text-xs font-semibold text-slate-500 flex items-center justify-between">
-              <div>Jami: <strong className="text-slate-800 font-bold">{filteredSales.length}</strong> ta chek</div>
-              <div>Summa: <strong className="text-slate-900 font-black">{formatSum(filteredSales.reduce((sum, s) => sum + s.total, 0))} UZS</strong></div>
+            <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <div>Jami: <strong className="text-slate-800 dark:text-slate-200 font-bold">{filteredSales.length}</strong> ta chek</div>
+              <div>Summa: <strong className="text-slate-900 dark:text-white font-black">{formatSum(filteredSales.reduce((sum, s) => sum + s.total, 0))} UZS</strong></div>
             </div>
           </>
         )}
       </div>
 
       {/* DESKTOP TABLE VIEW (hidden md:block) */}
-      <div className="hidden md:block bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden h-auto">
+      <div className="hidden md:block bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden h-auto">
         <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 text-slate-500 border-b border-slate-200 text-xs font-bold uppercase tracking-wider">
+              <tr className="bg-slate-50/80 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 text-xs font-bold uppercase tracking-wider">
                 <th className="p-4 pl-6">Chek #</th>
                 <th className="p-4">Sana & Vaqt</th>
                 <th className="p-4">Mijoz</th>
@@ -809,7 +809,7 @@ export function TarixPage() {
                 <th className="p-4 pr-6 text-center">Amallar</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
               {visibleSales.map(sale => {
                 const totalItemsCount = sale.items.reduce((acc, it) => acc + it.quantity, 0);
                 const firstTwoItems = sale.items.slice(0, 2);
@@ -818,40 +818,40 @@ export function TarixPage() {
                 return (
                   <tr 
                     key={sale.id} 
-                    className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
+                    className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
                     onClick={() => setSelectedSale(sale)}
                   >
                     {/* Sale ID */}
-                    <td className="p-4 pl-6 font-extrabold text-slate-900 whitespace-nowrap">
-                      <span className="font-mono bg-slate-100 px-2.5 py-1 rounded-lg text-slate-800 border border-slate-200/60 group-hover:border-brand/40 group-hover:bg-brand/5 group-hover:text-brand transition-colors">
+                    <td className="p-4 pl-6 font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
+                      <span className="font-mono bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg text-slate-800 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 group-hover:border-brand/40 dark:group-hover:border-blue-500/40 group-hover:bg-brand/5 dark:group-hover:bg-blue-500/10 group-hover:text-brand dark:group-hover:text-blue-400 transition-colors">
                         {sale.saleNumber}
                       </span>
                     </td>
 
                     {/* Date / Time */}
-                    <td className="p-4 text-slate-600 whitespace-nowrap">
-                      <div className="font-semibold text-slate-800">
+                    <td className="p-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                      <div className="font-semibold text-slate-800 dark:text-slate-200">
                         {formatDateTime(sale.createdAt)}
                       </div>
                     </td>
 
                     {/* Customer */}
-                    <td className="p-4 text-slate-700 whitespace-nowrap">
+                    <td className="p-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                       {sale.customerName ? (
                         <div>
-                          <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5 text-slate-400" />
+                          <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                             {sale.customerName}
                           </div>
                           {sale.customerPhone && (
-                            <div className="text-xs text-slate-400 flex items-center gap-1">
+                            <div className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
                               <Phone className="w-3 h-3" />
                               {sale.customerPhone}
                             </div>
                           )}
                         </div>
                       ) : (
-                        <span className="text-slate-400 font-medium italic">Oddiy mijoz</span>
+                        <span className="text-slate-400 dark:text-slate-500 font-medium italic">Oddiy mijoz</span>
                       )}
                     </td>
 
@@ -859,17 +859,17 @@ export function TarixPage() {
                     <td className="p-4 max-w-xs">
                       <div className="space-y-1">
                         {firstTwoItems.map((it, i) => (
-                          <div key={i} className="text-xs text-slate-600 truncate flex items-center justify-between gap-2">
-                            <span className="font-semibold text-slate-800 truncate">{it.productName}</span>
-                            <span className="text-slate-400 shrink-0 font-medium">{it.quantity} {it.unit}</span>
+                          <div key={i} className="text-xs text-slate-600 dark:text-slate-300 truncate flex items-center justify-between gap-2">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">{it.productName}</span>
+                            <span className="text-slate-400 dark:text-slate-500 shrink-0 font-medium">{it.quantity} {it.unit}</span>
                           </div>
                         ))}
                         {remainingItemsCount > 0 && (
-                          <span className="text-[11px] font-bold text-brand bg-brand/10 px-2 py-0.5 rounded-md inline-block">
+                          <span className="text-[11px] font-bold text-brand dark:text-blue-400 bg-brand/10 dark:bg-blue-900/30 px-2 py-0.5 rounded-md inline-block">
                             +{remainingItemsCount} ta boshqa tovar
                           </span>
                         )}
-                        <span className="text-[11px] text-slate-400 block font-medium">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 block font-medium">
                           Jami: {totalItemsCount} dona/metr
                         </span>
                       </div>
@@ -882,8 +882,8 @@ export function TarixPage() {
 
                     {/* Total Sum */}
                     <td className="p-4 text-right whitespace-nowrap">
-                      <div className="font-black text-slate-900 text-base">
-                        {formatSum(sale.total)} <span className="text-xs font-bold text-slate-400">UZS</span>
+                      <div className="font-black text-slate-900 dark:text-white text-base">
+                        {formatSum(sale.total)} <span className="text-xs font-bold text-slate-400 dark:text-slate-500">UZS</span>
                       </div>
                       {sale.discount && sale.discount > 0 && (
                         <div className="text-[11px] font-semibold text-rose-500">
@@ -898,7 +898,7 @@ export function TarixPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedSale(sale)}
-                          className="p-2 rounded-xl bg-slate-100 hover:bg-brand/10 hover:text-brand text-slate-600 transition-colors"
+                          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand/10 dark:hover:bg-blue-900/30 hover:text-brand dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                           title="Chekni ko'rish"
                           aria-label="Chekni ko'rish"
                         >
@@ -911,7 +911,7 @@ export function TarixPage() {
                             setSelectedSale(sale);
                             setShouldPrint(true);
                           }}
-                          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                           title="Chop etish"
                           aria-label="Chop etish"
                         >
@@ -921,7 +921,7 @@ export function TarixPage() {
                         <button
                           type="button"
                           onClick={() => setSaleToDelete(sale)}
-                          className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-500 hover:text-rose-600 transition-colors"
+                          className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
                           title="Sotuvni o'chirish / Qaytarish"
                           aria-label="Sotuvni o'chirish"
                         >
@@ -937,16 +937,16 @@ export function TarixPage() {
               {filteredSales.length === 0 && (
                 <tr>
                   <td colSpan={7} className="p-16 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400">
-                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                        <Search className="w-8 h-8 text-slate-300" />
+                    <div className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                      <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                        <Search className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                       </div>
-                      <h3 className="font-bold text-lg text-slate-700 mb-1">
+                      <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200 mb-1">
                         {startDate && endDate 
                           ? "Bu oraliqda hech qanday sotuv topilmadi" 
                           : "Hech qanday sotuv topilmadi"}
                       </h3>
-                      <p className="text-slate-400 text-sm max-w-sm mb-4">
+                      <p className="text-slate-400 dark:text-slate-500 text-sm max-w-sm mb-4">
                         {startDate && endDate
                           ? `${formatToDMY(startDate)} — ${formatToDMY(endDate)} sanalari oralig'ida hech qanday sotuv yoki chek topilmadi.`
                           : "Qidiruv mezonlariga mos keladigan cheklar mavjud emas yoki hali xaridlar amalga oshirilmagan."}
@@ -968,7 +968,7 @@ export function TarixPage() {
                             handleDateRangeChange('', '');
                             setPaymentFilter('all');
                           }}
-                          className="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm transition-colors"
+                          className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm transition-colors cursor-pointer"
                         >
                           Filtrlarni tozalash
                         </button>
@@ -982,13 +982,13 @@ export function TarixPage() {
         </div>
 
         {/* Footer info bar */}
-        <div className="p-4 px-6 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+        <div className="p-4 px-6 bg-slate-50/80 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
           <div>
-            Jami ko'rsatilmoqda: <span className="font-bold text-slate-800">{filteredSales.length}</span> ta chek
+            Jami ko'rsatilmoqda: <span className="font-bold text-slate-800 dark:text-slate-200">{filteredSales.length}</span> ta chek
           </div>
           <div className="flex items-center gap-4">
             <span>
-              Filtrlangan jami summa: <strong className="text-slate-900 font-black text-sm">{formatSum(filteredSales.reduce((sum, s) => sum + s.total, 0))} UZS</strong>
+              Filtrlangan jami summa: <strong className="text-slate-900 dark:text-white font-black text-sm">{formatSum(filteredSales.reduce((sum, s) => sum + s.total, 0))} UZS</strong>
             </span>
           </div>
         </div>
@@ -1000,7 +1000,7 @@ export function TarixPage() {
           <button
             type="button"
             onClick={() => setVisibleCount(prev => prev + 30)}
-            className="px-6 py-2.5 bg-white hover:bg-slate-50 border border-slate-200/90 text-brand font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-6 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 text-brand dark:text-blue-400 font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
           >
             <span>Ko'proq ko'rsatish (+{filteredSales.length - visibleCount} ta)</span>
           </button>
@@ -1026,25 +1026,25 @@ export function TarixPage() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center border border-slate-100 animate-in zoom-in-95 duration-200 my-auto max-h-[92dvh] overflow-y-auto">
-            <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 my-auto max-h-[92dvh] overflow-y-auto">
+            <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8" />
             </div>
 
-            <h3 className="text-xl font-black text-slate-900 mb-2">Sotuvni bekor qilish</h3>
-            <p className="text-slate-500 text-sm mb-4">
-              Haqiqatan ham <strong className="text-slate-800">{saleToDelete.saleNumber}</strong> raqamli chekni o'chirmoqchimisiz?
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Sotuvni bekor qilish</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
+              Haqiqatan ham <strong className="text-slate-800 dark:text-slate-200">{saleToDelete.saleNumber}</strong> raqamli chekni o'chirmoqchimisiz?
             </p>
 
             {/* Stock restore checkbox */}
-            <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer text-left mb-6">
+            <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer text-left mb-6">
               <input 
                 type="checkbox"
                 checked={restoreStockOnDelete}
                 onChange={e => setRestoreStockOnDelete(e.target.checked)}
                 className="w-4 h-4 text-brand rounded focus:ring-brand"
               />
-              <span className="text-xs font-bold text-slate-700">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 Sotilgan mahsulotlarni ombor qoldig'iga (stock) qaytarish
               </span>
             </label>
@@ -1053,7 +1053,7 @@ export function TarixPage() {
               <button
                 type="button"
                 onClick={() => setSaleToDelete(null)}
-                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-sm"
+                className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-colors text-sm cursor-pointer"
               >
                 Bekor qilish
               </button>
@@ -1063,7 +1063,7 @@ export function TarixPage() {
                   deleteSale(saleToDelete.id, restoreStockOnDelete);
                   setSaleToDelete(null);
                 }}
-                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-md transition-all text-sm"
+                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-md transition-all text-sm cursor-pointer"
               >
                 Ha, o'chirish
               </button>
@@ -1079,13 +1079,13 @@ export function TarixPage() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center border border-slate-100 animate-in zoom-in-95 duration-200 my-auto max-h-[92dvh] overflow-y-auto">
-            <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 my-auto max-h-[92dvh] overflow-y-auto">
+            <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8" />
             </div>
 
-            <h3 className="text-xl font-black text-slate-900 mb-2">Barcha tarixni tozalash</h3>
-            <p className="text-slate-500 text-sm mb-6">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Barcha tarixni tozalash</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
               Barcha sotuvlar tarixi o'chiriladi. Bu amalni ortga qaytarib bo'lmaydi. Rozimisiz?
             </p>
 
@@ -1094,7 +1094,7 @@ export function TarixPage() {
                 <button
                   type="button"
                   onClick={() => setIsConfirmClearOpen(false)}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-sm"
+                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-colors text-sm cursor-pointer"
                 >
                   Bekor qilish
                 </button>
@@ -1104,7 +1104,7 @@ export function TarixPage() {
                     clearAllSales();
                     setIsConfirmClearOpen(false);
                   }}
-                  className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-md transition-all text-sm"
+                  className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-md transition-all text-sm cursor-pointer"
                 >
                   Hammasini o'chirish
                 </button>
@@ -1115,7 +1115,7 @@ export function TarixPage() {
                   resetToDemoSales();
                   setIsConfirmClearOpen(false);
                 }}
-                className="w-full py-2.5 bg-brand/10 hover:bg-brand/20 text-brand font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 bg-brand/10 dark:bg-blue-900/30 hover:bg-brand/20 dark:hover:bg-blue-900/50 text-brand dark:text-blue-400 font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <History className="w-4 h-4" />
                 Demo ma'lumotlarni tiklash

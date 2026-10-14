@@ -70,7 +70,7 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 my-auto"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 my-auto"
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -105,51 +105,51 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 flex flex-col gap-4">
           
           {/* Product Info Banner */}
-          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center gap-3 shrink-0">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700 flex items-center gap-3 shrink-0">
             <img 
               src={product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'} 
               alt={product.name}
-              className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0 bg-slate-100" 
+              className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs shrink-0 bg-slate-100 dark:bg-slate-800" 
             />
             <div className="min-w-0 flex-1">
-              <span className="text-[11px] font-bold text-brand uppercase tracking-wider block truncate">
+              <span className="text-[11px] font-bold text-brand dark:text-blue-400 uppercase tracking-wider block truncate">
                 {product.category || 'Umumiy'}
               </span>
-              <h3 className="font-extrabold text-slate-800 text-sm truncate leading-snug">
+              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm truncate leading-snug">
                 {product.name}
               </h3>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
-                Mavjud: <strong className="text-slate-800">{formatSum(currentStock)} {product.unit}</strong>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                Mavjud: <strong className="text-slate-800 dark:text-slate-200">{formatSum(currentStock)} {product.unit}</strong>
               </p>
             </div>
           </div>
 
           {/* Stock Calculation Preview */}
-          <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 text-center">
-            <div className="border-r border-emerald-200/80 pr-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+          <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/70 text-center">
+            <div className="border-r border-emerald-200/80 dark:border-emerald-800 pr-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block">
                 Hozirgi qoldiq
               </span>
-              <span className="text-base sm:text-lg font-black font-mono text-emerald-900">
-                {formatSum(currentStock)} <span className="text-xs font-sans font-bold text-emerald-700">{product.unit}</span>
+              <span className="text-base sm:text-lg font-black font-mono text-emerald-900 dark:text-emerald-200">
+                {formatSum(currentStock)} <span className="text-xs font-sans font-bold text-emerald-700 dark:text-emerald-400">{product.unit}</span>
               </span>
             </div>
             <div className="pl-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block">
                 Kirimdan so'ng
               </span>
-              <span className="text-base sm:text-lg font-black font-mono text-emerald-700">
-                {formatSum(newStock)} <span className="text-xs font-sans font-bold text-emerald-600">{product.unit}</span>
+              <span className="text-base sm:text-lg font-black font-mono text-emerald-700 dark:text-emerald-400">
+                {formatSum(newStock)} <span className="text-xs font-sans font-bold text-emerald-600 dark:text-emerald-300">{product.unit}</span>
               </span>
             </div>
           </div>
 
           {/* Quantity Input Field */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="stock-in-amount" className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            <label htmlFor="stock-in-amount" className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
               Kirim miqdori:
             </label>
-            <div className="flex items-center justify-between bg-slate-50 border-2 border-emerald-400 focus-within:border-emerald-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-2xl px-4 py-2.5 transition-all shadow-inner">
+            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border-2 border-emerald-400 focus-within:border-emerald-600 focus-within:bg-white dark:focus-within:bg-slate-850 focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-2xl px-4 py-2.5 transition-all shadow-inner">
               <FormattedNumberInput
                 id="stock-in-amount"
                 ref={inputRef}
@@ -159,9 +159,9 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
                   setError(null);
                 }}
                 placeholder="0"
-                className="w-full text-2xl sm:text-3xl font-mono font-black text-slate-900 bg-transparent focus:outline-none tracking-wider"
+                className="w-full text-2xl sm:text-3xl font-mono font-black text-slate-900 dark:text-white bg-transparent focus:outline-none tracking-wider"
               />
-              <span className="text-sm font-bold text-slate-500 font-sans ml-2 shrink-0 select-none">
+              <span className="text-sm font-bold text-slate-500 dark:text-slate-400 font-sans ml-2 shrink-0 select-none">
                 {product.unit}
               </span>
             </div>
@@ -178,7 +178,7 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
                   setError(null);
                   if (inputRef.current) inputRef.current.focus();
                 }}
-                className="py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-200 border border-slate-200/80 font-black text-xs text-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+                className="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 hover:border-emerald-200 dark:hover:border-emerald-700 border border-slate-200/80 dark:border-slate-700 font-black text-xs text-slate-700 dark:text-slate-200 active:scale-95 transition-all cursor-pointer select-none"
               >
                 +{preset}
               </button>
@@ -186,18 +186,18 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
           </div>
 
           {error && (
-            <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 p-2.5 rounded-xl text-xs font-semibold shrink-0">
+            <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-xl text-xs font-semibold shrink-0 border border-rose-200 dark:border-rose-900">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Action buttons */}
-          <div className="flex gap-2.5 pt-2 border-t border-slate-100 shrink-0">
+          <div className="flex gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl active:scale-95 transition-all text-sm cursor-pointer"
+              className="flex-1 py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl active:scale-95 transition-all text-sm cursor-pointer"
             >
               Bekor qilish
             </button>

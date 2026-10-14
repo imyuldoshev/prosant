@@ -129,12 +129,12 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
         </div>
 
         {/* Scrollable Container for Preview */}
-        <div className="bg-slate-200 p-2 sm:p-6 overflow-y-auto rounded-b-2xl shadow-2xl flex justify-center">
+        <div className="bg-slate-200 dark:bg-slate-950 p-2 sm:p-6 overflow-y-auto shadow-2xl flex justify-center transition-colors">
           
           {/* THE REAL PRINTABLE RECEIPT / INVOICE DOCUMENT */}
           <div 
             id="printable-receipt"
-            className={`receipt-printable bg-white text-black p-4 sm:p-6 rounded-sm shadow-md font-sans text-xs sm:text-sm leading-normal border border-slate-300 print:border-none print:shadow-none print:p-0 print:m-0 ${
+            className={`receipt-printable bg-white text-black p-4 sm:p-6 rounded-sm shadow-md font-sans text-xs sm:text-sm leading-normal border border-slate-300 dark:border-slate-800 print:border-none print:shadow-none print:p-0 print:m-0 ${
               printLayout === 'thermal' ? 'max-w-[80mm] w-full text-[11px]' : 'max-w-[210mm] w-full'
             }`}
           >
@@ -286,7 +286,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
         </div>
 
         {/* Footer Actions on screen */}
-        <div className="no-print bg-slate-900 p-3 rounded-b-2xl flex justify-end gap-2 text-xs">
+        <div className="no-print bg-slate-900 border-t border-slate-800 p-3 rounded-b-2xl flex justify-end gap-2 text-xs">
           <button
             type="button"
             onClick={onClose}
