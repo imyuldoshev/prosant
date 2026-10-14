@@ -245,6 +245,13 @@ export type Database = {
         };
         Returns: ProductRow;
       };
+      stock_in_batch: {
+        Args: {
+          p_items: Json;
+          p_note?: string | null;
+        };
+        Returns: void;
+      };
       search_products: {
         Args: {
           search_query: string;

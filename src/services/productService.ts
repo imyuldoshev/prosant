@@ -273,9 +273,22 @@ export const productService = {
     return dbToProduct(data as ProductRow);
   },
 
-  /** Stock kamaytirish (sotuv) — to'g'ridan-to'g'ri update */
+  /** Stock kamaytirish (sotuv) — atomik batch RPC yoki alohida fallback */
   deductStock: async (items: { productId: string; quantity: number }[]) => {
-    // Har birini alohida update — kelajakda RPC ga o'tkazish mumkin
+    if (!items.length) return;
+
+    // 1. Birinchi navbatda atomik batch RPC sinab ko'ramiz
+    const { error: batchError } = await supabase.rpc('stock_in_batch', {
+      p_items: items.map(it => ({
+        productId: it.productId,
+        quantity: -it.quantity,
+      })),
+      p_note: 'Sotuv',
+    });
+
+    if (!batchError) return;
+
+    // 2. Agar RPC topilmasa yoki xato bersa, har birini alohida stock_in ga fallback qilamiz
     const promises = items.map(({ productId, quantity }) =>
       supabase.rpc('stock_in', {
         p_product_id: productId,
@@ -288,8 +301,22 @@ export const productService = {
     if (failed?.error) throw failed.error;
   },
 
-  /** Stock qaytarish */
+  /** Stock qaytarish — atomik batch RPC yoki alohida fallback */
   returnStock: async (items: { productId: string; quantity: number }[]) => {
+    if (!items.length) return;
+
+    // 1. Birinchi navbatda atomik batch RPC sinab ko'ramiz
+    const { error: batchError } = await supabase.rpc('stock_in_batch', {
+      p_items: items.map(it => ({
+        productId: it.productId,
+        quantity: it.quantity,
+      })),
+      p_note: 'Qaytarildi',
+    });
+
+    if (!batchError) return;
+
+    // 2. Fallback
     const promises = items.map(({ productId, quantity }) =>
       supabase.rpc('stock_in', {
         p_product_id: productId,
