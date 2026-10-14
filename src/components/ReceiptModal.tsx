@@ -142,10 +142,10 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
             <div className="space-y-1.5 pb-3 border-b border-black">
               <div className="text-center pb-1">
                 <h1 className="text-base sm:text-lg font-black tracking-wider uppercase text-black">
-                  "SantexPro" do'koni
+                  ProSant
                 </h1>
                 <p className="text-[10px] sm:text-xs text-slate-600 font-medium">
-                  Santexnika va isitish jihozlari savdosi
+                  Santexnika mahsulotlari
                 </p>
               </div>
 
@@ -155,7 +155,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                     Sotuvchi:
                   </span>
                   <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                    SantexPro
+                    ProSant
                   </span>
                 </div>
                 <div className="text-right text-[10px] sm:text-xs font-semibold text-slate-600">
@@ -278,7 +278,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
             {/* 5. Footer Message */}
             <div className="text-center pt-2 pb-1 border-t border-dashed border-black/50 text-[10px] sm:text-xs text-slate-600">
               <p className="font-extrabold text-slate-800">Xaridingiz uchun rahmat!</p>
-              <p className="text-[9px] text-slate-500 mt-0.5">SantexPro — Sifatli santexnika va isitish jihozlari</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">ProSant — Santexnika mahsulotlari</p>
             </div>
 
           </div>

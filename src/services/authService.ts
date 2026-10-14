@@ -55,7 +55,7 @@ export const authService = {
         id: data.user.id,
         full_name: data.user.email?.split('@')[0] || 'Admin',
         role: 'admin',
-        store_name: 'SantexPro',
+        store_name: 'ProSant',
         created_at: new Date().toISOString(),
       },
     };
@@ -113,7 +113,7 @@ export const authService = {
         id: session.user.id,
         full_name: session.user.email?.split('@')[0] || 'Admin',
         role: 'admin',
-        store_name: 'SantexPro',
+        store_name: 'ProSant',
         created_at: new Date().toISOString(),
       },
     };
@@ -138,7 +138,7 @@ export const authService = {
             id: session.user.id,
             full_name: session.user.email?.split('@')[0] || 'Admin',
             role: 'admin',
-            store_name: 'SantexPro',
+            store_name: 'ProSant',
             created_at: new Date().toISOString(),
           },
         });

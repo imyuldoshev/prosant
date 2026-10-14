@@ -1,5 +1,5 @@
 /**
- * Date and time helper utilities for SantexPro
+ * Date and time helper utilities for ProSant
  */
 
 export const toISODate = (d: Date): string => {
