@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue } from 'react';
 import { 
   Package, 
   Search, 
@@ -34,6 +34,9 @@ export function TovarlarPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Barchasi');
   const [onlyLowStock, setOnlyLowStock] = useState(false);
+
+  // Progressive loading limit for optimal DOM weight
+  const [visibleCount, setVisibleCount] = useState(30);
 
   // Modals state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -73,12 +76,20 @@ export function TovarlarPage() {
   }, []);
 
   // Duplicate check logic (case-insensitive, trimming whitespace)
-  const checkDuplicate = (name: string, excludeId?: string): Product | undefined => {
+  const checkDuplicate = useCallback((name: string, excludeId?: string): Product | undefined => {
     if (!name || typeof name !== 'string') return undefined;
     const trimmed = name.trim().toLowerCase();
     if (!trimmed) return undefined;
     return products.find(p => p && p.id !== excludeId && typeof p.name === 'string' && p.name.trim().toLowerCase() === trimmed);
-  };
+  }, [products]);
+
+  // Deferred search to decouple typing latency from list filtering
+  const deferredSearch = useDeferredValue(searchQuery);
+
+  // Reset pagination limit on search or category filter change
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [searchQuery, selectedCategory, onlyLowStock]);
 
   // Filtered products list
   const filteredProducts = useMemo(() => {
@@ -89,15 +100,20 @@ export function TovarlarPage() {
     if (selectedCategory !== 'Barchasi') {
       list = list.filter(p => p?.category === selectedCategory);
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
+    if (deferredSearch.trim()) {
+      const q = deferredSearch.toLowerCase().trim();
       list = list.filter(p => 
         (typeof p?.name === 'string' && p.name.toLowerCase().includes(q)) || 
-        (typeof p?.category === 'string' && p.category.toLowerCase().includes(q))
+        (typeof p?.category === 'string' && p.category.toLowerCase().includes(q)) ||
+        (typeof p?.artikul === 'string' && p.artikul.toLowerCase().includes(q))
       );
     }
     return list;
-  }, [products, onlyLowStock, selectedCategory, searchQuery]);
+  }, [products, onlyLowStock, selectedCategory, deferredSearch]);
+
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount);
+  }, [filteredProducts, visibleCount]);
 
   // Statistics
   const totalStockCount = useMemo(() => {
@@ -109,27 +125,27 @@ export function TovarlarPage() {
   }, [products]);
 
   // Handlers
-  const handleOpenAddModal = () => {
+  const handleOpenAddModal = useCallback(() => {
     setEditingProduct(null);
     setIsFormModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenEditModal = (product: Product) => {
+  const handleOpenEditModal = useCallback((product: Product) => {
     setEditingProduct(product);
     setIsFormModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenStockIn = (product: Product) => {
+  const handleOpenStockIn = useCallback((product: Product) => {
     setStockInProduct(product);
     setIsStockInModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenDelete = (product: Product) => {
+  const handleOpenDelete = useCallback((product: Product) => {
     setDeletingProduct(product);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
-  const handleSaveProduct = (productData: Omit<Product, 'id'>) => {
+  const handleSaveProduct = useCallback((productData: Omit<Product, 'id'>) => {
     if (editingProduct) {
       updateProduct(editingProduct.id, productData);
       showToast(`"${productData.name}" muvaffaqiyatli tahrirlandi!`);
@@ -137,25 +153,22 @@ export function TovarlarPage() {
       addProduct(productData);
       showToast(`"${productData.name}" muvaffaqiyatli qo'shildi!`);
     }
-    // Signal task complete: if a deferred update is waiting, apply safely
     markTaskComplete();
-  };
+  }, [editingProduct, updateProduct, addProduct, showToast, markTaskComplete]);
 
-  const handleStockInConfirm = (qty: number) => {
+  const handleStockInConfirm = useCallback((qty: number) => {
     if (!stockInProduct) return;
     stockIn(stockInProduct.id, qty);
     showToast(`"${stockInProduct.name}"ga +${qty} ${stockInProduct.unit} kirim qilindi!`);
-    // Signal task complete: if a deferred update is waiting, apply safely
     markTaskComplete();
-  };
+  }, [stockInProduct, stockIn, showToast, markTaskComplete]);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     if (!deletingProduct) return;
     deleteProduct(deletingProduct.id);
     showToast(`"${deletingProduct.name}" ro'yxatdan o'chirildi!`);
-    // Signal task complete: if a deferred update is waiting, apply safely
     markTaskComplete();
-  };
+  }, [deletingProduct, deleteProduct, showToast, markTaskComplete]);
 
   return (
     <div className="h-full flex flex-col bg-slate-50 overflow-y-auto overflow-x-hidden w-full select-auto">
@@ -386,7 +399,7 @@ export function TovarlarPage() {
               </button>
             </div>
           ) : (
-            filteredProducts.map(product => {
+            visibleProducts.map(product => {
               const isLowStock = (Number(product.stock) || 0) <= 5;
               return (
                 <div 
@@ -501,7 +514,7 @@ export function TovarlarPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map(product => {
+                  visibleProducts.map(product => {
                     const isLowStock = (Number(product.stock) || 0) <= 5;
                     return (
                       <tr 
@@ -602,6 +615,19 @@ export function TovarlarPage() {
             </table>
           </div>
         </div>
+
+        {/* Progressive Load More button */}
+        {filteredProducts.length > visibleCount && (
+          <div className="py-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setVisibleCount(prev => prev + 30)}
+              className="px-6 py-2.5 bg-white hover:bg-slate-50 border border-slate-200/90 text-brand font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <span>Ko'proq ko'rsatish (+{filteredProducts.length - visibleCount} ta)</span>
+            </button>
+          </div>
+        )}
 
       </div>
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, useDeferredValue } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
   History, Search, Calendar, Download, Trash2, Eye, Printer, 
@@ -32,10 +32,13 @@ export function TarixPage() {
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrderType>('newest');
 
+  // Progressive rendering limit
+  const [visibleCount, setVisibleCount] = useState(30);
+
   // Mobile expandable card details state
   const [expandedSaleIds, setExpandedSaleIds] = useState<Set<string>>(new Set());
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = useCallback((id: string) => {
     setExpandedSaleIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -45,7 +48,7 @@ export function TarixPage() {
       }
       return next;
     });
-  };
+  }, []);
 
   // Date Range state synced with URL search params (?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD)
   const [startDate, setStartDate] = useState(() => searchParams.get('startDate') || '');
@@ -60,7 +63,7 @@ export function TarixPage() {
   }, [searchParams]);
 
   // Synchronize date range state and URL query params
-  const handleDateRangeChange = (start: string, end: string) => {
+  const handleDateRangeChange = useCallback((start: string, end: string) => {
     setStartDate(start);
     setEndDate(end);
 
@@ -73,10 +76,10 @@ export function TarixPage() {
       newParams.delete('endDate');
     }
     setSearchParams(newParams, { replace: true });
-  };
+  }, [searchParams, setSearchParams]);
 
   // Quick preset button click handler
-  const handleQuickPreset = (preset: 'all' | 'today' | 'yesterday' | 'week' | 'month') => {
+  const handleQuickPreset = useCallback((preset: 'all' | 'today' | 'yesterday' | 'week' | 'month') => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -93,11 +96,10 @@ export function TarixPage() {
       const w = new Date(today.getTime() - 6 * 24 * 3600 * 1000);
       handleDateRangeChange(toISODate(w), toISODate(today));
     } else if (preset === 'month') {
-      // Oxirgi 1 oy (oxirgi 30 kunlik davr)
       const m = new Date(today.getTime() - 29 * 24 * 3600 * 1000);
       handleDateRangeChange(toISODate(m), toISODate(today));
     }
-  };
+  }, [handleDateRangeChange]);
 
   // Calculate which preset is active
   const currentPreset = useMemo(() => {
@@ -149,14 +151,19 @@ export function TarixPage() {
     }
   }, [shouldPrint, selectedSale]);
 
+  // Decoupled search input to eliminate input lag
+  const deferredSearch = useDeferredValue(searchQuery);
+
+  // Reset pagination limit on filter change
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [searchQuery, startDate, endDate, paymentFilter, sortOrder]);
+
   // Filtered & Sorted Sales
   const filteredSales = useMemo(() => {
     return sales.filter(sale => {
       const saleDate = new Date(sale.createdAt);
 
-      // 1. Date Range Filter:
-      // Kun chegaralari: startDate 00:00:00.000 va endDate 23:59:59.999
-      // Agar faqat bitta sana tanlansa yoki hech qanday oraliq tanlanmasa, filtrsiz barcha ma'lumotlar ko'rinsin.
       if (startDate && endDate) {
         const [sYear, sMonth, sDay] = startDate.split('-').map(Number);
         const [eYear, eMonth, eDay] = endDate.split('-').map(Number);
@@ -169,14 +176,12 @@ export function TarixPage() {
         }
       }
 
-      // 2. Payment Method Filter
       if (paymentFilter !== 'all' && sale.paymentMethod !== paymentFilter) {
         return false;
       }
 
-      // 3. Search Query (Sale ID, Product Name, Customer, Phone)
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
+      if (deferredSearch.trim()) {
+        const query = deferredSearch.toLowerCase().trim();
         const matchesNumber = sale.saleNumber.toLowerCase().includes(query);
         const matchesCustomer = sale.customerName?.toLowerCase().includes(query) || false;
         const matchesPhone = sale.customerPhone?.toLowerCase().includes(query) || false;
@@ -204,24 +209,35 @@ export function TarixPage() {
       }
       return 0;
     });
-  }, [sales, searchQuery, startDate, endDate, paymentFilter, sortOrder]);
+  }, [sales, deferredSearch, startDate, endDate, paymentFilter, sortOrder]);
 
-  // Summary Metrics dynamically calculated from filteredSales (so date range filter updates the numbers)
+  const visibleSales = useMemo(() => {
+    return filteredSales.slice(0, visibleCount);
+  }, [filteredSales, visibleCount]);
+
+  // Summary Metrics calculated in a single linear pass O(N)
   const stats = useMemo(() => {
-    const totalRevenue = filteredSales.reduce((sum, s) => sum + s.total, 0);
-    const totalCount = filteredSales.length;
-
-    // Foyda (belgilangan sotish narxidan qolgan sof foyda):
-    // Jami tushum - Jami tannarx (asl narx)
+    let totalRevenue = 0;
     let totalCost = 0;
+    let naqd = 0;
+    let karta = 0;
+    let transfer = 0;
+    let nasiya = 0;
+
     for (const sale of filteredSales) {
+      totalRevenue += sale.total;
+      if (sale.paymentMethod === 'naqd') naqd += sale.total;
+      else if (sale.paymentMethod === 'karta') karta += sale.total;
+      else if (sale.paymentMethod === 'transfer') transfer += sale.total;
+      else if (sale.paymentMethod === 'nasiya') nasiya += sale.total;
+
       for (const item of sale.items) {
         const prod = productsMap.get(item.productId);
         const cp = typeof item.costPrice === 'number' && item.costPrice > 0
           ? item.costPrice
           : (prod && typeof prod.costPrice === 'number' && prod.costPrice > 0
               ? prod.costPrice
-              : item.price * 0.7); // 30% margin fallback for older records without costPrice
+              : item.price * 0.7);
         totalCost += cp * item.quantity;
       }
     }
@@ -229,20 +245,12 @@ export function TarixPage() {
     const totalProfit = Math.round(totalRevenue - totalCost);
     const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0';
 
-    // Payment methods breakdown for the filtered period
-    const methods = {
-      naqd: filteredSales.filter(s => s.paymentMethod === 'naqd').reduce((sum, s) => sum + s.total, 0),
-      karta: filteredSales.filter(s => s.paymentMethod === 'karta').reduce((sum, s) => sum + s.total, 0),
-      transfer: filteredSales.filter(s => s.paymentMethod === 'transfer').reduce((sum, s) => sum + s.total, 0),
-      nasiya: filteredSales.filter(s => s.paymentMethod === 'nasiya').reduce((sum, s) => sum + s.total, 0),
-    };
-
     return {
       totalRevenue,
       totalProfit,
       profitMargin,
-      totalCount,
-      methods,
+      totalCount: filteredSales.length,
+      methods: { naqd, karta, transfer, nasiya },
     };
   }, [filteredSales, productsMap]);
 
@@ -621,7 +629,7 @@ export function TarixPage() {
           </div>
         ) : (
           <>
-            {filteredSales.map(sale => {
+            {visibleSales.map(sale => {
               const isExpanded = expandedSaleIds.has(sale.id);
               const totalItemsCount = sale.items.reduce((acc, it) => acc + it.quantity, 0);
 
@@ -801,7 +809,7 @@ export function TarixPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
-              {filteredSales.map(sale => {
+              {visibleSales.map(sale => {
                 const totalItemsCount = sale.items.reduce((acc, it) => acc + it.quantity, 0);
                 const firstTwoItems = sale.items.slice(0, 2);
                 const remainingItemsCount = sale.items.length - 2;
@@ -984,6 +992,19 @@ export function TarixPage() {
           </div>
         </div>
       </div>
+
+      {/* Progressive Load More button */}
+      {filteredSales.length > visibleCount && (
+        <div className="py-4 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount(prev => prev + 30)}
+            className="px-6 py-2.5 bg-white hover:bg-slate-50 border border-slate-200/90 text-brand font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <span>Ko'proq ko'rsatish (+{filteredSales.length - visibleCount} ta)</span>
+          </button>
+        </div>
+      )}
 
       {/* 5. NAKLADNAYA / RECEIPT MODAL (MATCHES USER PHOTO) */}
       {selectedSale && (
