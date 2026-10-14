@@ -6,8 +6,7 @@ import { SalesProvider } from './context/SalesContext';
 import { UpdateProvider } from './context/UpdateContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
-import { KassaPage } from './pages/KassaPage';
-
+const KassaPage = lazy(() => import('./pages/KassaPage').then(m => ({ default: m.KassaPage })));
 const TovarlarPage = lazy(() => import('./pages/TovarlarPage').then(m => ({ default: m.TovarlarPage })));
 const TarixPage = lazy(() => import('./pages/TarixPage').then(m => ({ default: m.TarixPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
