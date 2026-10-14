@@ -1527,7 +1527,7 @@ export function KassaPage() {
                     {/* Change Display */}
                     {parseFloat(receivedCashStr) >= totalCartSum ? (
                       <div className="mt-2.5 pt-2 border-t border-emerald-200 flex justify-between items-center text-emerald-900 font-bold">
-                        <span className="text-xs uppercase tracking-wider">Qaytim (Сдача):</span>
+                        <span className="text-xs uppercase tracking-wider">Qaytim:</span>
                         <span className="text-xl font-black text-emerald-700 font-mono">
                           {(parseFloat(receivedCashStr) - totalCartSum).toLocaleString()} <span className="text-xs font-sans">UZS</span>
                         </span>
