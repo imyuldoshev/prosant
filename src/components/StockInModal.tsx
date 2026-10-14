@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, PackagePlus, AlertCircle, ArrowUpRight, Delete } from 'lucide-react';
+import { X, PackagePlus, AlertCircle, ArrowUpRight } from 'lucide-react';
 import type { Product } from '../types';
 
 interface StockInModalProps {
@@ -31,32 +31,6 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
   const currentStock = product ? (Number(product.stock) || 0) : 0;
   const parsedAmount = parseFloat(amountStr) || 0;
   const newStock = Math.max(0, currentStock + (parsedAmount > 0 ? parsedAmount : 0));
-
-  const handleNumpadInput = (val: string) => {
-    setError(null);
-    if (val === 'C') {
-      setAmountStr('');
-      if (inputRef.current) inputRef.current.focus();
-    } else if (val === 'BACKSPACE') {
-      setAmountStr(prev => prev.slice(0, -1));
-      if (inputRef.current) inputRef.current.focus();
-    } else if (val === '.') {
-      if (!amountStr) {
-        setAmountStr('0.');
-      } else if (!amountStr.includes('.')) {
-        setAmountStr(prev => prev + '.');
-      }
-      if (inputRef.current) inputRef.current.focus();
-    } else {
-      // Numbers 0-9
-      if (amountStr === '0') {
-        setAmountStr(val);
-      } else {
-        setAmountStr(prev => prev + val);
-      }
-      if (inputRef.current) inputRef.current.focus();
-    }
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(',', '.');
@@ -103,7 +77,7 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl sm:max-w-2xl lg:max-w-3xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 my-auto max-h-[92dvh] overflow-y-auto"
+        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 my-auto"
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -134,224 +108,110 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
           </button>
         </div>
 
-        {/* Modal Body - 2 Columns on desktop POS (lg:grid-cols-2), single column on mobile & tablet */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 flex flex-col gap-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-            
-            {/* LEFT COLUMN: Product info + Stock preview + Display */}
-            <div className="flex flex-col justify-between gap-3">
-              
-              {/* Product Info Banner */}
-              <div className="p-3 sm:p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center gap-3.5 shrink-0">
-                <img 
-                  src={product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'} 
-                  alt={product.name}
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0 bg-slate-100" 
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold text-brand bg-brand/10 px-2.5 py-0.5 rounded-full">
-                      {product.category}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-400">
-                      ID: #{product.id.slice(-5)}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2 mt-1" title={product.name}>
-                    {product.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1">
-                    Narxi: <span className="font-bold text-slate-700">{product.price.toLocaleString()} UZS</span> / {product.unit}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stock Calculation Preview Bar (Oldingi qoldiq va Yangi qoldiq) */}
-              <div className="grid grid-cols-2 gap-3 p-3 sm:p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl text-center shrink-0">
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wide truncate">Oldingi qoldiq</div>
-                  <div className="text-lg sm:text-2xl font-black text-slate-800 mt-0.5 truncate">
-                    {currentStock} <span className="text-xs sm:text-sm font-semibold text-slate-500">{product.unit}</span>
-                  </div>
-                </div>
-                <div className="min-w-0 border-l border-emerald-200/80 pl-3">
-                  <div className="text-xs font-bold text-brand uppercase tracking-wide truncate">Yangi qoldiq</div>
-                  <div className="text-lg sm:text-2xl font-black text-brand mt-0.5 truncate">
-                    {newStock} <span className="text-xs sm:text-sm font-semibold text-brand/70">{product.unit}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Interactive Input for Kirim Amount (Keyboard + Mouse + Touch friendly) */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="stockin-amount-input" className="text-xs font-bold uppercase tracking-wider text-slate-500 cursor-pointer">
-                    Kirim miqdori:
-                  </label>
-                  <span className="text-xs font-bold text-brand bg-brand/10 px-2.5 py-0.5 rounded-md">
-                    {product.unit}
-                  </span>
-                </div>
-
-                <div className="bg-white border-2 border-emerald-500/50 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between shadow-inner transition-all">
-                  <input
-                    ref={inputRef}
-                    id="stockin-amount-input"
-                    type="text"
-                    inputMode="decimal"
-                    value={amountStr}
-                    onChange={handleInputChange}
-                    placeholder="0"
-                    className="w-full text-2xl sm:text-4xl font-mono font-black text-slate-900 bg-transparent focus:outline-none tracking-wider px-1"
-                    title="Klaviatura orqali sonni kiritishingiz yoki o'zgartirishingiz mumkin"
-                  />
-                  <span className="text-base sm:text-lg font-bold text-slate-400 font-sans ml-2 shrink-0 select-none">
-                    {product.unit}
-                  </span>
-                </div>
-              </div>
-
-              {/* Quick Presets for fast quantity entry */}
-              <div className="grid grid-cols-4 gap-2 pt-1">
-                {[5, 10, 50, 100].map(preset => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => {
-                      setAmountStr(preset.toString());
-                      setError(null);
-                      if (inputRef.current) inputRef.current.focus();
-                    }}
-                    className="py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 font-black text-xs sm:text-sm text-emerald-800 active:scale-95 transition-all cursor-pointer select-none"
-                  >
-                    +{preset} {product.unit}
-                  </button>
-                ))}
-              </div>
-
-              {error && (
-                <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 p-2.5 rounded-xl text-xs sm:text-sm font-semibold shrink-0">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
+        {/* Modal Form */}
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 flex flex-col gap-4">
+          
+          {/* Product Info Banner */}
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center gap-3 shrink-0">
+            <img 
+              src={product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'} 
+              alt={product.name}
+              className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0 bg-slate-100" 
+            />
+            <div className="min-w-0 flex-1">
+              <span className="text-[11px] font-bold text-brand uppercase tracking-wider block truncate">
+                {product.category || 'Umumiy'}
+              </span>
+              <h3 className="font-extrabold text-slate-800 text-sm truncate leading-snug">
+                {product.name}
+              </h3>
+              <p className="text-xs text-slate-500 font-mono mt-0.5">
+                Mavjud: <strong className="text-slate-800">{currentStock} {product.unit}</strong>
+              </p>
             </div>
-
-            {/* RIGHT COLUMN: Touch & Computer Calculator Grid (ONLY VISIBLE ON DESKTOP POS lg+) */}
-            <div className="hidden lg:flex flex-col justify-between select-none">
-              <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
-                {/* Row 1 */}
-                {[1, 2, 3].map(num => (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => handleNumpadInput(num.toString())}
-                    className="h-16 sm:h-18 lg:h-20 bg-slate-100 hover:bg-slate-200 active:bg-brand active:text-white active:scale-95 text-slate-800 text-2xl sm:text-3xl font-black rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80"
-                    aria-label={num.toString()}
-                  >
-                    {num}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => handleNumpadInput('C')}
-                  className="h-16 sm:h-18 lg:h-20 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 active:scale-95 text-rose-600 text-xl sm:text-2xl font-black rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-rose-200"
-                  aria-label="Hammasini tozalash"
-                  title="Hammasini tozalash"
-                >
-                  C
-                </button>
-
-                {/* Row 2 */}
-                {[4, 5, 6].map(num => (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => handleNumpadInput(num.toString())}
-                    className="h-16 sm:h-18 lg:h-20 bg-slate-100 hover:bg-slate-200 active:bg-brand active:text-white active:scale-95 text-slate-800 text-2xl sm:text-3xl font-black rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80"
-                    aria-label={num.toString()}
-                  >
-                    {num}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => handleNumpadInput('BACKSPACE')}
-                  className="h-16 sm:h-18 lg:h-20 bg-amber-50 hover:bg-amber-100 active:bg-amber-200 active:scale-95 text-amber-700 rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-amber-200"
-                  aria-label="Bitta o'chirish"
-                  title="Bitta o'chirish"
-                >
-                  <Delete className="w-7 h-7 stroke-[2.2]" />
-                </button>
-
-                {/* Row 3 */}
-                {[7, 8, 9].map(num => (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => handleNumpadInput(num.toString())}
-                    className="h-16 sm:h-18 lg:h-20 bg-slate-100 hover:bg-slate-200 active:bg-brand active:text-white active:scale-95 text-slate-800 text-2xl sm:text-3xl font-black rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80"
-                    aria-label={num.toString()}
-                  >
-                    {num}
-                  </button>
-                ))}
-                {/* Tall Side Kirim / Enter Button spanning 2 rows */}
-                <button
-                  type="button"
-                  onClick={() => handleSubmit()}
-                  className="row-span-2 h-full bg-gradient-to-b from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 active:scale-95 text-white font-black text-lg sm:text-xl rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer select-none border border-emerald-400/40"
-                  aria-label="Kirimni tasdiqlash"
-                  title="Kirimni tasdiqlash"
-                >
-                  <ArrowUpRight className="w-7 h-7 stroke-[3]" />
-                  <span>Kirim</span>
-                </button>
-
-                {/* Row 4 */}
-                <button
-                  type="button"
-                  onClick={() => handleNumpadInput('.')}
-                  className="h-16 sm:h-18 lg:h-20 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 active:scale-95 text-slate-800 text-3xl sm:text-4xl font-black rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80"
-                  aria-label="Nuqta"
-                >
-                  .
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleNumpadInput('0')}
-                  className="h-16 sm:h-18 lg:h-20 bg-slate-100 hover:bg-slate-200 active:bg-brand active:text-white active:scale-95 text-slate-800 text-2xl sm:text-3xl font-black rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80"
-                  aria-label="0"
-                >
-                  0
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleNumpadInput('00')}
-                  className="h-16 sm:h-18 lg:h-20 bg-slate-100 hover:bg-slate-200 active:bg-brand active:text-white active:scale-95 text-slate-800 text-xl sm:text-2xl font-black rounded-2xl transition-all shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80"
-                  aria-label="00"
-                >
-                  00
-                </button>
-              </div>
-            </div>
-
           </div>
 
+          {/* Stock Calculation Preview */}
+          <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 text-center">
+            <div className="border-r border-emerald-200/80 pr-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+                Hozirgi qoldiq
+              </span>
+              <span className="text-base sm:text-lg font-black font-mono text-emerald-900">
+                {currentStock} <span className="text-xs font-sans font-bold text-emerald-700">{product.unit}</span>
+              </span>
+            </div>
+            <div className="pl-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+                Kirimdan so'ng
+              </span>
+              <span className="text-base sm:text-lg font-black font-mono text-emerald-700">
+                {newStock} <span className="text-xs font-sans font-bold text-emerald-600">{product.unit}</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Quantity Input Field */}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="stock-in-amount" className="text-xs font-bold uppercase tracking-wider text-slate-600">
+              Kirim miqdori:
+            </label>
+            <div className="flex items-center justify-between bg-slate-50 border-2 border-emerald-400 focus-within:border-emerald-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-2xl px-4 py-2.5 transition-all shadow-inner">
+              <input
+                id="stock-in-amount"
+                ref={inputRef}
+                type="text"
+                inputMode="decimal"
+                value={amountStr}
+                onChange={handleInputChange}
+                placeholder="0"
+                className="w-full text-2xl sm:text-3xl font-mono font-black text-slate-900 bg-transparent focus:outline-none tracking-wider"
+              />
+              <span className="text-sm font-bold text-slate-500 font-sans ml-2 shrink-0 select-none">
+                {product.unit}
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Presets for fast quantity entry */}
+          <div className="grid grid-cols-4 gap-2">
+            {[5, 10, 50, 100].map(preset => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => {
+                  setAmountStr(preset.toString());
+                  setError(null);
+                  if (inputRef.current) inputRef.current.focus();
+                }}
+                className="py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-200 border border-slate-200/80 font-black text-xs text-slate-700 active:scale-95 transition-all cursor-pointer select-none"
+              >
+                +{preset}
+              </button>
+            ))}
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 p-2.5 rounded-xl text-xs font-semibold shrink-0">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           {/* Action buttons */}
-          <div className="flex gap-3 pt-2 border-t border-slate-100 shrink-0">
+          <div className="flex gap-2.5 pt-2 border-t border-slate-100 shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 min-h-[48px] sm:min-h-[52px] py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl active:scale-95 transition-all text-sm sm:text-base cursor-pointer"
+              className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl active:scale-95 transition-all text-sm cursor-pointer"
             >
               Bekor qilish
             </button>
             <button
               type="submit"
-              className="flex-[2] min-h-[48px] sm:min-h-[52px] py-3 px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-2xl active:scale-95 transition-all shadow-lg shadow-emerald-600/25 text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-[2] py-3 px-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-2xl active:scale-95 transition-all shadow-md shadow-emerald-600/25 text-sm flex items-center justify-center gap-2 cursor-pointer"
             >
-              <ArrowUpRight className="hidden sm:inline-block w-5 h-5 stroke-[3]" />
+              <ArrowUpRight className="w-4 h-4 stroke-[3]" />
               <span>Kirimni tasdiqlash</span>
             </button>
           </div>

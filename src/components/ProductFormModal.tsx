@@ -6,12 +6,10 @@ import {
   AlertCircle, 
   ArrowUpRight, 
   FolderPlus,
-  Check,
-  Calculator
+  Check
 } from 'lucide-react';
 import type { Product } from '../types';
 import { CustomSelect } from './CustomSelect';
-import { ProductNumpad, type NumField } from './ProductNumpad';
 import { ProductImageSection } from './ProductImageSection';
 
 interface ProductFormModalProps {
@@ -51,121 +49,66 @@ export function ProductFormModal({
   const [isAddingNewCat, setIsAddingNewCat] = useState(false);
   const [newCatInput, setNewCatInput] = useState('');
 
-  // Active numeric field for Calculator numpad: 'costPrice' | 'price' | 'minStock' | 'stock' | null
-  const [activeNumField, setActiveNumField] = useState<NumField>(null);
-
   // Duplicate match and error
   const [duplicateMatch, setDuplicateMatch] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const availableCategories = useMemo(() => categories.filter(c => c !== 'Barchasi'), [categories]);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Track modal open/edit transition to only initialize on fresh open or edit target switch
-  const prevIsOpenRef = useRef(false);
-  const prevEditIdRef = useRef<string | undefined>(undefined);
+  // Ensure category is available
+  const availableCategories = useMemo(() => {
+    return categories.filter(c => c !== 'Barchasi');
+  }, [categories]);
 
-  // Initialize form ONLY when opened or when product to edit switches
+  // Sync state on open/edit
   useEffect(() => {
-    if (!isOpen) {
-      prevIsOpenRef.current = false;
-      return;
-    }
-
-    const wasJustOpened = !prevIsOpenRef.current;
-    const editTargetChanged = productToEdit?.id !== prevEditIdRef.current;
-    prevIsOpenRef.current = true;
-    prevEditIdRef.current = productToEdit?.id;
-
-    if (wasJustOpened || editTargetChanged) {
+    if (isOpen) {
       if (productToEdit) {
-        setName(productToEdit.name || '');
-        setCategory(productToEdit.category || '');
-        setCostPrice(productToEdit.costPrice !== undefined && productToEdit.costPrice !== null ? String(productToEdit.costPrice) : '');
-        setPrice(String(productToEdit.price ?? ''));
+        setName(productToEdit.name);
+        setCategory(productToEdit.category || availableCategories[0] || 'Umumiy');
+        setCostPrice(productToEdit.costPrice !== undefined ? productToEdit.costPrice.toString() : '');
+        setPrice(productToEdit.price.toString());
         setUnit(productToEdit.unit || 'dona');
-        setStock(String(productToEdit.stock ?? '0'));
-        setMinStock(productToEdit.minStock !== undefined && productToEdit.minStock !== null ? String(productToEdit.minStock) : '');
+        setStock(productToEdit.stock !== undefined ? productToEdit.stock.toString() : '0');
+        setMinStock(productToEdit.minStock !== undefined ? productToEdit.minStock.toString() : '');
         setImage(productToEdit.image || DEFAULT_IMAGE);
       } else {
         setName('');
-        const initialCat = categories.find(c => c !== 'Barchasi') || 'Trubalar';
-        setCategory(initialCat);
+        setCategory(availableCategories[0] || 'Umumiy');
         setCostPrice('');
-        setPrice('');
+        setPrice('10000');
         setUnit('dona');
-        setStock('0');
+        setStock('10');
         setMinStock('');
         setImage(DEFAULT_IMAGE);
       }
-      setDuplicateMatch(null);
-      setError(null);
       setIsAddingNewCat(false);
       setNewCatInput('');
-      setActiveNumField(null);
-    }
-  }, [isOpen, productToEdit, categories]);
+      setDuplicateMatch(null);
+      setError(null);
 
-  // Debounced duplicate check (150ms debounce prevents jank on typing)
+      // Focus name input immediately
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 50);
+    }
+  }, [isOpen, productToEdit, availableCategories]);
+
+  // Debounced duplicate check (150ms) to eliminate keystroke jank
   useEffect(() => {
-    if (!isOpen || !name.trim()) {
+    if (!name.trim()) {
       setDuplicateMatch(null);
       return;
     }
-
     const timer = setTimeout(() => {
-      try {
-        const match = checkDuplicate(name.trim(), productToEdit?.id);
-        setDuplicateMatch(match || null);
-      } catch (err) {
-        console.warn('Duplicate check warning:', err);
-        setDuplicateMatch(null);
-      }
+      const match = checkDuplicate(name.trim(), productToEdit?.id);
+      setDuplicateMatch(match || null);
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [name, checkDuplicate, productToEdit?.id, isOpen]);
+  }, [name, checkDuplicate, productToEdit?.id]);
 
-  // Auto-scroll input into view when on-screen calculator opens so it is never hidden
-  useEffect(() => {
-    if (activeNumField) {
-      const timer = setTimeout(() => {
-        const id = activeNumField === 'costPrice'
-          ? 'prod-cost-price-input'
-          : activeNumField === 'price' 
-            ? 'prod-price-input' 
-            : activeNumField === 'stock' 
-              ? 'prod-stock-input' 
-              : 'prod-min-stock-input';
-        const el = document.getElementById(id);
-        el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 40);
-      return () => clearTimeout(timer);
-    }
-  }, [activeNumField]);
-
-  // Physical keyboard Escape and Enter handler
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (activeNumField) {
-          setActiveNumField(null);
-        } else {
-          onClose();
-        }
-      } else if (e.key === 'Enter') {
-        if (activeNumField) {
-          e.preventDefault();
-          setActiveNumField(null);
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, activeNumField, onClose]);
-
-  // Inline Category Add
-  const handleAddNewCategoryConfirm = useCallback(() => {
+  const handleAddNewCategory = useCallback(() => {
     const trimmed = newCatInput.trim();
     if (!trimmed) return;
     onAddCategory(trimmed);
@@ -173,60 +116,6 @@ export function ProductFormModal({
     setIsAddingNewCat(false);
     setNewCatInput('');
   }, [newCatInput, onAddCategory]);
-
-  // Calculator Numpad Actions for active number field
-  const handleNumpadInput = useCallback((val: string) => {
-    if (!activeNumField) return;
-
-    if (val === 'OK') {
-      setActiveNumField(null);
-      return;
-    }
-
-    const currentVal = (
-      activeNumField === 'costPrice' ? costPrice : 
-      activeNumField === 'price' ? price : 
-      activeNumField === 'stock' ? stock : 
-      minStock
-    ) || '';
-
-    let updatedVal = currentVal;
-    if (val === 'C') {
-      updatedVal = '';
-    } else if (val === 'BACKSPACE') {
-      updatedVal = currentVal.length > 0 ? currentVal.slice(0, -1) : '';
-    } else if (val === '.') {
-      if (!currentVal) {
-        updatedVal = '0.';
-      } else if (!currentVal.includes('.')) {
-        updatedVal = currentVal + '.';
-      }
-    } else if (val === '00') {
-      if (currentVal && currentVal !== '0') {
-        updatedVal = currentVal + '00';
-      }
-    } else {
-      if (currentVal === '0') {
-        updatedVal = val;
-      } else {
-        updatedVal = currentVal + val;
-      }
-    }
-
-    if (activeNumField === 'costPrice') setCostPrice(updatedVal);
-    else if (activeNumField === 'price') setPrice(updatedVal);
-    else if (activeNumField === 'stock') setStock(updatedVal);
-    else if (activeNumField === 'minStock') setMinStock(updatedVal);
-  }, [activeNumField, costPrice, price, stock, minStock]);
-
-  const handleNumpadPreset = useCallback((preset: number) => {
-    if (!activeNumField) return;
-    const strVal = preset.toString();
-    if (activeNumField === 'costPrice') setCostPrice(strVal);
-    else if (activeNumField === 'price') setPrice(strVal);
-    else if (activeNumField === 'stock') setStock(strVal);
-    else if (activeNumField === 'minStock') setMinStock(strVal);
-  }, [activeNumField]);
 
   // Real-time Profit and Margin calculation if cost price and selling price are provided
   const profitCalc = useMemo(() => {
@@ -307,7 +196,7 @@ export function ProductFormModal({
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden flex flex-col my-auto max-h-[96vh] animate-in zoom-in-95 duration-200"
+        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden flex flex-col my-auto max-h-[96vh] animate-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -320,18 +209,18 @@ export function ProductFormModal({
               {isEditing ? <Edit3 className="w-5 h-5 text-white" /> : <Plus className="w-6 h-6 text-white stroke-[2.5]" />}
             </div>
             <div>
-              <h2 id="product-form-modal-title" className="text-base sm:text-lg font-black tracking-tight">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-sky-100 block leading-none">
+                {isEditing ? 'Tahrirlash rejimi' : 'Yangi tovar'}
+              </span>
+              <h2 id="product-form-modal-title" className="text-base sm:text-xl font-black leading-tight mt-0.5">
                 {isEditing ? 'Mahsulotni tahrirlash' : 'Yangi mahsulot qo\'shish'}
               </h2>
-              <p className="text-white/80 text-xs font-medium">
-                {isEditing ? 'Ma\'lumotlarni o\'zgartiring va saqlang' : 'Santexnika mahsulotini ro\'yxatga kiritish'}
-              </p>
             </div>
           </div>
-          <button
+          <button 
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white cursor-pointer"
             aria-label="Yopish"
           >
             <X className="w-5 h-5" />
@@ -340,65 +229,67 @@ export function ProductFormModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto flex flex-col gap-4">
-          {/* 1. Name Input */}
+          
+          {/* 1. Name & Duplicate Check Alert */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="prod-name-input" className="text-xs sm:text-sm font-bold text-slate-700 flex items-center justify-between">
+            <label htmlFor="prod-name-input" className="text-xs sm:text-sm font-bold text-slate-700 flex justify-between items-center">
               <span>Mahsulot nomi: <span className="text-rose-500">*</span></span>
-              {duplicateMatch && (
-                <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  Bu nomdagi tovar allaqachon mavjud!
+              {name.trim() && !duplicateMatch && (
+                <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5" /> Nomi to'g'ri
                 </span>
               )}
             </label>
-            <div className="relative">
-              <input
-                id="prod-name-input"
-                type="text"
-                value={name}
-                onChange={e => {
-                  setName(e.target.value);
-                  setError(null);
-                }}
-                placeholder="Masalan: Truba (Oq) 20mm yoki Smesitel Oshxona"
-                className={`w-full min-h-[48px] px-3.5 py-2.5 bg-slate-50 border rounded-2xl text-slate-900 font-semibold text-sm sm:text-base focus:bg-white focus:outline-none transition-all ${
-                  duplicateMatch 
-                    ? 'border-rose-400 focus:ring-2 focus:ring-rose-200' 
-                    : 'border-slate-200 focus:border-brand focus:ring-2 focus:ring-brand/20'
-                }`}
-                autoFocus
-              />
-            </div>
+            <input
+              id="prod-name-input"
+              ref={nameInputRef}
+              type="text"
+              required
+              value={name}
+              onChange={e => {
+                setName(e.target.value);
+                if (error) setError(null);
+              }}
+              placeholder="Masalan: Truba 20 lik PPR, Smesitel vanna..."
+              className={`w-full min-h-[46px] sm:min-h-[50px] px-4 rounded-2xl border-2 text-sm sm:text-base font-bold transition-all focus:outline-none ${
+                duplicateMatch 
+                  ? 'border-amber-400 bg-amber-50/50 text-slate-900 focus:ring-2 focus:ring-amber-400/20' 
+                  : 'border-slate-200 focus:border-brand focus:ring-2 focus:ring-brand/20 bg-slate-50 focus:bg-white text-slate-900'
+              }`}
+            />
+
+            {/* Inline Duplicate Alert Banner */}
             {duplicateMatch && (
-              <div className="p-2.5 bg-rose-50/90 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center justify-between gap-2 animate-in fade-in duration-150">
-                <div className="min-w-0">
-                  <span className="font-bold block truncate">{duplicateMatch.name}</span>
-                  <span className="text-[11px] text-rose-600">
-                    Mavjud qoldiq: {duplicateMatch.stock} {duplicateMatch.unit} | Narxi: {duplicateMatch.price.toLocaleString()} UZS
-                  </span>
+              <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl flex flex-col gap-1 text-xs animate-in fade-in duration-150">
+                <div className="flex items-center gap-1.5 font-extrabold text-amber-900">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Bunday nomli mahsulot bazada mavjud!</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onDuplicateAttempt) {
+                <p className="text-slate-600 pl-5">
+                  Mavjud: <strong className="text-slate-900">{duplicateMatch.name}</strong> ({duplicateMatch.stock} {duplicateMatch.unit}, {duplicateMatch.price.toLocaleString()} UZS).
+                </p>
+                {onDuplicateAttempt && (
+                  <button
+                    type="button"
+                    onClick={() => {
                       onDuplicateAttempt(duplicateMatch);
                       onClose();
-                    }
-                  }}
-                  className="px-3 py-1.5 min-h-[36px] bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-lg text-xs shrink-0 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
-                >
-                  <span>Kirim qilish</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 stroke-[3]" />
-                </button>
+                    }}
+                    className="self-start mt-1 ml-5 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <span>Mavjud tovar sahifasiga o'tish</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             )}
           </div>
 
-          {/* 2. Category & Unit Selection */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Category Dropdown with inline creation */}
+          {/* 2. Category & Unit Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-start">
+            {/* Category */}
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between items-center">
                 <label className="text-xs sm:text-sm font-bold text-slate-700">
                   Kategoriya: <span className="text-rose-500">*</span>
                 </label>
@@ -406,54 +297,55 @@ export function ProductFormModal({
                   <button
                     type="button"
                     onClick={() => setIsAddingNewCat(true)}
-                    className="text-[11px] font-bold text-brand hover:text-brand-dark flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-bold text-brand hover:text-brand-dark flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <FolderPlus className="w-3.5 h-3.5" />
-                    <span>Yangi qo'shish</span>
+                    <span>Yangi kategoriya</span>
                   </button>
                 )}
               </div>
 
               {isAddingNewCat ? (
-                <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
+                <div className="flex items-center gap-1.5 min-h-[46px]">
                   <input
                     type="text"
+                    autoFocus
                     value={newCatInput}
                     onChange={e => setNewCatInput(e.target.value)}
-                    placeholder="Yangi kategoriya..."
-                    className="flex-1 min-h-[44px] px-3 py-2 bg-slate-50 border border-brand rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:bg-white"
-                    autoFocus
                     onKeyDown={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        handleAddNewCategoryConfirm();
+                        handleAddNewCategory();
                       } else if (e.key === 'Escape') {
                         setIsAddingNewCat(false);
                       }
                     }}
+                    placeholder="Kategoriya nomi..."
+                    className="flex-1 min-h-[46px] px-3 rounded-2xl border-2 border-brand bg-white text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand/20"
                   />
                   <button
                     type="button"
-                    onClick={handleAddNewCategoryConfirm}
-                    className="min-h-[44px] px-3 bg-brand text-white font-bold rounded-xl text-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center"
-                    title="Tasdiqlash"
+                    onClick={handleAddNewCategory}
+                    className="min-h-[46px] px-3 bg-brand hover:bg-brand-dark text-white rounded-2xl font-bold text-xs flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+                    title="Qo'shish"
                   >
-                    <Check className="w-4 h-4 stroke-[3]" />
+                    <Check className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAddingNewCat(false)}
-                    className="min-h-[44px] px-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center"
-                    title="Bekor"
+                    className="min-h-[46px] px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-xs flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+                    title="Bekor qilish"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
                 <CustomSelect
+                  options={availableCategories.map(cat => ({ value: cat, label: cat }))}
                   value={category || availableCategories[0] || 'Umumiy'}
                   onChange={setCategory}
-                  options={availableCategories.map(cat => ({ value: cat, label: cat }))}
+                  placeholder="Kategoriya tanlang"
                   ariaLabel="Mahsulot kategoriyasi"
                 />
               )}
@@ -507,22 +399,8 @@ export function ProductFormModal({
                     <span>Asl narxi (kelish)</span>
                     <span className="text-[10px] font-normal text-slate-400">(ixtiyoriy)</span>
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveNumField(prev => prev === 'costPrice' ? null : 'costPrice')}
-                    className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
-                      activeNumField === 'costPrice' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
-                    }`}
-                    title="On-screen kalkulyatorni ochish/yopish"
-                  >
-                    <Calculator className="w-3.5 h-3.5" />
-                  </button>
                 </label>
-                <div 
-                  className={`flex items-center bg-white rounded-2xl border-2 transition-all p-1.5 ${
-                    activeNumField === 'costPrice' ? 'border-brand ring-2 ring-brand/20' : 'border-slate-200 focus-within:border-brand'
-                  }`}
-                >
+                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
                   <input
                     id="prod-cost-price-input"
                     type="text"
@@ -548,25 +426,11 @@ export function ProductFormModal({
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-price-input" 
-                  className="text-xs font-bold text-slate-700 flex items-center justify-between"
+                  className="text-xs font-bold text-slate-700"
                 >
                   <span>Sotish narxi: <span className="text-rose-500">*</span></span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveNumField(prev => prev === 'price' ? null : 'price')}
-                    className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
-                      activeNumField === 'price' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
-                    }`}
-                    title="On-screen kalkulyatorni ochish/yopish"
-                  >
-                    <Calculator className="w-3.5 h-3.5" />
-                  </button>
                 </label>
-                <div 
-                  className={`flex items-center bg-white rounded-2xl border-2 transition-all p-1.5 ${
-                    activeNumField === 'price' ? 'border-brand ring-2 ring-brand/20' : 'border-slate-200 focus-within:border-brand'
-                  }`}
-                >
+                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
                   <input
                     id="prod-price-input"
                     type="text"
@@ -601,25 +465,11 @@ export function ProductFormModal({
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-stock-input" 
-                  className="text-xs font-bold text-slate-700 flex items-center justify-between"
+                  className="text-xs font-bold text-slate-700"
                 >
                   <span>{isEditing ? 'Hozirgi qoldiq' : 'Dastlabki kirim'}:</span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveNumField(prev => prev === 'stock' ? null : 'stock')}
-                    className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
-                      activeNumField === 'stock' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
-                    }`}
-                    title="On-screen kalkulyatorni ochish/yopish"
-                  >
-                    <Calculator className="w-3.5 h-3.5" />
-                  </button>
                 </label>
-                <div 
-                  className={`flex items-center bg-white rounded-2xl border-2 transition-all p-1.5 ${
-                    activeNumField === 'stock' ? 'border-brand ring-2 ring-brand/20' : 'border-slate-200 focus-within:border-brand'
-                  }`}
-                >
+                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
                   <input
                     id="prod-stock-input"
                     type="text"
@@ -645,28 +495,14 @@ export function ProductFormModal({
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-min-stock-input" 
-                  className="text-xs font-bold text-slate-600 flex items-center justify-between"
+                  className="text-xs font-bold text-slate-600"
                 >
                   <span className="flex items-center gap-1">
                     <span>Eng kam qoldiq</span>
                     <span className="text-[10px] font-normal text-slate-400">(ogohlantirish)</span>
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveNumField(prev => prev === 'minStock' ? null : 'minStock')}
-                    className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
-                      activeNumField === 'minStock' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
-                    }`}
-                    title="On-screen kalkulyatorni ochish/yopish"
-                  >
-                    <Calculator className="w-3.5 h-3.5" />
-                  </button>
                 </label>
-                <div 
-                  className={`flex items-center bg-white rounded-2xl border-2 transition-all p-1.5 ${
-                    activeNumField === 'minStock' ? 'border-brand ring-2 ring-brand/20' : 'border-slate-200 focus-within:border-brand'
-                  }`}
-                >
+                <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
                   <input
                     id="prod-min-stock-input"
                     type="text"
@@ -689,15 +525,6 @@ export function ProductFormModal({
               </div>
             </div>
           </div>
-
-          {/* ON-SCREEN CALCULATOR / NUMPAD (ONLY VISIBLE ON DESKTOP POS lg+) */}
-          <ProductNumpad
-            activeNumField={activeNumField}
-            unit={unit}
-            onClose={() => setActiveNumField(null)}
-            onInput={handleNumpadInput}
-            onPreset={handleNumpadPreset}
-          />
 
           {/* 5. Image Section: 2 Methods (1-Upload, 2-Camera) */}
           <ProductImageSection
