@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Product } from '../types';
 import { PRODUCTS as INITIAL_PRODUCTS, CATEGORIES as INITIAL_CATEGORIES } from '../mockData';
 import { productService } from '../services/productService';
@@ -124,23 +124,26 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   }, [products]);
 
   // Kategoriya qo'shish (Optimistic + Supabase)
-  const addCategory = (newCat: string) => {
+  const addCategory = useCallback((newCat: string) => {
     const trimmed = newCat.trim();
     if (!trimmed) return;
-    if (!categories.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
-      setCategories(prev => [...prev, trimmed]);
+    setCategories(prev => {
+      if (prev.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+        return prev;
+      }
       categoryService.add(trimmed).catch(console.error);
-    }
-  };
+      return [...prev, trimmed];
+    });
+  }, []);
 
-  const findProductByName = (name: string): Product | undefined => {
+  const findProductByName = useCallback((name: string): Product | undefined => {
     const trimmed = name.trim().toLowerCase();
     if (!trimmed) return undefined;
     return products.find(p => p.name.trim().toLowerCase() === trimmed);
-  };
+  }, [products]);
 
   // Mahsulot qo'shish (Optimistic + Supabase)
-  const addProduct = (newProd: Omit<Product, 'id'>): Product => {
+  const addProduct = useCallback((newProd: Omit<Product, 'id'>): Product => {
     const tempId = 'prod_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const createdProduct: Product = {
       ...newProd,
@@ -173,10 +176,10 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       });
 
     return createdProduct;
-  };
+  }, []);
 
   // Mahsulotni tahrirlash (Optimistic + Supabase)
-  const updateProduct = (id: string, updates: Partial<Omit<Product, 'id'>>) => {
+  const updateProduct = useCallback((id: string, updates: Partial<Omit<Product, 'id'>>) => {
     // 1. Darhol interfeysda yangilash
     setProducts(prev =>
       prev.map(p => {
@@ -205,18 +208,18 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     }).catch(err => {
       console.error('[Supabase] Mahsulotni yangilashda xatolik:', err);
     });
-  };
+  }, []);
 
   // Mahsulotni o'chirish (Optimistic + Supabase)
-  const deleteProduct = (id: string) => {
+  const deleteProduct = useCallback((id: string) => {
     setProducts(prev => prev.filter(p => p.id !== id));
     productService.delete(id).catch(err => {
       console.error('[Supabase] Mahsulotni o‘chirishda xatolik:', err);
     });
-  };
+  }, []);
 
   // Stock kirim (Optimistic + Supabase RPC)
-  const stockIn = (id: string, quantityToAdd: number) => {
+  const stockIn = useCallback((id: string, quantityToAdd: number) => {
     if (quantityToAdd <= 0) return;
     setProducts(prev =>
       prev.map(p => {
@@ -234,10 +237,10 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     productService.stockIn(id, quantityToAdd, 'Kirim').catch(err => {
       console.error('[Supabase] Stock kirimda xatolik:', err);
     });
-  };
+  }, []);
 
   // Sotuvda stock kamaytirish
-  const deductStock = (items: { productId: string; quantity: number }[]) => {
+  const deductStock = useCallback((items: { productId: string; quantity: number }[]) => {
     setProducts(prev => {
       const map = new Map<string, number>();
       for (const it of items) {
@@ -258,10 +261,10 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     productService.deductStock(items).catch(err => {
       console.warn('[Supabase] Stock kamaytirish xabari:', err);
     });
-  };
+  }, []);
 
   // Sotuv bekor qilinganda stock qaytarish
-  const returnStock = (items: { productId: string; quantity: number }[]) => {
+  const returnStock = useCallback((items: { productId: string; quantity: number }[]) => {
     setProducts(prev => {
       const map = new Map<string, number>();
       for (const it of items) {
@@ -282,34 +285,51 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     productService.returnStock(items).catch(err => {
       console.warn('[Supabase] Stock qaytarish xabari:', err);
     });
-  };
+  }, []);
 
-  const resetToDefaults = () => {
+  const resetToDefaults = useCallback(() => {
     setProducts(INITIAL_PRODUCTS);
     setCategories(INITIAL_CATEGORIES);
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(CATEGORIES_KEY);
     syncWithSupabase();
-  };
+  }, [syncWithSupabase]);
+
+  const value = useMemo(
+    () => ({
+      products,
+      categories,
+      isLoading,
+      addCategory,
+      addProduct,
+      updateProduct,
+      deleteProduct,
+      stockIn,
+      deductStock,
+      returnStock,
+      findProductByName,
+      resetToDefaults,
+      syncWithSupabase,
+    }),
+    [
+      products,
+      categories,
+      isLoading,
+      addCategory,
+      addProduct,
+      updateProduct,
+      deleteProduct,
+      stockIn,
+      deductStock,
+      returnStock,
+      findProductByName,
+      resetToDefaults,
+      syncWithSupabase,
+    ]
+  );
 
   return (
-    <ProductContext.Provider
-      value={{
-        products,
-        categories,
-        isLoading,
-        addCategory,
-        addProduct,
-        updateProduct,
-        deleteProduct,
-        stockIn,
-        deductStock,
-        returnStock,
-        findProductByName,
-        resetToDefaults,
-        syncWithSupabase,
-      }}
-    >
+    <ProductContext.Provider value={value}>
       {children}
     </ProductContext.Provider>
   );

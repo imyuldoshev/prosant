@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { SaleRecord } from '../types';
 import { useProducts } from './ProductContext';
 
@@ -358,7 +358,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [sales]);
 
-  const addSale = (params: AddSaleParams): SaleRecord => {
+  const addSale = useCallback((params: AddSaleParams): SaleRecord => {
     // Navbatdagi chek raqamini topish (maksimal raqam asosida)
     const maxNum = sales.reduce((max, s) => {
       const n = parseInt(s.saleNumber.replace(/\D/g, ''), 10);
@@ -391,9 +391,9 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
 
     setSales(prev => [newSale, ...prev]);
     return newSale;
-  };
+  }, [sales, deductStock]);
 
-  const deleteSale = (id: string, restoreStock: boolean = true) => {
+  const deleteSale = useCallback((id: string, restoreStock: boolean = true) => {
     const saleToDelete = sales.find(s => s.id === id);
     if (!saleToDelete) return;
 
@@ -407,34 +407,37 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     }
 
     setSales(prev => prev.filter(s => s.id !== id));
-  };
+  }, [sales, returnStock]);
 
-  const getSaleById = (id: string): SaleRecord | undefined => {
+  const getSaleById = useCallback((id: string): SaleRecord | undefined => {
     return sales.find(s => s.id === id);
-  };
+  }, [sales]);
 
-  const clearAllSales = () => {
+  const clearAllSales = useCallback(() => {
     setSales([]);
     localStorage.removeItem(SALES_STORAGE_KEY);
-  };
+  }, []);
 
-  const resetToDemoSales = () => {
+  const resetToDemoSales = useCallback(() => {
     const demo = generateDemoSales();
     setSales(demo);
     localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(demo));
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      sales,
+      addSale,
+      deleteSale,
+      getSaleById,
+      clearAllSales,
+      resetToDemoSales,
+    }),
+    [sales, addSale, deleteSale, getSaleById, clearAllSales, resetToDemoSales]
+  );
 
   return (
-    <SalesContext.Provider
-      value={{
-        sales,
-        addSale,
-        deleteSale,
-        getSaleById,
-        clearAllSales,
-        resetToDemoSales,
-      }}
-    >
+    <SalesContext.Provider value={value}>
       {children}
     </SalesContext.Provider>
   );

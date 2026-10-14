@@ -1,7 +1,7 @@
 // src/context/AuthContext.tsx
 // Global auth holati — ilovaning barcha joyidan foydalanish mumkin
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { authService, type AuthUser } from '../services/authService';
 
 interface AuthContextType {
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
       const authUser = await authService.signIn({ email, password });
@@ -94,13 +94,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     await authService.signInWithGoogle();
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     setIsLoading(true);
     try {
       await authService.signOut();
@@ -108,19 +108,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       updateUserState(null);
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: !!user,
+      signIn,
+      signInWithGoogle,
+      signOut,
+    }),
+    [user, isLoading, signIn, signInWithGoogle, signOut]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        signIn,
-        signInWithGoogle,
-        signOut,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

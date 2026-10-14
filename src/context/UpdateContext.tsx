@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { updateManager } from '../services/updateManager';
 import type { UpdateManagerConfig, UpdateState } from '../types/update';
@@ -83,15 +83,26 @@ export function UpdateProvider({
     return updateManager.registerBusyLock(id, reason);
   }, []);
 
-  const value: UpdateContextValue = {
-    ...state,
-    applyNow,
-    checkForUpdate,
-    dismissIndicator,
-    markTaskComplete,
-    registerBusyLock,
-    showIndicator,
-  };
+  const value: UpdateContextValue = useMemo(
+    () => ({
+      ...state,
+      applyNow,
+      checkForUpdate,
+      dismissIndicator,
+      markTaskComplete,
+      registerBusyLock,
+      showIndicator,
+    }),
+    [
+      state,
+      applyNow,
+      checkForUpdate,
+      dismissIndicator,
+      markTaskComplete,
+      registerBusyLock,
+      showIndicator,
+    ]
+  );
 
   return <UpdateContext.Provider value={value}>{children}</UpdateContext.Provider>;
 }
