@@ -11,6 +11,7 @@ import {
 import type { Product } from '../types';
 import { CustomSelect } from './CustomSelect';
 import { ProductImageSection } from './ProductImageSection';
+import { FormattedNumberInput } from './FormattedNumberInput';
 import { formatSum, formatInputNumber, parseFormattedNumber } from '../utils/format';
 
 interface ProductFormModalProps {
@@ -402,17 +403,10 @@ export function ProductFormModal({
                   </span>
                 </label>
                 <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
-                  <input
+                  <FormattedNumberInput
                     id="prod-cost-price-input"
-                    type="text"
-                    inputMode="decimal"
                     value={costPrice}
-                    onFocus={e => {
-                      const target = e.currentTarget;
-                      requestAnimationFrame(() => target.select());
-                    }}
-                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => setCostPrice(formatInputNumber(e.target.value))}
+                    onChangeValue={setCostPrice}
                     placeholder="Masalan: 8 000"
                     className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
@@ -429,17 +423,10 @@ export function ProductFormModal({
                   <span>Sotish narxi: <span className="text-rose-500">*</span></span>
                 </label>
                 <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
-                  <input
+                  <FormattedNumberInput
                     id="prod-price-input"
-                    type="text"
-                    inputMode="decimal"
                     value={price}
-                    onFocus={e => {
-                      const target = e.currentTarget;
-                      requestAnimationFrame(() => target.select());
-                    }}
-                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => setPrice(formatInputNumber(e.target.value))}
+                    onChangeValue={setPrice}
                     placeholder="Masalan: 12 000"
                     className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
@@ -465,17 +452,10 @@ export function ProductFormModal({
                   <span>{isEditing ? 'Hozirgi qoldiq' : 'Dastlabki kirim'}:</span>
                 </label>
                 <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
-                  <input
+                  <FormattedNumberInput
                     id="prod-stock-input"
-                    type="text"
-                    inputMode="decimal"
                     value={stock}
-                    onFocus={e => {
-                      const target = e.currentTarget;
-                      requestAnimationFrame(() => target.select());
-                    }}
-                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => setStock(formatInputNumber(e.target.value))}
+                    onChangeValue={setStock}
                     placeholder="0"
                     className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
@@ -495,17 +475,10 @@ export function ProductFormModal({
                   </span>
                 </label>
                 <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200 focus-within:border-brand transition-all p-1.5">
-                  <input
+                  <FormattedNumberInput
                     id="prod-min-stock-input"
-                    type="text"
-                    inputMode="decimal"
                     value={minStock}
-                    onFocus={e => {
-                      const target = e.currentTarget;
-                      requestAnimationFrame(() => target.select());
-                    }}
-                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => setMinStock(formatInputNumber(e.target.value))}
+                    onChangeValue={setMinStock}
                     placeholder="Masalan: 5"
                     className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />

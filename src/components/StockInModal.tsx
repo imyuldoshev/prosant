@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, PackagePlus, AlertCircle, ArrowUpRight } from 'lucide-react';
 import type { Product } from '../types';
-import { formatSum, formatInputNumber, parseFormattedNumber } from '../utils/format';
+import { FormattedNumberInput } from './FormattedNumberInput';
+import { formatSum, parseFormattedNumber } from '../utils/format';
 
 interface StockInModalProps {
   product: Product;
@@ -32,12 +33,6 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
   const currentStock = product ? (Number(product.stock) || 0) : 0;
   const parsedAmount = parseFormattedNumber(amountStr);
   const newStock = Math.max(0, currentStock + (parsedAmount > 0 ? parsedAmount : 0));
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(',', '.');
-    setAmountStr(formatInputNumber(raw));
-    setError(null);
-  };
 
   const handleSubmit = useCallback((e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -155,13 +150,14 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
               Kirim miqdori:
             </label>
             <div className="flex items-center justify-between bg-slate-50 border-2 border-emerald-400 focus-within:border-emerald-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-2xl px-4 py-2.5 transition-all shadow-inner">
-              <input
+              <FormattedNumberInput
                 id="stock-in-amount"
                 ref={inputRef}
-                type="text"
-                inputMode="decimal"
                 value={amountStr}
-                onChange={handleInputChange}
+                onChangeValue={(val) => {
+                  setAmountStr(val);
+                  setError(null);
+                }}
                 placeholder="0"
                 className="w-full text-2xl sm:text-3xl font-mono font-black text-slate-900 bg-transparent focus:outline-none tracking-wider"
               />

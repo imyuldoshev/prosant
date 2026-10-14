@@ -10,7 +10,8 @@ import { useSales } from '../context/SalesContext';
 import { useBlockUpdate, useTaskCompletion } from '../context/UpdateContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { KassaProductCard } from '../components/KassaProductCard';
-import { formatSum, formatInputNumber, parseFormattedNumber } from '../utils/format';
+import { FormattedNumberInput } from '../components/FormattedNumberInput';
+import { formatSum, parseFormattedNumber } from '../utils/format';
 
 function formatPhoneLocal(digits: string): string {
   const d = digits.replace(/\D/g, '').slice(0, 9);
@@ -842,14 +843,10 @@ export function KassaPage() {
 
                   <div className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-emerald-300 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20">
                     <span className="text-xs text-slate-400 font-semibold shrink-0 mr-2 select-none">Berilgan:</span>
-                    <input
+                    <FormattedNumberInput
                       ref={cashInputRef}
-                      type="text"
-                      inputMode="decimal"
                       value={receivedCashStr}
-                      onChange={(e) => {
-                        setReceivedCashStr(formatInputNumber(e.target.value));
-                      }}
+                      onChangeValue={setReceivedCashStr}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
