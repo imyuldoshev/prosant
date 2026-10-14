@@ -752,6 +752,9 @@ export function KassaPage() {
 
               <div className="flex items-center gap-2">
                 <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-xl border border-slate-700">
+                  <kbd className="px-1 py-0.5 bg-slate-700 rounded text-slate-200 font-mono font-bold text-[10px]">Enter</kbd>
+                  <span>— Keyingi</span>
+                  <span className="text-slate-600">•</span>
                   <kbd className="px-1 py-0.5 bg-slate-700 rounded text-slate-200 font-mono font-bold text-[10px]">Ctrl+Enter</kbd>
                   <span>— Tasdiqlash</span>
                 </div>
@@ -850,7 +853,11 @@ export function KassaPage() {
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
-                          handleCompleteSale();
+                          if (e.ctrlKey || e.metaKey) {
+                            handleCompleteSale();
+                          } else {
+                            customerPhoneInputRef.current?.focus();
+                          }
                         }
                       }}
                       placeholder="0"
@@ -901,7 +908,11 @@ export function KassaPage() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        customerNameInputRef.current?.focus();
+                        if (e.ctrlKey || e.metaKey) {
+                          handleCompleteSale();
+                        } else {
+                          customerNameInputRef.current?.focus();
+                        }
                       }
                     }}
                     className="w-full px-3.5 py-2.5 text-slate-900 font-black text-base font-mono focus:outline-none bg-transparent"
@@ -923,7 +934,11 @@ export function KassaPage() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      checkoutNoteInputRef.current?.focus();
+                      if (e.ctrlKey || e.metaKey) {
+                        handleCompleteSale();
+                      } else {
+                        checkoutNoteInputRef.current?.focus();
+                      }
                     }
                   }}
                   className="w-full bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-900 text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 shadow-xs"
