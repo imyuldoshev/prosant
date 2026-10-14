@@ -14,6 +14,7 @@ import { DateRangePicker } from '../components/DateRangePicker';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { CustomSelect } from '../components/CustomSelect';
 import { toISODate, formatDateTime, formatToDMY } from '../utils/dateUtils';
+import { formatSum } from '../utils/format';
 
 type SortOrderType = 'newest' | 'oldest' | 'highest' | 'lowest';
 
@@ -390,7 +391,7 @@ export function TarixPage() {
 
           <div className="mt-3 flex items-baseline gap-2 flex-wrap">
             <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white drop-shadow-xs">
-              {stats.totalRevenue.toLocaleString()}
+              {formatSum(stats.totalRevenue)}
             </span>
             <span className="text-base sm:text-lg font-bold text-blue-200">
               UZS
@@ -426,7 +427,7 @@ export function TarixPage() {
 
           <div className="mt-3 flex items-baseline gap-2 flex-wrap">
             <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white drop-shadow-xs">
-              {stats.totalProfit >= 0 ? '+' : ''}{stats.totalProfit.toLocaleString()}
+              {stats.totalProfit >= 0 ? '+' : ''}{formatSum(stats.totalProfit)}
             </span>
             <span className="text-base sm:text-lg font-bold text-emerald-200">
               UZS
@@ -457,25 +458,25 @@ export function TarixPage() {
             <span className="text-emerald-700 flex items-center gap-1">
               <Banknote className="w-3.5 h-3.5" /> Naqd:
             </span>
-            <span className="font-black">{stats.methods.naqd.toLocaleString()} UZS</span>
+            <span className="font-black">{formatSum(stats.methods.naqd)} UZS</span>
           </div>
           <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-sky-50 text-sky-900 border border-sky-100 rounded-xl text-xs font-bold">
             <span className="text-sky-700 flex items-center gap-1">
               <CreditCard className="w-3.5 h-3.5" /> Karta:
             </span>
-            <span className="font-black">{stats.methods.karta.toLocaleString()} UZS</span>
+            <span className="font-black">{formatSum(stats.methods.karta)} UZS</span>
           </div>
           <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-purple-50 text-purple-900 border border-purple-100 rounded-xl text-xs font-bold">
             <span className="text-purple-700 flex items-center gap-1">
               <Building2 className="w-3.5 h-3.5" /> O'tkazma:
             </span>
-            <span className="font-black">{stats.methods.transfer.toLocaleString()} UZS</span>
+            <span className="font-black">{formatSum(stats.methods.transfer)} UZS</span>
           </div>
           <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-100 rounded-xl text-xs font-bold">
             <span className="text-amber-700 flex items-center gap-1">
               <FileText className="w-3.5 h-3.5" /> Nasiya:
             </span>
-            <span className="font-black">{stats.methods.nasiya.toLocaleString()} UZS</span>
+            <span className="font-black">{formatSum(stats.methods.nasiya)} UZS</span>
           </div>
         </div>
       </div>
@@ -669,11 +670,11 @@ export function TarixPage() {
                     </div>
                     <div className="text-right shrink-0">
                       <div className="font-black text-slate-900 text-base leading-tight">
-                        {sale.total.toLocaleString()} <span className="text-[10px] font-bold text-slate-400">UZS</span>
+                        {formatSum(sale.total)} <span className="text-[10px] font-bold text-slate-400">UZS</span>
                       </div>
                       {sale.discount && sale.discount > 0 ? (
                         <div className="text-[10px] font-bold text-rose-500">
-                          -{sale.discount.toLocaleString()} UZS
+                          -{formatSum(sale.discount)} UZS
                         </div>
                       ) : null}
                     </div>
@@ -752,11 +753,11 @@ export function TarixPage() {
                                 {item.productName}
                               </span>
                               <span className="text-[11px] text-slate-400 font-medium">
-                                {item.quantity} {item.unit} × {item.price.toLocaleString()} UZS
+                                {formatSum(item.quantity)} {item.unit} × {formatSum(item.price)} UZS
                               </span>
                             </div>
                             <span className="font-extrabold text-slate-900 shrink-0 text-xs">
-                              {(item.quantity * item.price).toLocaleString()} UZS
+                              {formatSum(item.quantity * item.price)} UZS
                             </span>
                           </div>
                         ))}
@@ -787,7 +788,7 @@ export function TarixPage() {
             {/* Mobile Summary bar at bottom */}
             <div className="p-3.5 bg-white rounded-2xl border border-slate-200 text-xs font-semibold text-slate-500 flex items-center justify-between">
               <div>Jami: <strong className="text-slate-800 font-bold">{filteredSales.length}</strong> ta chek</div>
-              <div>Summa: <strong className="text-slate-900 font-black">{filteredSales.reduce((sum, s) => sum + s.total, 0).toLocaleString()} UZS</strong></div>
+              <div>Summa: <strong className="text-slate-900 font-black">{formatSum(filteredSales.reduce((sum, s) => sum + s.total, 0))} UZS</strong></div>
             </div>
           </>
         )}
@@ -882,11 +883,11 @@ export function TarixPage() {
                     {/* Total Sum */}
                     <td className="p-4 text-right whitespace-nowrap">
                       <div className="font-black text-slate-900 text-base">
-                        {sale.total.toLocaleString()} <span className="text-xs font-bold text-slate-400">UZS</span>
+                        {formatSum(sale.total)} <span className="text-xs font-bold text-slate-400">UZS</span>
                       </div>
                       {sale.discount && sale.discount > 0 && (
                         <div className="text-[11px] font-semibold text-rose-500">
-                          -{sale.discount.toLocaleString()} UZS chegirma
+                          -{formatSum(sale.discount)} UZS chegirma
                         </div>
                       )}
                     </td>
@@ -987,7 +988,7 @@ export function TarixPage() {
           </div>
           <div className="flex items-center gap-4">
             <span>
-              Filtrlangan jami summa: <strong className="text-slate-900 font-black text-sm">{filteredSales.reduce((sum, s) => sum + s.total, 0).toLocaleString()} UZS</strong>
+              Filtrlangan jami summa: <strong className="text-slate-900 font-black text-sm">{formatSum(filteredSales.reduce((sum, s) => sum + s.total, 0))} UZS</strong>
             </span>
           </div>
         </div>

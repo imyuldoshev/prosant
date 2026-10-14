@@ -10,6 +10,7 @@ import { useSales } from '../context/SalesContext';
 import { useBlockUpdate, useTaskCompletion } from '../context/UpdateContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { KassaProductCard } from '../components/KassaProductCard';
+import { formatSum, formatInputNumber, parseFormattedNumber } from '../utils/format';
 
 function formatPhoneLocal(digits: string): string {
   const d = digits.replace(/\D/g, '').slice(0, 9);
@@ -82,7 +83,7 @@ export function KassaPage() {
     if (cart.length === 0) return;
     const finalTotal = totalCartSum;
     const receivedNum = paymentMethod === 'naqd' 
-      ? (parseFloat(receivedCashStr) || finalTotal) 
+      ? (parseFormattedNumber(receivedCashStr) || finalTotal) 
       : finalTotal;
     const change = (paymentMethod === 'naqd' && receivedNum > finalTotal) 
       ? receivedNum - finalTotal 
@@ -171,13 +172,13 @@ export function KassaPage() {
     setPaymentMethod(method);
     if (method === 'naqd') {
       if (!receivedCashStr) {
-        setReceivedCashStr(totalCartSum.toString());
+        setReceivedCashStr(formatSum(totalCartSum));
       }
       setTimeout(() => {
         cashInputRef.current?.focus();
       }, 50);
     } else {
-      setReceivedCashStr(totalCartSum.toString());
+      setReceivedCashStr(formatSum(totalCartSum));
       setTimeout(() => {
         customerPhoneInputRef.current?.focus();
       }, 50);
@@ -186,7 +187,7 @@ export function KassaPage() {
 
   const openCheckoutModal = () => {
     if (cart.length === 0) return;
-    setReceivedCashStr(totalCartSum.toString());
+    setReceivedCashStr(formatSum(totalCartSum));
     setCustomerPhoneDigits('');
     setCustomerName('');
     setCheckoutNote('');
@@ -459,7 +460,7 @@ export function KassaPage() {
                   {selectedProduct.name}
                 </h2>
                 <p className="text-sm font-semibold text-slate-500 mt-1">
-                  Narxi: <strong className="text-slate-800">{selectedProduct.price.toLocaleString()} UZS</strong> / {selectedProduct.unit}
+                  Narxi: <strong className="text-slate-800">{formatSum(selectedProduct.price)} UZS</strong> / {selectedProduct.unit}
                 </p>
               </div>
               <button 
@@ -478,7 +479,7 @@ export function KassaPage() {
                   Miqdori:
                 </span>
                 <span className="text-xs sm:text-sm text-emerald-400 font-bold font-mono">
-                  Jami: {(((parseFloat(quantityStr) || (quantityStr === '' ? 1 : 0))) * selectedProduct.price).toLocaleString()} UZS
+                  Jami: {formatSum(((parseFloat(quantityStr) || (quantityStr === '' ? 1 : 0))) * selectedProduct.price)} UZS
                 </span>
               </div>
 
@@ -627,7 +628,7 @@ export function KassaPage() {
                   </h4>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-slate-500 font-mono">
-                      {item.product.price.toLocaleString()} UZS
+                      {formatSum(item.product.price)} UZS
                     </span>
                     {item.product.artikul && (
                       <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono font-semibold">
@@ -660,7 +661,7 @@ export function KassaPage() {
                     className="px-2 font-mono font-black text-sm text-slate-800 hover:text-brand cursor-pointer select-none"
                     title="Miqdorni kiritish"
                   >
-                    {item.quantity} <span className="text-[11px] font-sans font-medium text-slate-500">{item.product.unit}</span>
+                    {formatSum(item.quantity)} <span className="text-[11px] font-sans font-medium text-slate-500">{item.product.unit}</span>
                   </button>
                   <button 
                     onClick={() => updateCartItemQuantity(item.product.id, 1)}
@@ -672,7 +673,7 @@ export function KassaPage() {
                 </div>
 
                 <div className="text-right font-mono font-black text-sm text-slate-900">
-                  {(item.product.price * item.quantity).toLocaleString()} <span className="text-[10px] font-sans font-medium text-slate-500">UZS</span>
+                  {formatSum(item.product.price * item.quantity)} <span className="text-[10px] font-sans font-medium text-slate-500">UZS</span>
                 </div>
               </div>
             </div>
@@ -697,7 +698,7 @@ export function KassaPage() {
             <div className="flex justify-between items-baseline pt-1 border-t border-slate-200/60">
               <span className="text-sm font-extrabold text-slate-700 uppercase tracking-wider">Jami to'lov:</span>
               <span className="text-2xl font-black text-brand font-mono tracking-tight">
-                {totalCartSum.toLocaleString()} <span className="text-xs font-sans font-bold text-slate-500">UZS</span>
+                {formatSum(totalCartSum)} <span className="text-xs font-sans font-bold text-slate-500">UZS</span>
               </span>
             </div>
           </div>
@@ -780,7 +781,7 @@ export function KassaPage() {
                 </div>
                 <div className="text-right">
                   <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tracking-tight">
-                    {totalCartSum.toLocaleString()} <span className="text-xs sm:text-sm text-slate-300 font-sans font-bold">UZS</span>
+                    {formatSum(totalCartSum)} <span className="text-xs sm:text-sm text-slate-300 font-sans font-bold">UZS</span>
                   </span>
                 </div>
               </div>
@@ -829,7 +830,7 @@ export function KassaPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setReceivedCashStr(totalCartSum.toString());
+                        setReceivedCashStr(formatSum(totalCartSum));
                         cashInputRef.current?.focus();
                       }}
                       className="text-[11px] font-black text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer active:scale-95"
@@ -847,10 +848,7 @@ export function KassaPage() {
                       inputMode="decimal"
                       value={receivedCashStr}
                       onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9.]/g, '');
-                        const parts = val.split('.');
-                        const cleanVal = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : val;
-                        setReceivedCashStr(cleanVal);
+                        setReceivedCashStr(formatInputNumber(e.target.value));
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -865,18 +863,18 @@ export function KassaPage() {
                   </div>
 
                   {/* Change Display */}
-                  {parseFloat(receivedCashStr) >= totalCartSum ? (
+                  {parseFormattedNumber(receivedCashStr) >= totalCartSum ? (
                     <div className="mt-2.5 pt-2 border-t border-emerald-200 flex justify-between items-center text-emerald-900 font-bold">
                       <span className="text-xs uppercase tracking-wider">Qaytim:</span>
                       <span className="text-xl font-black text-emerald-700 font-mono">
-                        {(parseFloat(receivedCashStr) - totalCartSum).toLocaleString()} <span className="text-xs font-sans">UZS</span>
+                        {formatSum(parseFormattedNumber(receivedCashStr) - totalCartSum)} <span className="text-xs font-sans">UZS</span>
                       </span>
                     </div>
-                  ) : parseFloat(receivedCashStr) > 0 ? (
+                  ) : parseFormattedNumber(receivedCashStr) > 0 ? (
                     <div className="mt-2.5 pt-2 border-t border-amber-200 flex justify-between items-center text-amber-800 font-bold text-xs">
                       <span>Yetarli emas:</span>
                       <span className="font-mono text-amber-700 text-sm font-black">
-                        {(totalCartSum - parseFloat(receivedCashStr)).toLocaleString()} UZS
+                        {formatSum(totalCartSum - parseFormattedNumber(receivedCashStr))} UZS
                       </span>
                     </div>
                   ) : null}

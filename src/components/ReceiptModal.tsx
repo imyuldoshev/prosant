@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Printer, X, CheckCircle2, FileText, Receipt as ReceiptIcon } from 'lucide-react';
 import type { SaleRecord } from '../types';
+import { formatSum } from '../utils/format';
 
 interface ReceiptModalProps {
   sale: SaleRecord | null;
@@ -212,14 +213,14 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                           {item.productName}
                         </td>
                         <td className="border border-black py-1 px-1 text-center font-mono whitespace-nowrap">
-                          <span className="font-bold">{item.quantity}</span>{' '}
+                          <span className="font-bold">{formatSum(item.quantity)}</span>{' '}
                           <span className="text-[9px] sm:text-[10px] text-slate-600 font-sans">{item.unit || 'dona'}</span>
                         </td>
                         <td className="border border-black py-1 px-1.5 text-right font-mono whitespace-nowrap">
-                          {Number(item.price || 0).toLocaleString()}
+                          {formatSum(item.price)}
                         </td>
                         <td className="border border-black py-1 px-1.5 text-right font-mono font-bold whitespace-nowrap">
-                          {Number(item.total || 0).toLocaleString()}
+                          {formatSum(item.total)}
                         </td>
                       </tr>
                     );
@@ -234,14 +235,14 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                 <div className="text-right text-xs text-slate-600">
                   <span className="mr-2">Chegirma:</span>
                   <span className="font-mono font-bold text-rose-600">
-                    -{sale.discount.toLocaleString()} UZS
+                    -{formatSum(sale.discount)} UZS
                   </span>
                 </div>
               ) : null}
               <div className="text-right">
                 <span className="font-black text-xs sm:text-base mr-2">Jami to'lov:</span>
                 <span className="font-black text-sm sm:text-lg font-mono">
-                  {sale.total.toLocaleString()} <span className="text-xs font-sans">so'm</span>
+                  {formatSum(sale.total)} <span className="text-xs font-sans">so'm</span>
                 </span>
               </div>
             </div>
@@ -254,8 +255,8 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                 </span>
                 {sale.paymentMethod === 'naqd' && sale.receivedAmount && (
                   <span className="font-mono text-slate-700">
-                    Qabul qilindi: {sale.receivedAmount.toLocaleString()} UZS
-                    {sale.changeAmount ? ` | Qaytim: ${sale.changeAmount.toLocaleString()} UZS` : ''}
+                    Qabul qilindi: {formatSum(sale.receivedAmount)} UZS
+                    {sale.changeAmount ? ` | Qaytim: ${formatSum(sale.changeAmount)} UZS` : ''}
                   </span>
                 )}
               </div>
@@ -269,7 +270,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
               {/* Debt Notice (If nasiya) */}
               {sale.paymentMethod === 'nasiya' && (
                 <div className="font-bold text-rose-800 bg-rose-50 p-2 rounded border border-rose-200 mt-1">
-                  Nasiya bo'yicha qarzdorlik miqdori: {sale.total.toLocaleString()} so'm
+                  Nasiya bo'yicha qarzdorlik miqdori: {formatSum(sale.total)} so'm
                 </div>
               )}
             </div>

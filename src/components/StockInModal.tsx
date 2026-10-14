@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, PackagePlus, AlertCircle, ArrowUpRight } from 'lucide-react';
 import type { Product } from '../types';
+import { formatSum, formatInputNumber, parseFormattedNumber } from '../utils/format';
 
 interface StockInModalProps {
   product: Product;
@@ -29,21 +30,18 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
   }, [isOpen, product?.id]);
 
   const currentStock = product ? (Number(product.stock) || 0) : 0;
-  const parsedAmount = parseFloat(amountStr) || 0;
+  const parsedAmount = parseFormattedNumber(amountStr);
   const newStock = Math.max(0, currentStock + (parsedAmount > 0 ? parsedAmount : 0));
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(',', '.');
-    // Allow digits and at most one dot
-    if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
-      setAmountStr(raw);
-      setError(null);
-    }
+    setAmountStr(formatInputNumber(raw));
+    setError(null);
   };
 
   const handleSubmit = useCallback((e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const qty = parseFloat(amountStr);
+    const qty = parseFormattedNumber(amountStr);
     if (isNaN(qty) || qty <= 0) {
       setError('Kirim miqdori 0 dan katta bo\'lishi kerak!');
       if (inputRef.current) inputRef.current.focus();
@@ -126,7 +124,7 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
                 {product.name}
               </h3>
               <p className="text-xs text-slate-500 font-mono mt-0.5">
-                Mavjud: <strong className="text-slate-800">{currentStock} {product.unit}</strong>
+                Mavjud: <strong className="text-slate-800">{formatSum(currentStock)} {product.unit}</strong>
               </p>
             </div>
           </div>
@@ -138,7 +136,7 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
                 Hozirgi qoldiq
               </span>
               <span className="text-base sm:text-lg font-black font-mono text-emerald-900">
-                {currentStock} <span className="text-xs font-sans font-bold text-emerald-700">{product.unit}</span>
+                {formatSum(currentStock)} <span className="text-xs font-sans font-bold text-emerald-700">{product.unit}</span>
               </span>
             </div>
             <div className="pl-2">
@@ -146,7 +144,7 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
                 Kirimdan so'ng
               </span>
               <span className="text-base sm:text-lg font-black font-mono text-emerald-700">
-                {newStock} <span className="text-xs font-sans font-bold text-emerald-600">{product.unit}</span>
+                {formatSum(newStock)} <span className="text-xs font-sans font-bold text-emerald-600">{product.unit}</span>
               </span>
             </div>
           </div>

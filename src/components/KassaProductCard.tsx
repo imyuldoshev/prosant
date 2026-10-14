@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Plus } from 'lucide-react';
 import type { Product } from '../types';
+import { formatSum } from '../utils/format';
 
 interface KassaProductCardProps {
   product: Product;
@@ -95,7 +96,7 @@ export const KassaProductCard = memo(function KassaProductCard({
 
         <div className="pt-1.5 mt-auto border-t border-slate-100 flex items-baseline justify-between gap-1">
           <div className="text-brand font-black text-sm sm:text-base tracking-tight">
-            {Number(product.price || 0).toLocaleString()} <span className="text-[11px] font-bold text-slate-500">UZS</span>
+            {formatSum(product.price)} <span className="text-[11px] font-bold text-slate-500">UZS</span>
           </div>
           <span className="text-[11px] font-semibold text-slate-400">
             /{product.unit}

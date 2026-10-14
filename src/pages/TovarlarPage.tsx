@@ -18,6 +18,7 @@ import type { Product } from '../types';
 import { StockInModal } from '../components/StockInModal';
 import { ProductFormModal } from '../components/ProductFormModal';
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
+import { formatSum } from '../utils/format';
 
 export function TovarlarPage() {
   const { 
@@ -258,7 +259,7 @@ export function TovarlarPage() {
                 Jami qoldiq
               </div>
               <div className="text-sm sm:text-lg lg:text-xl font-black leading-tight truncate mt-0.5">
-                {totalStockCount.toLocaleString()} <span className="text-[9px] sm:text-xs font-normal text-emerald-100">dona</span>
+                {formatSum(totalStockCount)} <span className="text-[9px] sm:text-xs font-normal text-emerald-100">dona</span>
               </div>
             </div>
           </div>
@@ -430,11 +431,11 @@ export function TovarlarPage() {
                       <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-slate-100/80">
                         <div className="flex flex-col">
                           <span className="text-xs sm:text-sm font-black text-slate-800">
-                            {Number(product.price || 0).toLocaleString()} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">UZS / {product.unit}</span>
+                            {formatSum(product.price)} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">UZS / {product.unit}</span>
                           </span>
                           {product.costPrice ? (
                             <span className="text-[10px] text-emerald-700 font-semibold mt-0.5">
-                              Asl: {Number(product.costPrice).toLocaleString()} UZS
+                              Asl: {formatSum(product.costPrice)} UZS
                             </span>
                           ) : null}
                         </div>
@@ -444,7 +445,7 @@ export function TovarlarPage() {
                               ? 'text-amber-700 bg-amber-50 border-amber-200/80' 
                               : 'text-emerald-700 bg-emerald-50 border-emerald-200/80'
                           }`}>
-                            {product.stock} {product.unit}
+                            {formatSum(product.stock)} {product.unit}
                           </span>
                         </div>
                       </div>
@@ -546,7 +547,7 @@ export function TovarlarPage() {
                         <td className="p-4">
                           <div className="flex flex-col">
                             <span className="font-extrabold text-slate-900 text-base leading-tight">
-                              {Number(product.price || 0).toLocaleString()}
+                              {formatSum(product.price)}
                               <span className="text-xs text-slate-500 font-medium ml-1">
                                 UZS / {product.unit}
                               </span>
@@ -554,7 +555,7 @@ export function TovarlarPage() {
                             {product.costPrice ? (
                               <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
                                 <span className="text-slate-400 font-normal">Asl:</span>
-                                <span>{Number(product.costPrice).toLocaleString()} UZS</span>
+                                <span>{formatSum(product.costPrice)} UZS</span>
                               </span>
                             ) : null}
                           </div>
@@ -564,7 +565,7 @@ export function TovarlarPage() {
                             <span className={`inline-flex items-center font-black text-base ${
                               isLowStock ? 'text-amber-600' : 'text-emerald-700'
                             }`}>
-                              {product.stock}
+                              {formatSum(product.stock)}
                             </span>
                             <span className="text-xs text-slate-500 font-medium">{product.unit}</span>
                             {isLowStock && (

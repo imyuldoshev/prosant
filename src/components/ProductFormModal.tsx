@@ -11,6 +11,7 @@ import {
 import type { Product } from '../types';
 import { CustomSelect } from './CustomSelect';
 import { ProductImageSection } from './ProductImageSection';
+import { formatSum, formatInputNumber, parseFormattedNumber } from '../utils/format';
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -66,17 +67,17 @@ export function ProductFormModal({
       if (productToEdit) {
         setName(productToEdit.name);
         setCategory(productToEdit.category || availableCategories[0] || 'Umumiy');
-        setCostPrice(productToEdit.costPrice !== undefined ? productToEdit.costPrice.toString() : '');
-        setPrice(productToEdit.price.toString());
+        setCostPrice(productToEdit.costPrice !== undefined ? formatInputNumber(productToEdit.costPrice.toString()) : '');
+        setPrice(formatInputNumber(productToEdit.price.toString()));
         setUnit(productToEdit.unit || 'dona');
-        setStock(productToEdit.stock !== undefined ? productToEdit.stock.toString() : '0');
-        setMinStock(productToEdit.minStock !== undefined ? productToEdit.minStock.toString() : '');
+        setStock(productToEdit.stock !== undefined ? formatInputNumber(productToEdit.stock.toString()) : '0');
+        setMinStock(productToEdit.minStock !== undefined ? formatInputNumber(productToEdit.minStock.toString()) : '');
         setImage(productToEdit.image || DEFAULT_IMAGE);
       } else {
         setName('');
         setCategory(availableCategories[0] || 'Umumiy');
         setCostPrice('');
-        setPrice('10000');
+        setPrice('10 000');
         setUnit('dona');
         setStock('10');
         setMinStock('');
@@ -119,8 +120,8 @@ export function ProductFormModal({
 
   // Real-time Profit and Margin calculation if cost price and selling price are provided
   const profitCalc = useMemo(() => {
-    const cp = parseFloat(costPrice);
-    const sp = parseFloat(price);
+    const cp = parseFormattedNumber(costPrice);
+    const sp = parseFormattedNumber(price);
     if (!isNaN(cp) && !isNaN(sp) && cp > 0 && sp > 0) {
       const profit = sp - cp;
       const percent = ((profit / cp) * 100).toFixed(1);
@@ -148,7 +149,7 @@ export function ProductFormModal({
       return;
     }
 
-    const parsedPrice = parseFloat(price);
+    const parsedPrice = parseFormattedNumber(price);
     if (isNaN(parsedPrice) || parsedPrice < 0) {
       setError('Belgilangan narxni to\'g\'ri kiriting!');
       return;
@@ -157,19 +158,19 @@ export function ProductFormModal({
     // Cost price is optional
     let parsedCostPrice: number | undefined = undefined;
     if (costPrice.trim() !== '') {
-      const cp = parseFloat(costPrice);
+      const cp = parseFormattedNumber(costPrice);
       if (!isNaN(cp) && cp >= 0) {
         parsedCostPrice = cp;
       }
     }
 
     // Default stock: preserve existing product's stock or start with 0
-    const finalStock = productToEdit ? Number(productToEdit.stock) || 0 : (parseFloat(stock) || 0);
+    const finalStock = productToEdit ? Number(productToEdit.stock) || 0 : parseFormattedNumber(stock);
 
     // minStock is optional
     let parsedMinStock: number | undefined = undefined;
     if (minStock.trim() !== '') {
-      const m = parseFloat(minStock);
+      const m = parseFormattedNumber(minStock);
       if (!isNaN(m) && m >= 0) {
         parsedMinStock = m;
       }
@@ -266,7 +267,7 @@ export function ProductFormModal({
                   <span>Bunday nomli mahsulot bazada mavjud!</span>
                 </div>
                 <p className="text-slate-600 pl-5">
-                  Mavjud: <strong className="text-slate-900">{duplicateMatch.name}</strong> ({duplicateMatch.stock} {duplicateMatch.unit}, {duplicateMatch.price.toLocaleString()} UZS).
+                  Mavjud: <strong className="text-slate-900">{duplicateMatch.name}</strong> ({formatSum(duplicateMatch.stock)} {duplicateMatch.unit}, {formatSum(duplicateMatch.price)} UZS).
                 </p>
                 {onDuplicateAttempt && (
                   <button
@@ -383,7 +384,7 @@ export function ProductFormModal({
               </span>
               {profitCalc && (
                 <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
-                  Foyda: +{profitCalc.profit.toLocaleString()} UZS ({profitCalc.percent}%)
+                  Foyda: +{formatSum(profitCalc.profit)} UZS ({profitCalc.percent}%)
                 </span>
               )}
             </div>
@@ -411,12 +412,9 @@ export function ProductFormModal({
                       requestAnimationFrame(() => target.select());
                     }}
                     onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => {
-                      const v = e.target.value.replace(',', '.');
-                      if (v === '' || /^\d*\.?\d*$/.test(v)) setCostPrice(v);
-                    }}
-                    placeholder="Masalan: 8000"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
+                    onChange={e => setCostPrice(formatInputNumber(e.target.value))}
+                    placeholder="Masalan: 8 000"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
                   <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">UZS</span>
                 </div>
@@ -441,12 +439,9 @@ export function ProductFormModal({
                       requestAnimationFrame(() => target.select());
                     }}
                     onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => {
-                      const v = e.target.value.replace(',', '.');
-                      if (v === '' || /^\d*\.?\d*$/.test(v)) setPrice(v);
-                    }}
-                    placeholder="Masalan: 12000"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
+                    onChange={e => setPrice(formatInputNumber(e.target.value))}
+                    placeholder="Masalan: 12 000"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
                   <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">UZS</span>
                 </div>
@@ -480,12 +475,9 @@ export function ProductFormModal({
                       requestAnimationFrame(() => target.select());
                     }}
                     onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => {
-                      const v = e.target.value.replace(',', '.');
-                      if (v === '' || /^\d*\.?\d*$/.test(v)) setStock(v);
-                    }}
+                    onChange={e => setStock(formatInputNumber(e.target.value))}
                     placeholder="0"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
                   <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">{unit}</span>
                 </div>
@@ -513,12 +505,9 @@ export function ProductFormModal({
                       requestAnimationFrame(() => target.select());
                     }}
                     onClick={e => (e.currentTarget as HTMLInputElement).select()}
-                    onChange={e => {
-                      const v = e.target.value.replace(',', '.');
-                      if (v === '' || /^\d*\.?\d*$/.test(v)) setMinStock(v);
-                    }}
+                    onChange={e => setMinStock(formatInputNumber(e.target.value))}
                     placeholder="Masalan: 5"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text font-mono"
                   />
                   <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">{unit}</span>
                 </div>
