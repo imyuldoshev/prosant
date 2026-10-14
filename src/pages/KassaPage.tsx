@@ -129,6 +129,7 @@ export function KassaPage() {
       category: item.product.category,
       artikul: item.product.artikul,
       quantity: item.quantity,
+      costPrice: item.product.costPrice,
       price: item.product.price,
       unit: item.product.unit,
       total: item.product.price * item.quantity,
@@ -519,6 +520,17 @@ export function KassaPage() {
     return filtered;
   }, [query, selectedCategory, products]);
 
+  // Progressive rendering: initial 24 items to keep DOM lightweight and load instantly
+  const [visibleCount, setVisibleCount] = useState(24);
+
+  useEffect(() => {
+    setVisibleCount(24);
+  }, [query, selectedCategory]);
+
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount);
+  }, [filteredProducts, visibleCount]);
+
   const openProductNumpad = (product: Product) => {
     setSelectedProduct(product);
     setEditingCartProductId(null);
@@ -623,18 +635,43 @@ export function KassaPage() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedProduct) return;
 
-      if (e.key >= '0' && e.key <= '9') {
-        handleNumpadInput(e.key);
-      } else if (e.key === '.' || e.key === ',') {
-        handleNumpadInput('.');
-      } else if (e.key === 'Backspace') {
-        handleNumpadInput('BACKSPACE');
-      } else if (e.key === 'Enter') {
+      // Escape har qanday holatda modalni yopadi
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeNumpad();
+        return;
+      }
+
+      // Enter kiritilgan miqdorni tasdiqlab savatga qo'shadi
+      if (e.key === 'Enter') {
         e.preventDefault();
         handleNumpadInput('OK');
-      } else if (e.key === 'Escape') {
-        closeNumpad();
+        return;
+      }
+
+      // Agar fokus miqdor inputida (quantityInputRef) bo'lsa:
+      // Klaviatura terish (0-9 raqamlari, NumLock, nuqta, backspace va h.k.) inputning o'zi
+      // tomonidan tabiiy ravishda (native onChange orqali) amalga oshiriladi.
+      // Global listener ularni qayta ushlamasligi shart, aks holda raqamlar 2 tadan yozilib ketadi (masalan, 5 -> 55)!
+      const isInputFocused = document.activeElement === quantityInputRef.current;
+      if (isInputFocused) {
+        return;
+      }
+
+      // Agar input fokusda bo'lmasa, raqamni kiritib, inputni fokuslaymiz:
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        handleNumpadInput(e.key);
+        quantityInputRef.current?.focus();
+      } else if (e.key === '.' || e.key === ',') {
+        e.preventDefault();
+        handleNumpadInput('.');
+        quantityInputRef.current?.focus();
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleNumpadInput('BACKSPACE');
       } else if (e.key === 'Delete' || e.key.toLowerCase() === 'c') {
+        e.preventDefault();
         handleNumpadInput('C');
       }
     };
@@ -816,14 +853,23 @@ export function KassaPage() {
       
       {/* LEFT PANEL: SEARCH & PRODUCTS LIST */}
       <div className="flex-1 flex flex-col h-full min-h-0 min-w-0">
+        {/* Semantic H1 heading for SEO and Accessibility structure */}
+        <h1 className="sr-only">ProSant — Santexnika Mahsulotlari Kassa va POS Tizimi</h1>
         
         {/* Search & Categories Area */}
         <div className="bg-white p-3.5 sm:p-4 border-b border-slate-200/80 z-10 flex flex-col gap-3 shrink-0 shadow-xs">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="flex-1 relative">
+              <label htmlFor="product-search-input" className="sr-only">
+                Mahsulot qidirish
+              </label>
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 sm:w-6 sm:h-6" />
               <input 
                 type="text" 
+                id="product-search-input"
+                name="search"
+                aria-label="Mahsulot qidirish"
+                autoComplete="off"
                 className="w-full bg-slate-100 rounded-xl sm:rounded-2xl py-3 sm:py-3.5 pl-11 sm:pl-12 pr-14 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white transition-all font-medium border border-transparent focus:border-brand/30"
                 placeholder="Mahsulot qidirish (Masalan: tr 20)"
                 value={query}
@@ -877,18 +923,10 @@ export function KassaPage() {
 
         {/* Product List */}
         <div className="flex-1 overflow-y-auto min-h-0 p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 content-start scrollbar-hide pb-28 xl:pb-4">
-          {filteredProducts.map(product => (
+          {visibleProducts.map(product => (
             <div 
               key={product.id}
-              role="button"
-              tabIndex={0}
               onClick={() => openProductNumpad(product)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  openProductNumpad(product);
-                  e.preventDefault();
-                }
-              }}
               className={`group relative flex flex-col rounded-2xl border text-left cursor-pointer transition-all duration-150 select-none bg-white ${
                 selectedProduct?.id === product.id 
                   ? 'border-brand shadow-md ring-2 ring-brand/30 scale-[0.98]' 
@@ -900,10 +938,13 @@ export function KassaPage() {
                 <img 
                   src={product.image} 
                   alt={product.name}
+                  width={260}
+                  height={144}
                   loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=500&q=80';
+                    target.src = 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=260&q=65&auto=format&fit=crop';
                   }}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                 />
@@ -966,6 +1007,19 @@ export function KassaPage() {
               </div>
             </div>
           ))}
+
+          {/* Progressive Load More button */}
+          {filteredProducts.length > visibleCount && (
+            <div className="col-span-full py-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount(prev => prev + 24)}
+                className="px-6 py-2.5 bg-white hover:bg-slate-50 border border-slate-200/90 text-brand font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <span>Ko'proq ko'rsatish (+{filteredProducts.length - visibleCount} ta)</span>
+              </button>
+            </div>
+          )}
           
           {/* Issue 16: Empty search result UI */}
           {filteredProducts.length === 0 && (
@@ -1067,7 +1121,12 @@ export function KassaPage() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
+                        e.stopPropagation();
                         handleNumpadInput('OK');
+                      } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeNumpad();
                       }
                     }}
                     placeholder="1"

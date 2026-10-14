@@ -1,7 +1,8 @@
-import { Menu, LayoutDashboard, Package, History } from 'lucide-react';
+import { Menu, LayoutDashboard, Package, History, LogIn, LogOut } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import logoWeb from '../assets/logo/logo-web.jpg';
-import logoMobile from '../assets/logo/logo-mobile.jpg';
+import { useAuth } from '../context/AuthContext';
+import logoWeb from '../assets/logo/logo-web.webp';
+import logoMobile from '../assets/logo/logo-mobile.webp';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const location = useLocation();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   const navItems = [
     {
@@ -55,6 +57,10 @@ export function Header({ onMenuClick }: HeaderProps) {
           <img 
             src={logoWeb} 
             alt="ProSant - Santexnika Mahsulotlari" 
+            width={200}
+            height={40}
+            decoding="async"
+            fetchPriority="high"
             className="h-10 lg:h-11 w-auto max-w-[200px] lg:max-w-[240px] object-contain rounded-md" 
           />
         </Link>
@@ -68,6 +74,10 @@ export function Header({ onMenuClick }: HeaderProps) {
           <img 
             src={logoMobile} 
             alt="ProSant" 
+            width={32}
+            height={32}
+            decoding="async"
+            fetchPriority="high"
             className="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-100 group-hover:scale-105 transition-transform shrink-0" 
           />
           <span className="text-lg font-black text-slate-900 tracking-tight">
@@ -99,21 +109,60 @@ export function Header({ onMenuClick }: HeaderProps) {
         </nav>
       </div>
 
-      {/* RIGHT AREA: Mobile Title & Status Indicator */}
-      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-        {/* Title for mobile */}
-        <div className="md:hidden font-bold text-slate-800 text-sm truncate max-w-[140px]">
+      {/* RIGHT AREA: Mobile Title & Status Indicator & Auth */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Title for small tablet screens */}
+        <div className="hidden sm:block md:hidden font-bold text-slate-800 text-xs sm:text-sm truncate max-w-[100px]">
           {currentTitle}
         </div>
 
         {/* Pro Online Status Dot */}
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-bold shrink-0">
+        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-bold shrink-0">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          <span className="hidden sm:inline">Online</span>
+          <span>Online</span>
         </div>
+
+        {/* Auth Action */}
+        {isAuthenticated ? (
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* User Profile Chip (Desktop) */}
+            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 bg-slate-100/90 border border-slate-200/80 rounded-xl shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black uppercase shrink-0 shadow-xs">
+                {(user?.profile?.full_name || user?.email || 'U')[0]}
+              </div>
+              <div className="flex flex-col text-left leading-tight pr-1">
+                <span className="text-xs font-bold text-slate-800 max-w-[120px] truncate">
+                  {user?.profile?.full_name || user?.email?.split('@')[0]}
+                </span>
+                <span className="text-[10px] text-slate-500 capitalize font-medium">
+                  {user?.profile?.role === 'admin' ? 'Admin' : 'Kassir'}
+                </span>
+              </div>
+            </div>
+
+            {/* Katta va Qulay Chiqish Tugmasi (Responsive, Zero Layout Shift) */}
+            <button
+              onClick={() => signOut()}
+              title="Tizimdan chiqish"
+              className="h-10 px-3 sm:px-3.5 bg-rose-50 hover:bg-rose-100 active:bg-rose-200/80 text-rose-600 border border-rose-200/90 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all active:scale-95 shadow-xs shrink-0 cursor-pointer select-none"
+              aria-label="Tizimdan chiqish"
+            >
+              <LogOut className="w-4 h-4 shrink-0 stroke-[2.2]" />
+              <span className="whitespace-nowrap">Chiqish</span>
+            </button>
+          </div>
+        ) : (
+          <Link
+            to="/login"
+            className="h-10 px-3.5 sm:px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm shadow-blue-500/20 active:scale-95 transition-all shrink-0 cursor-pointer select-none"
+          >
+            <LogIn className="w-4 h-4 stroke-[2.2]" />
+            <span className="whitespace-nowrap">Kirish</span>
+          </Link>
+        )}
       </div>
     </header>
   );

@@ -7,18 +7,25 @@ import {
   User, Phone, Clock, ChevronDown
 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
+import { useProducts } from '../context/ProductContext';
 import { useBlockUpdate } from '../context/UpdateContext';
 import type { SaleRecord, PaymentMethod } from '../types';
 import { DateRangePicker } from '../components/DateRangePicker';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { CustomSelect } from '../components/CustomSelect';
-import { toISODate, isSameDay, formatDateTime, formatToDMY } from '../utils/dateUtils';
+import { toISODate, formatDateTime, formatToDMY } from '../utils/dateUtils';
 
 type SortOrderType = 'newest' | 'oldest' | 'highest' | 'lowest';
 
 export function TarixPage() {
   const { sales, deleteSale, clearAllSales, resetToDemoSales } = useSales();
+  const { products } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Fast product lookup map for calculating cost prices / profit
+  const productsMap = useMemo(() => {
+    return new Map(products.map(p => [p.id, p]));
+  }, [products]);
 
   // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,8 +93,9 @@ export function TarixPage() {
       const w = new Date(today.getTime() - 6 * 24 * 3600 * 1000);
       handleDateRangeChange(toISODate(w), toISODate(today));
     } else if (preset === 'month') {
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      handleDateRangeChange(toISODate(firstDay), toISODate(today));
+      // Oxirgi 1 oy (oxirgi 30 kunlik davr)
+      const m = new Date(today.getTime() - 29 * 24 * 3600 * 1000);
+      handleDateRangeChange(toISODate(m), toISODate(today));
     }
   };
 
@@ -103,10 +111,22 @@ export function TarixPage() {
     if (startDate === yStr && endDate === yStr) return 'yesterday';
     const wStr = toISODate(new Date(today.getTime() - 6 * 24 * 3600 * 1000));
     if (startDate === wStr && endDate === todayStr) return 'week';
-    const mStr = toISODate(new Date(today.getFullYear(), today.getMonth(), 1));
+    const mStr = toISODate(new Date(today.getTime() - 29 * 24 * 3600 * 1000));
     if (startDate === mStr && endDate === todayStr) return 'month';
+    const firstDay = toISODate(new Date(today.getFullYear(), today.getMonth(), 1));
+    if (startDate === firstDay && endDate === todayStr) return 'month';
     return 'custom';
   }, [startDate, endDate]);
+
+  // Dynamic user-friendly date range badge text
+  const dateRangeBadgeText = useMemo(() => {
+    if (!startDate && !endDate) return "Barcha davrlar bo'yicha";
+    if (currentPreset === 'today') return 'Bugungi kun hisobi';
+    if (currentPreset === 'yesterday') return 'Kecha hisobi';
+    if (currentPreset === 'week') return 'Oxirgi 7 kun hisobi';
+    if (currentPreset === 'month') return 'Oxirgi 1 oylik hisob';
+    return `${formatToDMY(startDate)} — ${formatToDMY(endDate)}`;
+  }, [startDate, endDate, currentPreset]);
 
   // Modal states
   const [selectedSale, setSelectedSale] = useState<SaleRecord | null>(null);
@@ -186,34 +206,45 @@ export function TarixPage() {
     });
   }, [sales, searchQuery, startDate, endDate, paymentFilter, sortOrder]);
 
-  // Summary Metrics
+  // Summary Metrics dynamically calculated from filteredSales (so date range filter updates the numbers)
   const stats = useMemo(() => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const totalRevenue = filteredSales.reduce((sum, s) => sum + s.total, 0);
+    const totalCount = filteredSales.length;
 
-    const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
-    const totalCount = sales.length;
+    // Foyda (belgilangan sotish narxidan qolgan sof foyda):
+    // Jami tushum - Jami tannarx (asl narx)
+    let totalCost = 0;
+    for (const sale of filteredSales) {
+      for (const item of sale.items) {
+        const prod = productsMap.get(item.productId);
+        const cp = typeof item.costPrice === 'number' && item.costPrice > 0
+          ? item.costPrice
+          : (prod && typeof prod.costPrice === 'number' && prod.costPrice > 0
+              ? prod.costPrice
+              : item.price * 0.7); // 30% margin fallback for older records without costPrice
+        totalCost += cp * item.quantity;
+      }
+    }
 
-    const todaySales = sales.filter(s => isSameDay(new Date(s.createdAt), today));
-    const todayRevenue = todaySales.reduce((sum, s) => sum + s.total, 0);
-    const todayCount = todaySales.length;
+    const totalProfit = Math.round(totalRevenue - totalCost);
+    const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0';
 
-    // Payment methods breakdown
+    // Payment methods breakdown for the filtered period
     const methods = {
-      naqd: sales.filter(s => s.paymentMethod === 'naqd').reduce((sum, s) => sum + s.total, 0),
-      karta: sales.filter(s => s.paymentMethod === 'karta').reduce((sum, s) => sum + s.total, 0),
-      transfer: sales.filter(s => s.paymentMethod === 'transfer').reduce((sum, s) => sum + s.total, 0),
-      nasiya: sales.filter(s => s.paymentMethod === 'nasiya').reduce((sum, s) => sum + s.total, 0),
+      naqd: filteredSales.filter(s => s.paymentMethod === 'naqd').reduce((sum, s) => sum + s.total, 0),
+      karta: filteredSales.filter(s => s.paymentMethod === 'karta').reduce((sum, s) => sum + s.total, 0),
+      transfer: filteredSales.filter(s => s.paymentMethod === 'transfer').reduce((sum, s) => sum + s.total, 0),
+      nasiya: filteredSales.filter(s => s.paymentMethod === 'nasiya').reduce((sum, s) => sum + s.total, 0),
     };
 
     return {
       totalRevenue,
+      totalProfit,
+      profitMargin,
       totalCount,
-      todayRevenue,
-      todayCount,
       methods,
     };
-  }, [sales]);
+  }, [filteredSales, productsMap]);
 
   // Payment badge styles
   const getPaymentBadge = (method: PaymentMethod) => {
@@ -330,73 +361,113 @@ export function TarixPage() {
         </div>
       </div>
 
-      {/* 2. STATS OVERVIEW CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Total Revenue */}
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 rounded-3xl border border-transparent shadow-md shadow-blue-600/20 relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-100">Jami tushum</span>
-            <div className="p-2.5 rounded-xl bg-white/20 text-white">
-              <DollarSign className="w-5 h-5" />
-            </div>
+      {/* 2. STATS OVERVIEW CARDS: 2 KATTA TITLE (JAMI TUSHUM & FOYDA) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        
+        {/* KATTA TITLE 1: JAMI TUSHUM */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl shadow-indigo-900/20 border border-white/10 group transition-all hover:shadow-2xl">
+          <div className="absolute -right-8 -bottom-8 w-44 h-44 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute right-5 top-5 w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md border border-white/10 shadow-inner">
+            <DollarSign className="w-6 h-6 text-blue-200" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black leading-none mb-1">
-            {stats.totalRevenue.toLocaleString()} <span className="text-sm font-bold text-blue-200">UZS</span>
+
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-black uppercase tracking-widest text-blue-200/90 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-xs">
+              Jami tushum
+            </span>
+            <span className="text-[11px] font-bold text-blue-200/70">
+              • {dateRangeBadgeText}
+            </span>
           </div>
-          <p className="text-xs font-semibold text-blue-100 flex items-center gap-1">
-            <ShoppingBag className="w-3.5 h-3.5" />
-            Jami {stats.totalCount} ta sotuv orqali
-          </p>
+
+          <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+            <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white drop-shadow-xs">
+              {stats.totalRevenue.toLocaleString()}
+            </span>
+            <span className="text-base sm:text-lg font-bold text-blue-200">
+              UZS
+            </span>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-blue-100/90 font-semibold flex-wrap gap-2">
+            <span className="flex items-center gap-1.5">
+              <ShoppingBag className="w-4 h-4 text-blue-300" />
+              <span>{stats.totalCount} ta chek bo'yicha savdo</span>
+            </span>
+            <span className="bg-white/15 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white">
+              {startDate && endDate ? `${formatToDMY(startDate)} — ${formatToDMY(endDate)}` : 'Barcha davrlar'}
+            </span>
+          </div>
         </div>
 
-        {/* Today's Revenue */}
-        <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 rounded-3xl border border-transparent shadow-md shadow-emerald-600/20 relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-100">Bugungi tushum</span>
-            <div className="p-2.5 rounded-xl bg-white/20 text-white">
-              <TrendingUp className="w-5 h-5" />
-            </div>
+        {/* KATTA TITLE 2: FOYDA (Belgilangan narxdan tannarx chegirilgan sof foyda) */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl shadow-teal-900/20 border border-white/10 group transition-all hover:shadow-2xl">
+          <div className="absolute -right-8 -bottom-8 w-44 h-44 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute right-5 top-5 w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md border border-white/10 shadow-inner">
+            <TrendingUp className="w-6 h-6 text-emerald-200" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black leading-none mb-1">
-            {stats.todayRevenue.toLocaleString()} <span className="text-sm font-bold text-emerald-200">UZS</span>
+
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-200/90 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-xs">
+              Sof Foyda
+            </span>
+            <span className="text-[11px] font-bold text-emerald-200/70">
+              • {dateRangeBadgeText}
+            </span>
           </div>
-          <p className="text-xs font-semibold text-emerald-100 flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" />
-            Bugun {stats.todayCount} ta xarid amalga oshirildi
-          </p>
+
+          <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+            <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white drop-shadow-xs">
+              {stats.totalProfit >= 0 ? '+' : ''}{stats.totalProfit.toLocaleString()}
+            </span>
+            <span className="text-base sm:text-lg font-bold text-emerald-200">
+              UZS
+            </span>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-emerald-100/90 font-semibold flex-wrap gap-2">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+              <span>Belgilangan narxdan qolgan foyda</span>
+            </span>
+            <span className="bg-emerald-400/20 text-emerald-200 border border-emerald-300/30 px-2.5 py-0.5 rounded-full text-[11px] font-black">
+              {stats.profitMargin}% rentabellik
+            </span>
+          </div>
         </div>
 
-        {/* Payment Methods breakdown summary */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">To'lov turlari</span>
-            <span className="text-xs font-bold text-slate-500">{stats.totalCount} ta chek</span>
+      </div>
+
+      {/* TO'LOV TURLARI BO'YICHA TAQSIMOT (Filtrlangan sana bo'yicha) */}
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">
+          <CreditCard className="w-4 h-4 text-slate-400" />
+          <span>To'lov turlari bo'yicha tushum ({dateRangeBadgeText}):</span>
+        </div>
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-900 border border-emerald-100 rounded-xl text-xs font-bold">
+            <span className="text-emerald-700 flex items-center gap-1">
+              <Banknote className="w-3.5 h-3.5" /> Naqd:
+            </span>
+            <span className="font-black">{stats.methods.naqd.toLocaleString()} UZS</span>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-2 bg-emerald-50/70 rounded-xl border border-emerald-100/60">
-              <span className="text-emerald-700 font-bold block">Naqd</span>
-              <span className="font-extrabold text-slate-800 text-[13px]">
-                {stats.methods.naqd > 1000000 ? `${(stats.methods.naqd / 1000000).toFixed(1)}M` : stats.methods.naqd.toLocaleString()} UZS
-              </span>
-            </div>
-            <div className="p-2 bg-blue-50/70 rounded-xl border border-blue-100/60">
-              <span className="text-blue-700 font-bold block">Karta</span>
-              <span className="font-extrabold text-slate-800 text-[13px]">
-                {stats.methods.karta > 1000000 ? `${(stats.methods.karta / 1000000).toFixed(1)}M` : stats.methods.karta.toLocaleString()} UZS
-              </span>
-            </div>
-            <div className="p-2 bg-purple-50/70 rounded-xl border border-purple-100/60">
-              <span className="text-purple-700 font-bold block">O'tkazma</span>
-              <span className="font-extrabold text-slate-800 text-[13px]">
-                {stats.methods.transfer > 1000000 ? `${(stats.methods.transfer / 1000000).toFixed(1)}M` : stats.methods.transfer.toLocaleString()} UZS
-              </span>
-            </div>
-            <div className="p-2 bg-amber-50/70 rounded-xl border border-amber-100/60">
-              <span className="text-amber-700 font-bold block">Nasiya</span>
-              <span className="font-extrabold text-slate-800 text-[13px]">
-                {stats.methods.nasiya > 1000000 ? `${(stats.methods.nasiya / 1000000).toFixed(1)}M` : stats.methods.nasiya.toLocaleString()} UZS
-              </span>
-            </div>
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-sky-50 text-sky-900 border border-sky-100 rounded-xl text-xs font-bold">
+            <span className="text-sky-700 flex items-center gap-1">
+              <CreditCard className="w-3.5 h-3.5" /> Karta:
+            </span>
+            <span className="font-black">{stats.methods.karta.toLocaleString()} UZS</span>
+          </div>
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-purple-50 text-purple-900 border border-purple-100 rounded-xl text-xs font-bold">
+            <span className="text-purple-700 flex items-center gap-1">
+              <Building2 className="w-3.5 h-3.5" /> O'tkazma:
+            </span>
+            <span className="font-black">{stats.methods.transfer.toLocaleString()} UZS</span>
+          </div>
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-amber-50 text-amber-900 border border-amber-100 rounded-xl text-xs font-bold">
+            <span className="text-amber-700 flex items-center gap-1">
+              <FileText className="w-3.5 h-3.5" /> Nasiya:
+            </span>
+            <span className="font-black">{stats.methods.nasiya.toLocaleString()} UZS</span>
           </div>
         </div>
       </div>
@@ -407,9 +478,15 @@ export function TarixPage() {
           
           {/* Search box */}
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <label htmlFor="tarix-search-input" className="sr-only">
+              Sotuvlar tarixini qidirish
+            </label>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
             <input 
+              id="tarix-search-input"
+              name="search"
               type="text" 
+              aria-label="Sotuvlar tarixini qidirish"
               className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-12 pr-10 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white transition-all text-slate-800 placeholder:text-slate-400"
               placeholder="Qidiruv: Chek raqami (#1054), mijoz ismi, telefon, mahsulot..."
               value={searchQuery}
@@ -480,7 +557,7 @@ export function TarixPage() {
             { id: 'today' as const, label: 'Bugun' },
             { id: 'yesterday' as const, label: 'Kecha' },
             { id: 'week' as const, label: 'Oxirgi 7 kun' },
-            { id: 'month' as const, label: 'Shu oy' },
+            { id: 'month' as const, label: 'Oxirgi 1 oy' },
           ].map(tab => (
             <button
               key={tab.id}

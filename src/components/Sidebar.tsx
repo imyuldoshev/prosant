@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { LayoutDashboard, Package, History, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { LayoutDashboard, Package, History, X, LogIn, LogOut } from 'lucide-react';
 import { MenuButton } from './MenuButton';
-import logoMobile from '../assets/logo/logo-mobile.jpg';
+import { useAuth } from '../context/AuthContext';
+import logoMobile from '../assets/logo/logo-mobile.webp';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -9,6 +11,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { user, isAuthenticated, signOut } = useAuth();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -91,7 +94,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="p-6 flex justify-between items-center border-b border-white/10 h-[72px]">
           <div className="flex items-center gap-3">
-            <img src={logoMobile} alt="ProSant" className="w-10 h-10 rounded-xl object-contain shadow-md" />
+            <img src={logoMobile} alt="ProSant" width={40} height={40} decoding="async" className="w-10 h-10 rounded-xl object-contain shadow-md" />
             <h2 className="text-2xl font-bold tracking-wider">ProSant</h2>
           </div>
           <button 
@@ -121,6 +124,46 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             to="/tarix" 
             onClick={onClose} 
           />
+        </div>
+
+        {/* Bottom Auth Section */}
+        <div className="p-4 border-t border-white/10 bg-slate-950/40">
+          {isAuthenticated ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2.5 px-3 py-2 bg-white/5 border border-white/10 rounded-xl">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black uppercase shrink-0 shadow-xs">
+                  {(user?.profile?.full_name || user?.email || 'U')[0]}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold text-white truncate">
+                    {user?.profile?.full_name || user?.email?.split('@')[0]}
+                  </span>
+                  <span className="text-[10px] text-slate-400 capitalize font-medium">
+                    {user?.profile?.role === 'admin' ? 'Administrator' : 'Kassir'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  signOut();
+                  onClose();
+                }}
+                className="w-full h-11 flex items-center justify-center gap-2 px-4 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer shadow-xs select-none"
+              >
+                <LogOut className="w-4 h-4 stroke-[2.2]" />
+                <span>Tizimdan chiqish</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              onClick={onClose}
+              className="w-full h-11 flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-98 cursor-pointer select-none"
+            >
+              <LogIn className="w-4 h-4 stroke-[2.2]" />
+              <span>Tizimga kirish</span>
+            </Link>
+          )}
         </div>
       </div>
     </>

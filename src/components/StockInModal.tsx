@@ -59,7 +59,7 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
+    const raw = e.target.value.replace(',', '.');
     // Allow digits and at most one dot
     if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
       setAmountStr(raw);

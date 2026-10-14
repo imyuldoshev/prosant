@@ -1,6 +1,7 @@
 export interface Product {
   id: string;
   name: string;
+  costPrice?: number;
   price: number;
   unit: string;
   category: string;
@@ -22,6 +23,7 @@ export interface SaleItem {
   productName: string;
   category?: string;
   quantity: number;
+  costPrice?: number;
   price: number;
   unit: string;
   total: number;

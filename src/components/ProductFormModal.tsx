@@ -42,6 +42,7 @@ export function ProductFormModal({
   // Form fields
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
+  const [costPrice, setCostPrice] = useState('');
   const [price, setPrice] = useState('10000');
   const [unit, setUnit] = useState('dona');
   const [stock, setStock] = useState('10');
@@ -52,8 +53,8 @@ export function ProductFormModal({
   const [isAddingNewCat, setIsAddingNewCat] = useState(false);
   const [newCatInput, setNewCatInput] = useState('');
 
-  // Active numeric field for Calculator numpad: 'price' | 'minStock' | 'stock' | null
-  const [activeNumField, setActiveNumField] = useState<'price' | 'minStock' | 'stock' | null>(null);
+  // Active numeric field for Calculator numpad: 'costPrice' | 'price' | 'minStock' | 'stock' | null
+  const [activeNumField, setActiveNumField] = useState<'costPrice' | 'price' | 'minStock' | 'stock' | null>(null);
 
   // Camera capture modal state
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -69,6 +70,10 @@ export function ProductFormModal({
   const [error, setError] = useState<string | null>(null);
 
   const availableCategories = useMemo(() => categories.filter(c => c !== 'Barchasi'), [categories]);
+
+  // Track modal open/edit transition to only initialize on fresh open or edit target switch
+  const prevIsOpenRef = useRef(false);
+  const prevEditIdRef = useRef<string | undefined>(undefined);
 
   // Handle camera stream cleanup
   const stopCamera = useCallback(() => {
@@ -86,51 +91,59 @@ export function ProductFormModal({
     };
   }, [stopCamera]);
 
-  // Initialize or reset form when opened or productToEdit changes
+  // Initialize form ONLY when opened or when product to edit switches
   useEffect(() => {
     if (!isOpen) {
       stopCamera();
+      prevIsOpenRef.current = false;
       return;
     }
 
-    if (productToEdit) {
-      setName(productToEdit.name);
-      setCategory(productToEdit.category);
-      setPrice(String(productToEdit.price));
-      setUnit(productToEdit.unit);
-      setStock(String(productToEdit.stock));
-      setMinStock(productToEdit.minStock !== undefined ? String(productToEdit.minStock) : '');
-      setImage(productToEdit.image || DEFAULT_IMAGE);
-      setDuplicateMatch(null);
-      setError(null);
-      setIsAddingNewCat(false);
-      setNewCatInput('');
-      setActiveNumField(null);
-    } else {
-      setName('');
-      setCategory(categories.find(c => c !== 'Barchasi') || 'Trubalar');
-      setPrice('');
-      setUnit('dona');
-      setStock('0');
-      setMinStock('');
-      setImage(DEFAULT_IMAGE);
+    const wasJustOpened = !prevIsOpenRef.current;
+    const editTargetChanged = productToEdit?.id !== prevEditIdRef.current;
+    prevIsOpenRef.current = true;
+    prevEditIdRef.current = productToEdit?.id;
+
+    if (wasJustOpened || editTargetChanged) {
+      if (productToEdit) {
+        setName(productToEdit.name || '');
+        setCategory(productToEdit.category || '');
+        setCostPrice(productToEdit.costPrice !== undefined && productToEdit.costPrice !== null ? String(productToEdit.costPrice) : '');
+        setPrice(String(productToEdit.price ?? ''));
+        setUnit(productToEdit.unit || 'dona');
+        setStock(String(productToEdit.stock ?? '0'));
+        setMinStock(productToEdit.minStock !== undefined && productToEdit.minStock !== null ? String(productToEdit.minStock) : '');
+        setImage(productToEdit.image || DEFAULT_IMAGE);
+      } else {
+        setName('');
+        const initialCat = categories.find(c => c !== 'Barchasi') || 'Trubalar';
+        setCategory(initialCat);
+        setCostPrice('');
+        setPrice('');
+        setUnit('dona');
+        setStock('0');
+        setMinStock('');
+        setImage(DEFAULT_IMAGE);
+      }
       setDuplicateMatch(null);
       setError(null);
       setIsAddingNewCat(false);
       setNewCatInput('');
       setActiveNumField(null);
     }
-  }, [productToEdit, isOpen, stopCamera, categories]);
+  }, [isOpen, productToEdit, stopCamera, categories]);
 
   // Auto-scroll input into view when on-screen calculator opens so it is never hidden
   useEffect(() => {
     if (activeNumField) {
       setTimeout(() => {
-        const id = activeNumField === 'price' 
-          ? 'prod-price-input' 
-          : activeNumField === 'stock' 
-            ? 'prod-stock-input' 
-            : 'prod-min-stock-input';
+        const id = activeNumField === 'costPrice'
+          ? 'prod-cost-price-input'
+          : activeNumField === 'price' 
+            ? 'prod-price-input' 
+            : activeNumField === 'stock' 
+              ? 'prod-stock-input' 
+              : 'prod-min-stock-input';
         const el = document.getElementById(id);
         el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 40);
@@ -223,12 +236,19 @@ export function ProductFormModal({
     e.target.value = '';
   };
 
-  // Real-time duplicate check
+  // Real-time duplicate check with safe fallback
   const handleNameChange = (val: string) => {
     setName(val);
     setError(null);
-    const match = checkDuplicate(val, productToEdit?.id);
-    setDuplicateMatch(match || null);
+    try {
+      if (checkDuplicate) {
+        const match = checkDuplicate(val, productToEdit?.id);
+        setDuplicateMatch(match || null);
+      }
+    } catch (e) {
+      console.warn('Duplicate check error:', e);
+      setDuplicateMatch(null);
+    }
   };
 
   // Inline Category Add
@@ -250,13 +270,18 @@ export function ProductFormModal({
       return;
     }
 
-    const currentVal = activeNumField === 'price' ? price : activeNumField === 'stock' ? stock : minStock;
+    const currentVal = (
+      activeNumField === 'costPrice' ? costPrice : 
+      activeNumField === 'price' ? price : 
+      activeNumField === 'stock' ? stock : 
+      minStock
+    ) || '';
 
     let updatedVal = currentVal;
     if (val === 'C') {
       updatedVal = '';
     } else if (val === 'BACKSPACE') {
-      updatedVal = currentVal.slice(0, -1);
+      updatedVal = currentVal.length > 0 ? currentVal.slice(0, -1) : '';
     } else if (val === '.') {
       if (!currentVal) {
         updatedVal = '0.';
@@ -275,10 +300,23 @@ export function ProductFormModal({
       }
     }
 
-    if (activeNumField === 'price') setPrice(updatedVal);
+    if (activeNumField === 'costPrice') setCostPrice(updatedVal);
+    else if (activeNumField === 'price') setPrice(updatedVal);
     else if (activeNumField === 'stock') setStock(updatedVal);
     else if (activeNumField === 'minStock') setMinStock(updatedVal);
   };
+
+  // Real-time Profit and Margin calculation if cost price and selling price are provided
+  const profitCalc = useMemo(() => {
+    const cp = parseFloat(costPrice);
+    const sp = parseFloat(price);
+    if (!isNaN(cp) && !isNaN(sp) && cp > 0 && sp > 0) {
+      const profit = sp - cp;
+      const percent = ((profit / cp) * 100).toFixed(1);
+      return { profit, percent };
+    }
+    return null;
+  }, [costPrice, price]);
 
   if (!isOpen) return null;
 
@@ -301,8 +339,17 @@ export function ProductFormModal({
 
     const parsedPrice = parseFloat(price);
     if (isNaN(parsedPrice) || parsedPrice < 0) {
-      setError('Narxni to\'g\'ri kiriting!');
+      setError('Belgilangan narxni to\'g\'ri kiriting!');
       return;
+    }
+
+    // Cost price is optional
+    let parsedCostPrice: number | undefined = undefined;
+    if (costPrice.trim() !== '') {
+      const cp = parseFloat(costPrice);
+      if (!isNaN(cp) && cp >= 0) {
+        parsedCostPrice = cp;
+      }
     }
 
     // Default stock: preserve existing product's stock or start with 0
@@ -320,6 +367,7 @@ export function ProductFormModal({
     onSave({
       name: trimmedName,
       category: category || availableCategories[0] || 'Umumiy',
+      costPrice: parsedCostPrice,
       price: parsedPrice,
       unit,
       stock: finalStock,
@@ -516,67 +564,154 @@ export function ProductFormModal({
             </div>
           </div>
 
-          {/* 4. Numeric Inputs: Narxi, Boshlang'ich qoldiq (yangi tovar uchun) and Eng kam qoldiq */}
-          <div className={`grid grid-cols-1 ${!isEditing ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
-            {/* Price */}
-            <div className="flex flex-col gap-1">
-              <label 
-                htmlFor="prod-price-input" 
-                className="text-xs font-bold text-slate-700 flex items-center justify-between"
-              >
-                <span>Narxi (UZS) *</span>
-                <button
-                  type="button"
-                  onClick={() => setActiveNumField(prev => prev === 'price' ? null : 'price')}
-                  className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
-                    activeNumField === 'price' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
-                  }`}
-                  title="On-screen kalkulyatorni ochish"
+          {/* 4. Asosiy ko'rsatkichlar: Asl narx, Belgilangan narx, Dastlabki kirim, Eng kam qoldiq */}
+          <div className="flex flex-col gap-3">
+            {/* Narxlar bloki: Asl narx (tannarx) va Belgilangan narx (sotish narxi) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Asl narx (Tannarx / Kelish narxi) */}
+              <div className="flex flex-col gap-1">
+                <label 
+                  htmlFor="prod-cost-price-input" 
+                  className="text-xs font-bold text-slate-700 flex items-center justify-between"
                 >
-                  <Calculator className="w-3.5 h-3.5" />
-                </button>
-              </label>
-              <div 
-                className={`flex items-center bg-slate-100 rounded-2xl border-2 transition-all p-1.5 ${
-                  activeNumField === 'price' ? 'border-brand bg-white ring-2 ring-brand/20' : 'border-transparent'
-                }`}
-              >
-                <input
-                  id="prod-price-input"
-                  type="text"
-                  inputMode="decimal"
-                  required
-                  value={price}
-                  onFocus={() => {
-                    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-                      setActiveNumField('price');
-                    }
-                  }}
-                  onChange={e => {
-                    const v = e.target.value;
-                    if (v === '' || /^\d*\.?\d*$/.test(v)) setPrice(v);
-                  }}
-                  placeholder="0"
-                  className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2"
-                />
+                  <span className="flex items-center gap-1.5">
+                    <span>Asl narxi (UZS)</span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md">
+                      Kelish narxi
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNumField(prev => prev === 'costPrice' ? null : 'costPrice')}
+                    className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
+                      activeNumField === 'costPrice' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
+                    }`}
+                    title="On-screen kalkulyatorni ochish/yopish"
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                  </button>
+                </label>
+                <div 
+                  className={`flex items-center bg-slate-100 rounded-2xl border-2 transition-all p-1.5 ${
+                    activeNumField === 'costPrice' ? 'border-brand bg-white ring-2 ring-brand/20' : 'border-transparent'
+                  }`}
+                >
+                  <input
+                    id="prod-cost-price-input"
+                    type="text"
+                    inputMode="decimal"
+                    value={costPrice}
+                    onFocus={e => {
+                      const target = e.currentTarget;
+                      requestAnimationFrame(() => target.select());
+                    }}
+                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
+                    onChange={e => {
+                      const v = e.target.value.replace(',', '.');
+                      if (v === '' || /^\d*\.?\d*$/.test(v)) setCostPrice(v);
+                    }}
+                    placeholder="0"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
+                  />
+                  <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">UZS</span>
+                </div>
+              </div>
+
+              {/* Belgilangan narx (Sotish narxi) */}
+              <div className="flex flex-col gap-1">
+                <label 
+                  htmlFor="prod-price-input" 
+                  className="text-xs font-bold text-slate-700 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span>Belgilangan narxi (UZS) *</span>
+                    <span className="text-[10px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded-md">
+                      Sotish narxi
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNumField(prev => prev === 'price' ? null : 'price')}
+                    className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
+                      activeNumField === 'price' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
+                    }`}
+                    title="On-screen kalkulyatorni ochish/yopish"
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                  </button>
+                </label>
+                <div 
+                  className={`flex items-center bg-slate-100 rounded-2xl border-2 transition-all p-1.5 ${
+                    activeNumField === 'price' ? 'border-brand bg-white ring-2 ring-brand/20' : 'border-transparent'
+                  }`}
+                >
+                  <input
+                    id="prod-price-input"
+                    type="text"
+                    inputMode="decimal"
+                    required
+                    value={price}
+                    onFocus={e => {
+                      const target = e.currentTarget;
+                      requestAnimationFrame(() => target.select());
+                    }}
+                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
+                    onChange={e => {
+                      const v = e.target.value.replace(',', '.');
+                      if (v === '' || /^\d*\.?\d*$/.test(v)) setPrice(v);
+                    }}
+                    placeholder="0"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
+                  />
+                  <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">UZS</span>
+                </div>
               </div>
             </div>
 
-            {/* Initial Stock (Only for new products) */}
-            {!isEditing && (
+            {/* Real-time Profit / Margin Preview Banner if both prices are entered */}
+            {profitCalc && (
+              <div className={`p-2.5 sm:p-3 rounded-2xl border flex items-center justify-between text-xs font-bold transition-all animate-in fade-in ${
+                profitCalc.profit >= 0 
+                  ? 'bg-emerald-50/80 border-emerald-200/90 text-emerald-900' 
+                  : 'bg-rose-50/80 border-rose-200/90 text-rose-900'
+              }`}>
+                <span className="flex items-center gap-2">
+                  <span className="text-slate-600 font-semibold">Kutilayotgan foyda:</span>
+                  <span className={`font-black ${profitCalc.profit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    {profitCalc.profit >= 0 ? '+' : ''}{profitCalc.profit.toLocaleString()} UZS / {unit}
+                  </span>
+                </span>
+                <span className={`px-2.5 py-1 rounded-xl text-[11px] font-black border ${
+                  profitCalc.profit >= 0 
+                    ? 'bg-white text-emerald-800 border-emerald-300 shadow-2xs' 
+                    : 'bg-white text-rose-800 border-rose-300 shadow-2xs'
+                }`}>
+                  {profitCalc.percent}% marja
+                </span>
+              </div>
+            )}
+
+            {/* Qoldiqlar bloki: Dastlabki kirim va Eng kam qoldiq */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Dastlabki kirim (Boshlang'ich qoldiq) */}
               <div className="flex flex-col gap-1">
                 <label 
                   htmlFor="prod-stock-input" 
                   className="text-xs font-bold text-slate-700 flex items-center justify-between"
                 >
-                  <span className="truncate">Boshlang'ich qoldiq</span>
+                  <span className="flex items-center gap-1.5">
+                    <span>{isEditing ? 'Joriy qoldiq' : 'Dastlabki kirim'}</span>
+                    <span className="text-[10px] font-bold text-slate-600 bg-slate-200/80 px-1.5 py-0.5 rounded-md">
+                      {isEditing ? 'Ombordagi' : 'Boshlang\'ich miqdor'}
+                    </span>
+                  </span>
                   <button
                     type="button"
                     onClick={() => setActiveNumField(prev => prev === 'stock' ? null : 'stock')}
                     className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
                       activeNumField === 'stock' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
                     }`}
-                    title="On-screen kalkulyatorni ochish"
+                    title="On-screen kalkulyatorni ochish/yopish"
                   >
                     <Calculator className="w-3.5 h-3.5" />
                   </button>
@@ -591,63 +726,67 @@ export function ProductFormModal({
                     type="text"
                     inputMode="decimal"
                     value={stock}
-                    onFocus={() => {
-                      if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-                        setActiveNumField('stock');
-                      }
+                    onFocus={e => {
+                      const target = e.currentTarget;
+                      requestAnimationFrame(() => target.select());
                     }}
+                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
                     onChange={e => {
-                      const v = e.target.value;
+                      const v = e.target.value.replace(',', '.');
                       if (v === '' || /^\d*\.?\d*$/.test(v)) setStock(v);
                     }}
                     placeholder="0"
-                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
                   />
                   <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">{unit}</span>
                 </div>
               </div>
-            )}
 
-            {/* Min Stock (Optional) */}
-            <div className="flex flex-col gap-1">
-              <label 
-                htmlFor="prod-min-stock-input" 
-                className="text-xs font-bold text-slate-700 flex items-center justify-between"
-              >
-                <span className="truncate">Eng kam qoldiq <span className="font-normal text-slate-400 text-[10px]">(ixtiyoriy)</span></span>
-                <button
-                  type="button"
-                  onClick={() => setActiveNumField(prev => prev === 'minStock' ? null : 'minStock')}
-                  className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
-                    activeNumField === 'minStock' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
-                  }`}
-                  title="On-screen kalkulyatorni ochish"
+              {/* Eng kam qoldiq */}
+              <div className="flex flex-col gap-1">
+                <label 
+                  htmlFor="prod-min-stock-input" 
+                  className="text-xs font-bold text-slate-700 flex items-center justify-between"
                 >
-                  <Calculator className="w-3.5 h-3.5" />
-                </button>
-              </label>
-              <div 
-                className={`flex items-center bg-slate-100 rounded-2xl border-2 transition-all p-1.5 ${
-                  activeNumField === 'minStock' ? 'border-brand bg-white ring-2 ring-brand/20' : 'border-transparent'
-                }`}
-              >
-                <input
-                  id="prod-min-stock-input"
-                  type="text"
-                  inputMode="decimal"
-                  value={minStock}
-                  onFocus={() => {
-                    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-                      setActiveNumField('minStock');
-                    }
-                  }}
-                  onChange={e => {
-                    const v = e.target.value;
-                    if (v === '' || /^\d*\.?\d*$/.test(v)) setMinStock(v);
-                  }}
-                  placeholder="Masalan: 5"
-                  className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2"
-                />
+                  <span className="flex items-center gap-1.5">
+                    <span>Eng kam qoldiq</span>
+                    <span className="text-[10px] font-normal text-slate-400">(ogohlantirish limiti)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNumField(prev => prev === 'minStock' ? null : 'minStock')}
+                    className={`hidden lg:flex p-1 rounded-lg text-xs items-center gap-1 font-semibold transition-colors cursor-pointer ${
+                      activeNumField === 'minStock' ? 'bg-brand text-white' : 'text-slate-400 hover:text-brand'
+                    }`}
+                    title="On-screen kalkulyatorni ochish/yopish"
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                  </button>
+                </label>
+                <div 
+                  className={`flex items-center bg-slate-100 rounded-2xl border-2 transition-all p-1.5 ${
+                    activeNumField === 'minStock' ? 'border-brand bg-white ring-2 ring-brand/20' : 'border-transparent'
+                  }`}
+                >
+                  <input
+                    id="prod-min-stock-input"
+                    type="text"
+                    inputMode="decimal"
+                    value={minStock}
+                    onFocus={e => {
+                      const target = e.currentTarget;
+                      requestAnimationFrame(() => target.select());
+                    }}
+                    onClick={e => (e.currentTarget as HTMLInputElement).select()}
+                    onChange={e => {
+                      const v = e.target.value.replace(',', '.');
+                      if (v === '' || /^\d*\.?\d*$/.test(v)) setMinStock(v);
+                    }}
+                    placeholder="Masalan: 5"
+                    className="w-full text-base sm:text-lg font-black text-slate-900 bg-transparent focus:outline-none px-2 select-text"
+                  />
+                  <span className="text-xs font-bold text-slate-400 pr-2 shrink-0">{unit}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -660,11 +799,13 @@ export function ProductFormModal({
                   <Calculator className="w-4 h-4" />
                   <span>
                     Kalkulyator:{' '}
-                    {activeNumField === 'price' 
-                      ? 'Narx kiritish' 
-                      : activeNumField === 'stock' 
-                        ? 'Boshlang\'ich qoldiq' 
-                        : 'Eng kam qoldiq'}
+                    {activeNumField === 'costPrice'
+                      ? 'Asl narx (kelish narxi)'
+                      : activeNumField === 'price' 
+                        ? 'Belgilangan narx (sotish)' 
+                        : activeNumField === 'stock' 
+                          ? 'Dastlabki kirim' 
+                          : 'Eng kam qoldiq'}
                   </span>
                 </span>
                 <button
@@ -678,18 +819,19 @@ export function ProductFormModal({
 
               {/* Quick Presets for fast entry */}
               <div className="grid grid-cols-4 gap-2 max-w-md mx-auto w-full pt-1">
-                {(activeNumField === 'price' ? [1000, 5000, 10000, 50000] : [1, 5, 10, 50]).map(preset => (
+                {(activeNumField === 'costPrice' || activeNumField === 'price' ? [1000, 5000, 10000, 50000] : [1, 5, 10, 50]).map(preset => (
                   <button
                     key={preset}
                     type="button"
                     onClick={() => {
-                      if (activeNumField === 'price') setPrice(preset.toString());
+                      if (activeNumField === 'costPrice') setCostPrice(preset.toString());
+                      else if (activeNumField === 'price') setPrice(preset.toString());
                       else if (activeNumField === 'stock') setStock(preset.toString());
                       else if (activeNumField === 'minStock') setMinStock(preset.toString());
                     }}
                     className="py-2 rounded-xl bg-brand/10 hover:bg-brand/20 border border-brand/30 font-black text-xs text-brand active:scale-95 transition-all cursor-pointer select-none"
                   >
-                    +{preset} {activeNumField === 'price' ? 'UZS' : unit}
+                    +{preset} {activeNumField === 'costPrice' || activeNumField === 'price' ? 'UZS' : unit}
                   </button>
                 ))}
               </div>

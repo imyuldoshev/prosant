@@ -74,25 +74,26 @@ export function TovarlarPage() {
 
   // Duplicate check logic (case-insensitive, trimming whitespace)
   const checkDuplicate = (name: string, excludeId?: string): Product | undefined => {
+    if (!name || typeof name !== 'string') return undefined;
     const trimmed = name.trim().toLowerCase();
     if (!trimmed) return undefined;
-    return products.find(p => p.id !== excludeId && p.name.trim().toLowerCase() === trimmed);
+    return products.find(p => p && p.id !== excludeId && typeof p.name === 'string' && p.name.trim().toLowerCase() === trimmed);
   };
 
   // Filtered products list
   const filteredProducts = useMemo(() => {
     let list = products;
     if (onlyLowStock) {
-      list = list.filter(p => (Number(p.stock) || 0) <= 5);
+      list = list.filter(p => (Number(p?.stock) || 0) <= 5);
     }
     if (selectedCategory !== 'Barchasi') {
-      list = list.filter(p => p.category === selectedCategory);
+      list = list.filter(p => p?.category === selectedCategory);
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(p => 
-        p.name.toLowerCase().includes(q) || 
-        p.category.toLowerCase().includes(q)
+        (typeof p?.name === 'string' && p.name.toLowerCase().includes(q)) || 
+        (typeof p?.category === 'string' && p.category.toLowerCase().includes(q))
       );
     }
     return list;
@@ -100,11 +101,11 @@ export function TovarlarPage() {
 
   // Statistics
   const totalStockCount = useMemo(() => {
-    return products.reduce((acc, p) => acc + (Number(p.stock) || 0), 0);
+    return products.reduce((acc, p) => acc + (Number(p?.stock) || 0), 0);
   }, [products]);
 
   const lowStockCount = useMemo(() => {
-    return products.filter(p => (Number(p.stock) || 0) <= 5).length;
+    return products.filter(p => (Number(p?.stock) || 0) <= 5).length;
   }, [products]);
 
   // Handlers
@@ -157,7 +158,7 @@ export function TovarlarPage() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-slate-50 overflow-y-auto overflow-x-hidden w-full select-none sm:select-auto">
+    <div className="h-full flex flex-col bg-slate-50 overflow-y-auto overflow-x-hidden w-full select-auto">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-4 sm:right-8 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-3 duration-200 border border-slate-700">
@@ -312,9 +313,15 @@ export function TovarlarPage() {
           <div className="flex flex-col sm:flex-row items-stretch gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
+              <label htmlFor="tovarlar-search-input" className="sr-only">
+                Mahsulot nomi yoki kategoriya bo'yicha qidirish
+              </label>
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
               <input
+                id="tovarlar-search-input"
+                name="search"
                 type="text"
+                aria-label="Mahsulot nomi yoki kategoriya bo'yicha qidirish"
                 placeholder="Mahsulot nomi yoki kategoriya bo'yicha qidirish..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -408,9 +415,16 @@ export function TovarlarPage() {
                         {product.name}
                       </h3>
                       <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-slate-100/80">
-                        <span className="text-xs sm:text-sm font-black text-slate-800">
-                          {product.price.toLocaleString()} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">UZS / {product.unit}</span>
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-xs sm:text-sm font-black text-slate-800">
+                            {Number(product.price || 0).toLocaleString()} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">UZS / {product.unit}</span>
+                          </span>
+                          {product.costPrice ? (
+                            <span className="text-[10px] text-emerald-700 font-semibold mt-0.5">
+                              Asl: {Number(product.costPrice).toLocaleString()} UZS
+                            </span>
+                          ) : null}
+                        </div>
                         <div className="text-right">
                           <span className={`text-[11px] sm:text-xs font-black px-2 py-0.5 rounded-lg border ${
                             isLowStock 
@@ -506,7 +520,7 @@ export function TovarlarPage() {
                                 {product.name}
                               </span>
                               <span className="text-xs text-slate-400 font-medium">
-                                ID: #{product.id.slice(-6)}
+                                ID: #{String(product.id || '').slice(-6)}
                               </span>
                             </div>
                           </div>
@@ -517,12 +531,20 @@ export function TovarlarPage() {
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className="font-extrabold text-slate-900 text-base">
-                            {product.price.toLocaleString()}
-                          </span>
-                          <span className="text-xs text-slate-500 ml-1">
-                            UZS / {product.unit}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="font-extrabold text-slate-900 text-base leading-tight">
+                              {Number(product.price || 0).toLocaleString()}
+                              <span className="text-xs text-slate-500 font-medium ml-1">
+                                UZS / {product.unit}
+                              </span>
+                            </span>
+                            {product.costPrice ? (
+                              <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
+                                <span className="text-slate-400 font-normal">Asl:</span>
+                                <span>{Number(product.costPrice).toLocaleString()} UZS</span>
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
