@@ -213,6 +213,18 @@ export const productService = {
     if (error) throw error;
   },
 
+  /** Barcha mahsulotlarni o'chirish (DB dan tozalash) */
+  deleteAll: async () => {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    if (error) {
+      console.warn('Delete all products DB error:', error.message);
+    }
+  },
+
   /** Boshlang'ich mahsulotlarni Supabase ga ko'chirish / yuklash (Seed) */
   seedFromList: async (list: {
     name: string;
@@ -263,6 +275,9 @@ export const productService = {
 
   /** Stock kirim — atomik (stored procedure orqali) */
   stockIn: async (id: string, quantity: number, note?: string) => {
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (!isValidUuid) return null;
+
     const { data, error } = await supabase.rpc('stock_in', {
       p_product_id: id,
       p_quantity:   quantity,
@@ -275,11 +290,14 @@ export const productService = {
 
   /** Stock kamaytirish (sotuv) — atomik batch RPC yoki alohida fallback */
   deductStock: async (items: { productId: string; quantity: number }[]) => {
-    if (!items.length) return;
+    const validItems = items.filter(it =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(it.productId)
+    );
+    if (!validItems.length) return;
 
     // 1. Birinchi navbatda atomik batch RPC sinab ko'ramiz
     const { error: batchError } = await supabase.rpc('stock_in_batch', {
-      p_items: items.map(it => ({
+      p_items: validItems.map(it => ({
         productId: it.productId,
         quantity: -it.quantity,
       })),
@@ -289,7 +307,7 @@ export const productService = {
     if (!batchError) return;
 
     // 2. Agar RPC topilmasa yoki xato bersa, har birini alohida stock_in ga fallback qilamiz
-    const promises = items.map(({ productId, quantity }) =>
+    const promises = validItems.map(({ productId, quantity }) =>
       supabase.rpc('stock_in', {
         p_product_id: productId,
         p_quantity:   -quantity,   // manfiy = kamaytirish
@@ -303,11 +321,14 @@ export const productService = {
 
   /** Stock qaytarish — atomik batch RPC yoki alohida fallback */
   returnStock: async (items: { productId: string; quantity: number }[]) => {
-    if (!items.length) return;
+    const validItems = items.filter(it =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(it.productId)
+    );
+    if (!validItems.length) return;
 
     // 1. Birinchi navbatda atomik batch RPC sinab ko'ramiz
     const { error: batchError } = await supabase.rpc('stock_in_batch', {
-      p_items: items.map(it => ({
+      p_items: validItems.map(it => ({
         productId: it.productId,
         quantity: it.quantity,
       })),
@@ -317,7 +338,7 @@ export const productService = {
     if (!batchError) return;
 
     // 2. Fallback
-    const promises = items.map(({ productId, quantity }) =>
+    const promises = validItems.map(({ productId, quantity }) =>
       supabase.rpc('stock_in', {
         p_product_id: productId,
         p_quantity:   quantity,

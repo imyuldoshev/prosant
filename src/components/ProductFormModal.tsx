@@ -6,13 +6,15 @@ import {
   AlertCircle, 
   ArrowUpRight, 
   FolderPlus,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import type { Product } from '../types';
 import { CustomSelect } from './CustomSelect';
 import { ProductImageSection } from './ProductImageSection';
 import { FormattedNumberInput } from './FormattedNumberInput';
 import { formatSum, formatInputNumber, parseFormattedNumber } from '../utils/format';
+import { imageService } from '../services/imageService';
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -24,8 +26,6 @@ interface ProductFormModalProps {
   onDuplicateAttempt?: (existingProduct: Product) => void;
   checkDuplicate: (name: string, excludeId?: string) => Product | undefined;
 }
-
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80';
 
 export function ProductFormModal({
   isOpen,
@@ -45,7 +45,8 @@ export function ProductFormModal({
   const [unit, setUnit] = useState('dona');
   const [stock, setStock] = useState('10');
   const [minStock, setMinStock] = useState('');
-  const [image, setImage] = useState(DEFAULT_IMAGE);
+  const [image, setImage] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   // New Category inline creation state
   const [isAddingNewCat, setIsAddingNewCat] = useState(false);
@@ -73,7 +74,7 @@ export function ProductFormModal({
         setUnit(productToEdit.unit || 'dona');
         setStock(productToEdit.stock !== undefined ? formatInputNumber(productToEdit.stock.toString()) : '0');
         setMinStock(productToEdit.minStock !== undefined ? formatInputNumber(productToEdit.minStock.toString()) : '');
-        setImage(productToEdit.image || DEFAULT_IMAGE);
+        setImage(productToEdit.image || '');
       } else {
         setName('');
         setCategory(availableCategories[0] || 'Umumiy');
@@ -82,7 +83,7 @@ export function ProductFormModal({
         setUnit('dona');
         setStock('10');
         setMinStock('');
-        setImage(DEFAULT_IMAGE);
+        setImage('');
       }
       setIsAddingNewCat(false);
       setNewCatInput('');
@@ -133,8 +134,10 @@ export function ProductFormModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isUploading) return;
+
     const trimmedName = name.trim();
     if (!trimmedName) {
       setError('Mahsulot nomini kiriting!');
@@ -177,6 +180,25 @@ export function ProductFormModal({
       }
     }
 
+    let finalImageUrl = image.trim();
+
+    // Agar rasm yangi olingan yoki yuklangan base64 bo'lsa (data:image/...)
+    // uni Cloudflare R2 ga siqib yuklaymiz
+    if (finalImageUrl.startsWith('data:')) {
+      setIsUploading(true);
+      setError(null);
+      try {
+        const uploadResult = await imageService.uploadImage(finalImageUrl, trimmedName);
+        if (uploadResult && uploadResult.url) {
+          finalImageUrl = uploadResult.url;
+        }
+      } catch (uploadErr) {
+        console.warn('[ProductFormModal] Rasm yuklashda xatolik yuz berdi:', uploadErr);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     onSave({
       name: trimmedName,
       category: category || availableCategories[0] || 'Umumiy',
@@ -185,7 +207,7 @@ export function ProductFormModal({
       unit,
       stock: finalStock,
       minStock: parsedMinStock,
-      image: image.trim() || DEFAULT_IMAGE,
+      image: finalImageUrl,
     });
     onClose();
   };
@@ -230,7 +252,8 @@ export function ProductFormModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          <div className="p-4 sm:p-6 overflow-y-auto flex flex-col gap-4 flex-1">
           
           {/* 1. Name & Duplicate Check Alert */}
           <div className="flex flex-col gap-1.5">
@@ -491,7 +514,6 @@ export function ProductFormModal({
           {/* 5. Image Section: 2 Methods (1-Upload, 2-Camera) */}
           <ProductImageSection
             image={image}
-            defaultImage={DEFAULT_IMAGE}
             onChange={setImage}
           />
 
@@ -502,26 +524,38 @@ export function ProductFormModal({
             </div>
           )}
 
+          </div>
+
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-1 shrink-0 border-t border-slate-100 dark:border-slate-800">
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/90 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 min-h-[48px] py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl active:scale-95 transition-all text-sm sm:text-base cursor-pointer"
+              disabled={isUploading}
+              className="flex-1 min-h-[48px] py-3 px-4 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-2xl active:scale-95 transition-all text-sm sm:text-base cursor-pointer"
             >
               Bekor qilish
             </button>
             <button
               type="submit"
-              disabled={Boolean(duplicateMatch)}
+              disabled={Boolean(duplicateMatch) || isUploading}
               className={`flex-[2] min-h-[48px] py-3 px-6 font-extrabold rounded-2xl active:scale-95 transition-all text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer ${
-                duplicateMatch
+                duplicateMatch || isUploading
                   ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                   : 'bg-brand hover:bg-brand-dark text-white shadow-lg shadow-brand/25'
               }`}
             >
-              {isEditing ? <Edit3 className="hidden sm:inline-block w-5 h-5" /> : <Plus className="hidden sm:inline-block w-5 h-5 stroke-[3]" />}
-              <span>{isEditing ? 'O\'zgarishlarni saqlash' : 'Mahsulotni qo\'shish'}</span>
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Rasm yuklanmoqda...</span>
+                </>
+              ) : (
+                <>
+                  {isEditing ? <Edit3 className="hidden sm:inline-block w-5 h-5" /> : <Plus className="hidden sm:inline-block w-5 h-5 stroke-[3]" />}
+                  <span>{isEditing ? 'O\'zgarishlarni saqlash' : 'Mahsulotni qo\'shish'}</span>
+                </>
+              )}
             </button>
           </div>
         </form>

@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 import type { Product } from '../types';
 import { formatSum } from '../utils/format';
 
@@ -10,8 +10,6 @@ interface KassaProductCardProps {
   onQuickAdd: (product: Product) => void;
 }
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=260&q=65&auto=format&fit=crop';
-
 export const KassaProductCard = memo(function KassaProductCard({
   product,
   isSelected,
@@ -19,64 +17,106 @@ export const KassaProductCard = memo(function KassaProductCard({
   onQuickAdd,
 }: KassaProductCardProps) {
   const stockNum = Number(product.stock) || 0;
-  const isCriticalStock = stockNum <= 5;
+  const isOutOfStock = stockNum <= 0;
+  const isCriticalStock = stockNum > 0 && stockNum <= 5;
   const isLowStock = stockNum > 5 && stockNum <= 15;
 
   return (
     <div
-      onClick={() => onSelect(product)}
-      className={`group relative flex flex-col rounded-2xl border text-left cursor-pointer transition-all duration-150 select-none bg-white dark:bg-slate-900 ${
-        isSelected 
-          ? 'border-brand shadow-md ring-2 ring-brand/30 scale-[0.98]' 
-          : 'border-slate-200/90 dark:border-slate-800 hover:border-brand/40 dark:hover:border-brand/50 hover:shadow-md'
+      onClick={() => {
+        if (!isOutOfStock) {
+          onSelect(product);
+        }
+      }}
+      className={`group relative flex flex-col rounded-2xl border text-left transition-all duration-150 select-none bg-white dark:bg-slate-900 ${
+        isOutOfStock
+          ? 'opacity-80 border-slate-200 dark:border-slate-800 cursor-not-allowed'
+          : isSelected 
+          ? 'border-brand shadow-md ring-2 ring-brand/30 scale-[0.98] cursor-pointer' 
+          : 'border-slate-200/90 dark:border-slate-800 hover:border-brand/40 dark:hover:border-brand/50 hover:shadow-md cursor-pointer'
       }`}
     >
       {/* Product Image Area */}
-      <div className="relative h-28 sm:h-32 md:h-36 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden rounded-t-2xl shrink-0">
-        <img 
-          src={product.image || FALLBACK_IMAGE} 
-          alt={product.name}
-          width={260}
-          height={144}
-          loading="lazy"
-          decoding="async"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = FALLBACK_IMAGE;
-          }}
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-        />
+      <div className="relative h-28 sm:h-32 md:h-36 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden rounded-t-2xl shrink-0 flex items-center justify-center">
+        {product.image && product.image.trim() !== '' ? (
+          <img 
+            src={product.image} 
+            alt={product.name}
+            width={260}
+            height={144}
+            loading="lazy"
+            decoding="async"
+            className={`absolute inset-0 w-full h-full object-cover transition-transform duration-300 ${
+              isOutOfStock ? 'grayscale-[30%]' : 'group-hover:scale-105'
+            }`} 
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-slate-300 dark:text-slate-600 bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 select-none">
+            <Package className="w-9 h-9 stroke-[1.5]" />
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">Rasm yo'q</span>
+          </div>
+        )}
         
         {/* Quick Add Button */}
         <button
           type="button"
+          disabled={isOutOfStock}
           onClick={(e) => {
             e.stopPropagation();
-            onQuickAdd(product);
+            if (!isOutOfStock) {
+              onQuickAdd(product);
+            }
           }}
-          aria-label={`${product.name} ni bitta qo'shish`}
-          title="1 ta qo'shish"
-          className="absolute top-2 right-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-sm flex items-center justify-center text-brand dark:text-blue-400 font-black transition-all hover:scale-105 hover:bg-brand dark:hover:bg-brand hover:text-white active:scale-90 cursor-pointer min-w-[36px] min-h-[36px]"
+          aria-label={isOutOfStock ? `${product.name} qolmagan` : `${product.name} ni bitta qo'shish`}
+          title={isOutOfStock ? `Mahsulot qolmagan (0 ${product.unit})` : "1 ta qo'shish"}
+          className={`absolute top-2 right-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl backdrop-blur-md shadow-xs flex items-center justify-center font-black transition-all min-w-[36px] min-h-[36px] ${
+            isOutOfStock
+              ? 'bg-slate-100/95 dark:bg-slate-800/95 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+              : 'bg-white/95 dark:bg-slate-800/95 text-brand dark:text-blue-400 hover:scale-105 hover:bg-brand hover:text-white dark:hover:bg-brand active:scale-90 cursor-pointer shadow-sm'
+          }`}
         >
           <Plus className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+
+          {/* Qizil chiziq: chap pastki burchakdan o'ng yuqori burchakka */}
+          {isOutOfStock && (
+            <svg 
+              className="absolute inset-0 w-full h-full pointer-events-none" 
+              viewBox="0 0 40 40" 
+              fill="none"
+            >
+              <line 
+                x1="6" 
+                y1="34" 
+                x2="34" 
+                y2="6" 
+                stroke="#ef4444" 
+                strokeWidth="3.5" 
+                strokeLinecap="round" 
+              />
+            </svg>
+          )}
         </button>
 
         {/* Stock Badge with Status Indicator */}
         <div className={`absolute bottom-2 left-2 text-[11px] font-bold px-2 py-0.5 rounded-lg backdrop-blur-md flex items-center gap-1.5 shadow-xs ${
-          isCriticalStock
+          isOutOfStock
+            ? 'bg-rose-950/90 text-rose-300 border border-rose-500/40'
+            : isCriticalStock
             ? 'bg-rose-950/80 text-rose-200 border border-rose-500/30' 
             : isLowStock
             ? 'bg-amber-950/80 text-amber-200 border border-amber-500/30'
             : 'bg-slate-900/80 text-white border border-white/10'
         }`}>
           <span className={`w-1.5 h-1.5 rounded-full ${
-            isCriticalStock
+            isOutOfStock
+              ? 'bg-rose-500'
+              : isCriticalStock
               ? 'bg-rose-400 animate-pulse' 
               : isLowStock 
               ? 'bg-amber-400' 
               : 'bg-emerald-400'
           }`} />
-          <span>{stockNum} {product.unit}</span>
+          <span>{stockNum} {product.unit} {isOutOfStock ? '(Tugagan)' : ''}</span>
         </div>
       </div>
 
@@ -87,7 +127,11 @@ export const KassaProductCard = memo(function KassaProductCard({
             {product.category}
           </span>
           <h3 
-            className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm leading-tight line-clamp-2 group-hover:text-brand dark:group-hover:text-blue-400 transition-colors"
+            className={`font-bold text-xs sm:text-sm leading-tight line-clamp-2 transition-colors ${
+              isOutOfStock 
+                ? 'text-slate-500 dark:text-slate-400' 
+                : 'text-slate-800 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-blue-400'
+            }`}
             title={product.name}
           >
             {product.name}
@@ -95,7 +139,9 @@ export const KassaProductCard = memo(function KassaProductCard({
         </div>
 
         <div className="pt-1.5 mt-auto border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between gap-1">
-          <div className="text-brand dark:text-blue-400 font-black text-sm sm:text-base tracking-tight">
+          <div className={`font-black text-sm sm:text-base tracking-tight ${
+            isOutOfStock ? 'text-slate-400 dark:text-slate-500' : 'text-brand dark:text-blue-400'
+          }`}>
             {formatSum(product.price)} <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">UZS</span>
           </div>
           <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">

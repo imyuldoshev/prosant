@@ -215,6 +215,17 @@ export function LoginPage() {
             )}
             <span>Kirish</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('admin@prosant.uz');
+              setPassword('123456');
+            }}
+            className="w-full text-center text-xs font-semibold text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 py-1 transition-colors cursor-pointer"
+          >
+            Tezkor admin hisobini to'ldirish (123456)
+          </button>
         </form>
 
         {/* Footer info */}

@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const location = useLocation();
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated, signOut } = useAuth();
 
   const navItems = [
     {
@@ -120,44 +120,17 @@ export function Header({ onMenuClick }: HeaderProps) {
           {currentTitle}
         </div>
 
-        {/* Pro Online Status Dot */}
-        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl text-xs font-bold shrink-0">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span>Online</span>
-        </div>
-
         {/* Auth Action */}
         {isAuthenticated ? (
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            {/* User Profile Chip (Desktop) */}
-            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 rounded-xl shrink-0">
-              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black uppercase shrink-0 shadow-xs">
-                {(user?.profile?.full_name || user?.email || 'U')[0]}
-              </div>
-              <div className="flex flex-col text-left leading-tight pr-1">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
-                  {user?.profile?.full_name || user?.email?.split('@')[0]}
-                </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 capitalize font-medium">
-                  {user?.profile?.role === 'admin' ? 'Admin' : 'Kassir'}
-                </span>
-              </div>
-            </div>
-
-            {/* Katta va Qulay Chiqish Tugmasi (Responsive, Zero Layout Shift) */}
-            <button
-              onClick={() => signOut()}
-              title="Tizimdan chiqish"
-              className="h-10 px-3 sm:px-3.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 active:bg-rose-200/80 text-rose-600 dark:text-rose-400 border border-rose-200/90 dark:border-rose-900/60 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all active:scale-95 shadow-xs shrink-0 cursor-pointer select-none"
-              aria-label="Tizimdan chiqish"
-            >
-              <LogOut className="w-4 h-4 shrink-0 stroke-[2.2]" />
-              <span className="whitespace-nowrap">Chiqish</span>
-            </button>
-          </div>
+          <button
+            onClick={() => signOut()}
+            title="Tizimdan chiqish"
+            className="h-10 px-3 sm:px-3.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 active:bg-rose-200/80 text-rose-600 dark:text-rose-400 border border-rose-200/90 dark:border-rose-900/60 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all active:scale-95 shadow-xs shrink-0 cursor-pointer select-none"
+            aria-label="Tizimdan chiqish"
+          >
+            <LogOut className="w-4 h-4 shrink-0 stroke-[2.2]" />
+            <span className="whitespace-nowrap">Chiqish</span>
+          </button>
         ) : (
           <Link
             to="/login"

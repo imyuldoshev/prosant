@@ -1,4 +1,4 @@
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2, Package } from 'lucide-react';
 import type { Product } from '../types';
 
 interface DeleteConfirmModalProps {
@@ -36,11 +36,17 @@ export function DeleteConfirmModal({ product, isOpen, onClose, onConfirm }: Dele
           </p>
 
           <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 rounded-2xl w-full flex items-center gap-3 text-left">
-            <img 
-              src={product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'} 
-              alt={product.name}
-              className="w-12 h-12 rounded-xl object-cover shrink-0" 
-            />
+            {product.image && product.image.trim() !== '' ? (
+              <img 
+                src={product.image} 
+                alt={product.name}
+                className="w-12 h-12 rounded-xl object-cover shrink-0" 
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 text-slate-400 dark:text-slate-500">
+                <Package className="w-6 h-6 stroke-[1.5]" />
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">{product.name}</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">

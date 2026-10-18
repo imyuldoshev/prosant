@@ -4,10 +4,12 @@ import {
   History, Search, Calendar, Download, Trash2, Eye, Printer, 
   CreditCard, Banknote, Building2, FileText, 
   X, AlertCircle, ShoppingBag, TrendingUp, DollarSign,
-  User, Phone, Clock, ChevronDown
+  User, Phone, Clock, ChevronDown, Lock, EyeOff,
+  Loader2, CheckCircle2, ArrowRight, ArrowLeft, KeyRound
 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { useProducts } from '../context/ProductContext';
+import { useAuth } from '../context/AuthContext';
 import { useBlockUpdate } from '../context/UpdateContext';
 import type { SaleRecord, PaymentMethod } from '../types';
 import { DateRangePicker } from '../components/DateRangePicker';
@@ -19,6 +21,7 @@ import { formatSum } from '../utils/format';
 type SortOrderType = 'newest' | 'oldest' | 'highest' | 'lowest';
 
 export function TarixPage() {
+  const { user, verifyPassword } = useAuth();
   const { sales, deleteSale, clearAllSales, resetToDemoSales } = useSales();
   const { products } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -136,7 +139,66 @@ export function TarixPage() {
   const [shouldPrint, setShouldPrint] = useState(false);
   const [saleToDelete, setSaleToDelete] = useState<SaleRecord | null>(null);
   const [restoreStockOnDelete, setRestoreStockOnDelete] = useState(true);
+  
+  // Clear all history 2-step modal states (Tasdiqlash -> Parol kiritish)
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
+  const [clearStep, setClearStep] = useState<'confirm' | 'password'>('confirm');
+  const [clearPassword, setClearPassword] = useState('');
+  const [showClearPassword, setShowClearPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+  const [clearSuccessToast, setClearSuccessToast] = useState(false);
+
+  const handleOpenClearModal = useCallback(() => {
+    setClearStep('confirm');
+    setClearPassword('');
+    setShowClearPassword(false);
+    setPasswordError(null);
+    setIsVerifyingPassword(false);
+    setIsConfirmClearOpen(true);
+  }, []);
+
+  const handleCloseClearModal = useCallback(() => {
+    setIsConfirmClearOpen(false);
+    setClearStep('confirm');
+    setClearPassword('');
+    setShowClearPassword(false);
+    setPasswordError(null);
+    setIsVerifyingPassword(false);
+  }, []);
+
+  const handleProceedToPassword = useCallback(() => {
+    setPasswordError(null);
+    setClearPassword('');
+    setClearStep('password');
+  }, []);
+
+  const handleConfirmPasswordAndDelete = useCallback(async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!clearPassword.trim()) {
+      setPasswordError('Iltimos, akkaunt kirish parolini kiriting');
+      return;
+    }
+
+    setIsVerifyingPassword(true);
+    setPasswordError(null);
+
+    try {
+      const res = await verifyPassword(clearPassword);
+      if (res.success) {
+        clearAllSales();
+        handleCloseClearModal();
+        setClearSuccessToast(true);
+        setTimeout(() => setClearSuccessToast(false), 4000);
+      } else {
+        setPasswordError(res.message || "Parol noto'g'ri kiritildi. Qaytadan urinib ko'ring.");
+      }
+    } catch (err: any) {
+      setPasswordError(err?.message || "Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+    } finally {
+      setIsVerifyingPassword(false);
+    }
+  }, [clearPassword, verifyPassword, clearAllSales, handleCloseClearModal]);
 
   // Safety guard: Block silent updates while viewing receipt modal or confirm dialogs
   useBlockUpdate(
@@ -359,12 +421,13 @@ export function TarixPage() {
           {sales.length > 0 && (
             <button
               type="button"
-              onClick={() => setIsConfirmClearOpen(true)}
-              className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-sm rounded-xl transition-all border border-rose-200/60 dark:border-rose-800 flex items-center gap-2 active:scale-95 cursor-pointer"
-              title="Barcha tarixni tozalash"
+              onClick={handleOpenClearModal}
+              className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-sm rounded-xl transition-all border border-rose-200/60 dark:border-rose-800 flex items-center gap-2 active:scale-95 cursor-pointer shadow-xs hover:shadow-sm"
+              title="Barcha tarixni o'chirish"
             >
-              <Trash2 className="hidden sm:inline-block w-4 h-4" />
-              <span>Tozalash</span>
+              <Trash2 className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Barcha tarixni o'chirish</span>
+              <span className="sm:hidden">Tarixni tozalash</span>
             </button>
           )}
         </div>
@@ -1072,55 +1135,191 @@ export function TarixPage() {
         </div>
       )}
 
-      {/* 7. CLEAR ALL CONFIRMATION MODAL */}
+      {/* 7. CLEAR ALL CONFIRMATION & PASSWORD VERIFICATION MODAL */}
       {isConfirmClearOpen && (
         <div 
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 transition-all overflow-y-auto"
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 my-auto max-h-[92dvh] overflow-y-auto">
-            <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-8 h-8" />
-            </div>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl p-6 sm:p-7 border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 my-auto max-h-[92dvh] overflow-y-auto relative">
+            
+            {/* Top Close Button */}
+            <button
+              type="button"
+              onClick={handleCloseClearModal}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Yopish"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Barcha tarixni tozalash</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-              Barcha sotuvlar tarixi o'chiriladi. Bu amalni ortga qaytarib bo'lmaydi. Rozimisiz?
-            </p>
+            {/* 1-BOSQICH: TASDIQLASH SO'ROVI */}
+            {clearStep === 'confirm' && (
+              <div className="text-center pt-2">
+                <div className="w-16 h-16 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4 ring-8 ring-rose-50 dark:ring-rose-950/30">
+                  <Trash2 className="w-8 h-8" />
+                </div>
 
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsConfirmClearOpen(false)}
-                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-colors text-sm cursor-pointer"
-                >
-                  Bekor qilish
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearAllSales();
-                    setIsConfirmClearOpen(false);
-                  }}
-                  className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-md transition-all text-sm cursor-pointer"
-                >
-                  Hammasini o'chirish
-                </button>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-xs font-bold border border-rose-200/60 dark:border-rose-900/50 mb-3">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>1-bosqich: Tasdiqlash</span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2 leading-snug">
+                  Haqiqatan ham bu ma'lumotlarni o'chirishni istaysizmi?
+                </h3>
+
+                <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed mb-5">
+                  Barcha sotuvlar tarixi va hisobotlar butunlay o'chiriladi. Ushbu amalni ortga qaytarib bo'lmaydi.
+                </p>
+
+                {/* Xulosa qutisi */}
+                <div className="bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-4 text-left mb-6 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">O'chiriladigan cheklar:</span>
+                    <span className="font-black text-slate-900 dark:text-white bg-slate-200/70 dark:bg-slate-700 px-2.5 py-0.5 rounded-lg">
+                      {sales.length} ta chek
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">Jami tushum summasi:</span>
+                    <span className="font-black text-rose-600 dark:text-rose-400">
+                      {formatSum(sales.reduce((sum, s) => sum + s.total, 0))} UZS
+                    </span>
+                  </div>
+                </div>
+
+                {/* Amallar */}
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleCloseClearModal}
+                    className="flex-1 py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all text-sm cursor-pointer"
+                  >
+                    Yo'q, bekor qilish
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleProceedToPassword}
+                    className="flex-1 py-3 px-4 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold rounded-xl shadow-md shadow-rose-600/25 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  >
+                    <span>Ha, davom etish</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  resetToDemoSales();
-                  setIsConfirmClearOpen(false);
-                }}
-                className="w-full py-2.5 bg-brand/10 dark:bg-blue-900/30 hover:bg-brand/20 dark:hover:bg-blue-900/50 text-brand dark:text-blue-400 font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <History className="w-4 h-4" />
-                Demo ma'lumotlarni tiklash
-              </button>
-            </div>
+            )}
+
+            {/* 2-BOSQICH: AKKAUNT KIRISH KODINI / PAROLINI SO'RASH */}
+            {clearStep === 'password' && (
+              <div className="pt-2">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4 ring-8 ring-blue-50 dark:ring-blue-950/30">
+                  <Lock className="w-8 h-8" />
+                </div>
+
+                <div className="text-center mb-5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 text-xs font-bold border border-blue-200/60 dark:border-blue-900/50 mb-2">
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>2-bosqich: Xavfsizlik kodi</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                    Akkaunt parolini kiriting
+                  </h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1">
+                    Barcha ma'lumotlarni o'chirishni tasdiqlash uchun hisobingiz <span className="font-bold text-slate-800 dark:text-slate-200">({user?.email || 'admin'})</span> kirish parolini kiriting.
+                  </p>
+                </div>
+
+                <form onSubmit={handleConfirmPasswordAndDelete} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Akkaunt kirish paroli
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type={showClearPassword ? 'text' : 'password'}
+                        autoFocus
+                        required
+                        value={clearPassword}
+                        onChange={(e) => {
+                          setClearPassword(e.target.value);
+                          if (passwordError) setPasswordError(null);
+                        }}
+                        placeholder="Parolni kiriting..."
+                        className={`w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-800/80 border rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 transition-all ${
+                          passwordError 
+                            ? 'border-rose-500 focus:ring-rose-500 bg-rose-50/20' 
+                            : 'border-slate-200 dark:border-slate-700 focus:ring-blue-600 focus:bg-white dark:focus:bg-slate-800'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowClearPassword(!showClearPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer"
+                        aria-label={showClearPassword ? "Parolni yashirish" : "Parolni ko'rsatish"}
+                      >
+                        {showClearPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Xatolik xabari */}
+                  {passwordError && (
+                    <div className="p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 rounded-xl flex items-start gap-2.5 text-rose-700 dark:text-rose-400 text-xs animate-in fade-in">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span className="font-semibold leading-relaxed">{passwordError}</span>
+                    </div>
+                  )}
+
+                  {/* Tugmalar */}
+                  <div className="flex gap-2.5 pt-2">
+                    <button
+                      type="button"
+                      disabled={isVerifyingPassword}
+                      onClick={() => {
+                        setClearStep('confirm');
+                        setPasswordError(null);
+                        setClearPassword('');
+                      }}
+                      className="flex-1 py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>Orqaga</span>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isVerifyingPassword || !clearPassword.trim()}
+                      className="flex-1 py-3 px-4 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold rounded-xl shadow-md shadow-rose-600/25 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isVerifyingPassword ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Tekshirilmoqda...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4" />
+                          <span>Hammasini o'chirish</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* Muvaffaqiyatli o'chirish xabarnomasi (Toast) */}
+      {clearSuccessToast && (
+        <div className="fixed bottom-6 right-6 z-[100] bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-200 border border-emerald-500">
+          <CheckCircle2 className="w-5 h-5 shrink-0 text-white" />
+          <div className="text-sm font-bold">
+            Barcha savdo tarixi muvaffaqiyatli o'chirildi
           </div>
         </div>
       )}

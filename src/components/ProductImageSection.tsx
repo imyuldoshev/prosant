@@ -1,15 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
-import { Camera, Upload, Trash2 } from 'lucide-react';
+import { Camera, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
 
 interface ProductImageSectionProps {
   image: string;
-  defaultImage: string;
+  defaultImage?: string;
   onChange: (image: string) => void;
 }
 
 export const ProductImageSection = memo(function ProductImageSection({
   image,
-  defaultImage,
   onChange,
 }: ProductImageSectionProps) {
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -149,28 +148,35 @@ export const ProductImageSection = memo(function ProductImageSection({
         </div>
       ) : (
         <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row items-center gap-3">
-          {/* Image Preview */}
+          {/* Image Preview / Icon Placeholder */}
           <div className="relative group shrink-0">
-            <img 
-              src={image || defaultImage} 
-              alt="Tovar rasmi" 
-              width={96}
-              height={96}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-700 shadow-xs bg-white dark:bg-slate-800"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = defaultImage;
-              }}
-            />
-            {image && image !== defaultImage && (
-              <button
-                type="button"
-                onClick={() => onChange(defaultImage)}
-                className="absolute -top-1.5 -right-1.5 p-1 bg-rose-600 text-white rounded-full shadow-md hover:bg-rose-700 transition-colors cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
-                title="Rasmni olib tashlash"
-                aria-label="Rasmni olib tashlash"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+            {image && image.trim() !== '' ? (
+              <div className="relative">
+                <img 
+                  src={image} 
+                  alt="Tovar rasmi" 
+                  width={96}
+                  height={96}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-700 shadow-xs bg-white dark:bg-slate-800"
+                  onError={() => onChange('')}
+                />
+                <button
+                  type="button"
+                  onClick={() => onChange('')}
+                  className="absolute -top-1.5 -right-1.5 p-1 bg-rose-600 text-white rounded-full shadow-md hover:bg-rose-700 transition-colors cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
+                  title="Rasmni olib tashlash"
+                  aria-label="Rasmni olib tashlash"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800/70 flex flex-col items-center justify-center gap-1.5 text-slate-400 dark:text-slate-500 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700/60 flex items-center justify-center text-slate-400 dark:text-slate-400">
+                  <ImageIcon className="w-5 h-5 stroke-[2]" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-tight">Rasm yo'q</span>
+              </div>
             )}
           </div>
 

@@ -11,6 +11,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  verifyPassword: (password: string) => Promise<{ success: boolean; message?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,7 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (authUser) {
         updateUserState(authUser);
       } else {
-        updateUserState(null);
+        const hasLocal = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!hasLocal) {
+          updateUserState(null);
+        }
       }
       setIsLoading(false);
     });
@@ -110,6 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const verifyPassword = useCallback(async (password: string) => {
+    return authService.verifyCurrentPassword(password, user?.email);
+  }, [user]);
+
   const value = useMemo(
     () => ({
       user,
@@ -118,8 +126,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn,
       signInWithGoogle,
       signOut,
+      verifyPassword,
     }),
-    [user, isLoading, signIn, signInWithGoogle, signOut]
+    [user, isLoading, signIn, signInWithGoogle, signOut, verifyPassword]
   );
 
   return (

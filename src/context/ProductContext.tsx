@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { Product } from '../types';
 import { PRODUCTS as INITIAL_PRODUCTS, CATEGORIES as INITIAL_CATEGORIES } from '../mockData';
-import { productService } from '../services/productService';
+import { productService, dbToProduct } from '../services/productService';
 import { categoryService } from '../services/categoryService';
+import { supabase } from '../lib/supabase';
 import { useProductsRealtime } from '../hooks/useRealtime';
 
 interface ProductContextType {
@@ -13,6 +14,7 @@ interface ProductContextType {
   addProduct: (product: Omit<Product, 'id'>) => Product;
   updateProduct: (id: string, updates: Partial<Omit<Product, 'id'>>) => void;
   deleteProduct: (id: string) => void;
+  clearAllProducts: () => Promise<void>;
   stockIn: (id: string, quantityToAdd: number) => void;
   deductStock: (items: { productId: string; quantity: number }[]) => void;
   returnStock: (items: { productId: string; quantity: number }[]) => void;
@@ -21,8 +23,8 @@ interface ProductContextType {
   syncWithSupabase: () => Promise<void>;
 }
 
-const STORAGE_KEY = 'santexpro_products_v1';
-const CATEGORIES_KEY = 'santexpro_categories_v1';
+const STORAGE_KEY = 'santexpro_products_v2';
+const CATEGORIES_KEY = 'santexpro_categories_v2';
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
@@ -32,6 +34,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   const [categories, setCategories] = useState<string[]>(() => {
     try {
+      localStorage.removeItem('santexpro_categories_v1');
       const saved = localStorage.getItem(CATEGORIES_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -45,19 +48,73 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   const [products, setProducts] = useState<Product[]>(() => {
     try {
+      localStorage.removeItem('santexpro_products_v1');
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
       console.error('Failed to load products from localStorage', e);
     }
-    return INITIAL_PRODUCTS;
+    return [];
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const isInitialSyncDone = useRef(false);
+
+  // Realtime: Boshqa qurilmadan (telefon/kompyuter) tovar qo'shilsa yoki o'zgarsa, darhol ko'rsatish
+  useEffect(() => {
+    const channel = supabase
+      .channel('realtime:products_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newProd = dbToProduct(payload.new as any);
+            setProducts(prev => {
+              if (prev.some(p => p.id === newProd.id || (p.name.trim().toLowerCase() === newProd.name.trim().toLowerCase() && p.id.startsWith('prod_')))) {
+                return prev.map(p => (p.name.trim().toLowerCase() === newProd.name.trim().toLowerCase() && p.id.startsWith('prod_')) ? (newProd as Product) : p);
+              }
+              return [newProd as Product, ...prev];
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = dbToProduct(payload.new as any);
+            setProducts(prev => {
+              if (payload.new.is_active === false) {
+                return prev.filter(p => p.id !== updated.id);
+              }
+              return prev.map(p => p.id === updated.id ? (updated as Product) : p);
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as any)?.id;
+            if (deletedId) {
+              setProducts(prev => prev.filter(p => p.id !== deletedId));
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    const catChannel = supabase
+      .channel('realtime:categories_sync')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'categories' },
+        (payload) => {
+          const newCat = (payload.new as any)?.name;
+          if (newCat) {
+            setCategories(prev => prev.includes(newCat) ? prev : [...prev, newCat]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(catChannel);
+    };
+  }, []);
 
   // 1. Supabase bilan to'liq sinxronlash (Fetch & Auto-seed if empty)
   const syncWithSupabase = useCallback(async () => {
@@ -76,23 +133,16 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Mahsulotlarni olish
-      const { data: serverProducts, count } = await productService.getAll(0, 500);
+      const { data: serverProducts } = await productService.getAll(0, 500);
 
       // Agar bazada mahsulot bo'lsa — bazadagidan foydalanamiz
       if (serverProducts && serverProducts.length > 0) {
         setProducts(serverProducts as Product[]);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(serverProducts));
-      } else if (count === 0 && !isInitialSyncDone.current) {
-        // Agar baza hozircha bo'm-bo'sh bo'lsa (0 ta) — dastlabki mock tovarlarni Supabase ga yuklaymiz (Auto-seed)
-        isInitialSyncDone.current = true;
-        console.log('[Supabase] Baza bo‘sh. Boshlang‘ich mahsulotlar Supabase ga yuklanmoqda...');
-        await productService.seedFromList(INITIAL_PRODUCTS);
-        // Qayta o'qish
-        const fresh = await productService.getAll(0, 500);
-        if (fresh.data && fresh.data.length > 0) {
-          setProducts(fresh.data as Product[]);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh.data));
-        }
+      } else {
+        // Agar bazada mahsulot bo'lmasa — toza 0 holatga keltiramiz
+        setProducts([]);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
       }
     } catch (err) {
       console.warn('[Supabase] Sinxronlashda xatolik yuz berdi, mahalliy kesh ishlatiladi:', err);
@@ -218,6 +268,23 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Barcha mahsulotlarni o'chirish / tozalash (DB + Local)
+  const clearAllProducts = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await productService.deleteAll();
+    } catch (e) {
+      console.warn('Failed to delete all products from DB:', e);
+    }
+    setProducts([]);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+    } catch (e) {
+      console.error('Failed to clear products from localStorage:', e);
+    }
+    setIsLoading(false);
+  }, []);
+
   // Stock kirim (Optimistic + Supabase RPC)
   const stockIn = useCallback((id: string, quantityToAdd: number) => {
     if (quantityToAdd <= 0) return;
@@ -304,6 +371,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       addProduct,
       updateProduct,
       deleteProduct,
+      clearAllProducts,
       stockIn,
       deductStock,
       returnStock,
@@ -319,6 +387,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       addProduct,
       updateProduct,
       deleteProduct,
+      clearAllProducts,
       stockIn,
       deductStock,
       returnStock,

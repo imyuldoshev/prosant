@@ -10,7 +10,8 @@ import {
   Filter,
   Layers,
   CheckCircle2,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useBlockUpdate, useTaskCompletion } from '../context/UpdateContext';
@@ -28,6 +29,7 @@ export function TovarlarPage() {
     addProduct, 
     updateProduct, 
     deleteProduct, 
+    clearAllProducts,
     stockIn 
   } = useProducts();
 
@@ -42,6 +44,8 @@ export function TovarlarPage() {
   // Modals state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isConfirmClearAllOpen, setIsConfirmClearAllOpen] = useState(false);
+  const [isClearingAll, setIsClearingAll] = useState(false);
 
   const [stockInProduct, setStockInProduct] = useState<Product | null>(null);
   const [isStockInModalOpen, setIsStockInModalOpen] = useState(false);
@@ -53,7 +57,7 @@ export function TovarlarPage() {
 
   // Safety guard: Block silent updates while product form, stock-in, or delete modal is active
   useBlockUpdate(
-    isFormModalOpen || isStockInModalOpen || isDeleteModalOpen,
+    isFormModalOpen || isStockInModalOpen || isDeleteModalOpen || isConfirmClearAllOpen,
     'Tovarlar modal oynasi ochiq'
   );
 
@@ -171,11 +175,25 @@ export function TovarlarPage() {
     markTaskComplete();
   }, [deletingProduct, deleteProduct, showToast, markTaskComplete]);
 
+  const handleClearAllConfirm = useCallback(async () => {
+    setIsClearingAll(true);
+    try {
+      await clearAllProducts();
+      setIsConfirmClearAllOpen(false);
+      showToast("Barcha tovar kartalari muvaffaqiyatli tozalandi!");
+      markTaskComplete();
+    } catch (e: any) {
+      showToast(e?.message || "Xatolik yuz berdi");
+    } finally {
+      setIsClearingAll(false);
+    }
+  }, [clearAllProducts, showToast, markTaskComplete]);
+
   return (
     <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-y-auto overflow-x-hidden w-full select-auto">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-4 sm:right-8 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-3 duration-200 border border-slate-700">
+        <div className="fixed top-20 right-4 sm:right-8 z-[100] bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-3 duration-200 border border-slate-700 pointer-events-auto">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span className="font-semibold text-sm sm:text-base">{toastMessage}</span>
           <button 
@@ -211,15 +229,30 @@ export function TovarlarPage() {
             </div>
           </div>
 
-          {/* Touch-Friendly Add Product Button */}
-          <button
-            onClick={handleOpenAddModal}
-            className="min-h-[40px] sm:min-h-[46px] px-3.5 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-brand to-sky-600 hover:from-sky-600 hover:to-sky-700 active:scale-95 text-white font-bold text-xs sm:text-base rounded-xl sm:rounded-2xl shadow-md shadow-brand/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 self-stretch sm:self-auto cursor-pointer"
-            aria-label="Yangi mahsulot qo'shish"
-          >
-            <Plus className="hidden sm:inline-block w-4.5 h-4.5 stroke-[3]" />
-            <span>Mahsulot qo'shish</span>
-          </button>
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 self-stretch sm:self-auto flex-wrap">
+            {products.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsConfirmClearAllOpen(true)}
+                className="min-h-[40px] sm:min-h-[46px] px-3.5 sm:px-4 py-2 sm:py-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl border border-rose-200/80 dark:border-rose-900/60 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-xs"
+                title="Barcha tovar kartalarini tozalash"
+              >
+                <Trash2 className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Barchasini tozalash</span>
+                <span className="sm:hidden">Tozalash</span>
+              </button>
+            )}
+
+            {/* Touch-Friendly Add Product Button */}
+            <button
+              onClick={handleOpenAddModal}
+              className="min-h-[40px] sm:min-h-[46px] px-3.5 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-brand to-sky-600 hover:from-sky-600 hover:to-sky-700 active:scale-95 text-white font-bold text-xs sm:text-base rounded-xl sm:rounded-2xl shadow-md shadow-brand/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 flex-1 sm:flex-initial cursor-pointer"
+              aria-label="Yangi mahsulot qo'shish"
+            >
+              <Plus className="hidden sm:inline-block w-4.5 h-4.5 stroke-[3]" />
+              <span>Mahsulot qo'shish</span>
+            </button>
+          </div>
         </div>
 
         {/* Quick Stats bar */}
@@ -409,11 +442,17 @@ export function TovarlarPage() {
                 >
                   {/* Top row: image, info, badge */}
                   <div className="flex items-start gap-2.5 sm:gap-3">
-                    <img 
-                      src={product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'} 
-                      alt={product.name} 
-                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-slate-100 dark:border-slate-800 shadow-2xs shrink-0 bg-slate-100 dark:bg-slate-800"
-                    />
+                    {product.image && product.image.trim() !== '' ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-slate-100 dark:border-slate-800 shadow-2xs shrink-0 bg-slate-100 dark:bg-slate-800"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/80 flex items-center justify-center shrink-0 text-slate-400 dark:text-slate-500">
+                        <Package className="w-6 h-6 stroke-[1.5]" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-[10px] sm:text-[11px] font-bold text-brand dark:text-blue-400 bg-brand/10 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
@@ -524,11 +563,17 @@ export function TovarlarPage() {
                       >
                         <td className="p-4 pl-6">
                           <div className="flex items-center gap-3.5">
-                            <img 
-                              src={product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'} 
-                              alt={product.name} 
-                              className="w-12 h-12 rounded-xl object-cover border border-slate-200/80 dark:border-slate-700 shadow-xs shrink-0" 
-                            />
+                            {product.image && product.image.trim() !== '' ? (
+                              <img 
+                                src={product.image} 
+                                alt={product.name} 
+                                className="w-12 h-12 rounded-xl object-cover border border-slate-200/80 dark:border-slate-700 shadow-xs shrink-0" 
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/80 flex items-center justify-center shrink-0 text-slate-400 dark:text-slate-500">
+                                <Package className="w-5 h-5 stroke-[1.5]" />
+                              </div>
+                            )}
                             <div className="min-w-0">
                               <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base block group-hover:text-brand dark:group-hover:text-blue-400 transition-colors line-clamp-2 max-w-md leading-snug">
                                 {product.name}
@@ -677,6 +722,52 @@ export function TovarlarPage() {
           }}
           onConfirm={handleDeleteConfirm}
         />
+      )}
+
+      {/* Clear All Products Confirmation Modal */}
+      {isConfirmClearAllOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 transition-all overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 my-auto">
+            <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-8 h-8" />
+            </div>
+
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Barcha tovarlarni tozalash</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
+              Haqiqatan ham ombordagi barcha demo tovar kartalarini (<strong className="text-slate-800 dark:text-slate-200">{products.length} ta</strong>) tozalab tashlamoqchimisiz?
+            </p>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={isClearingAll}
+                onClick={() => setIsConfirmClearAllOpen(false)}
+                className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-colors text-sm cursor-pointer disabled:opacity-50"
+              >
+                Bekor qilish
+              </button>
+              <button
+                type="button"
+                disabled={isClearingAll}
+                onClick={handleClearAllConfirm}
+                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold rounded-xl shadow-md transition-all text-sm cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isClearingAll ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Tozalanmoqda...</span>
+                  </>
+                ) : (
+                  <span>Ha, tozalash</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

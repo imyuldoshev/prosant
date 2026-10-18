@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, PackagePlus, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { X, PackagePlus, AlertCircle, ArrowUpRight, Package } from 'lucide-react';
 import type { Product } from '../types';
 import { FormattedNumberInput } from './FormattedNumberInput';
 import { formatSum, parseFormattedNumber } from '../utils/format';
@@ -106,11 +106,17 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
           
           {/* Product Info Banner */}
           <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700 flex items-center gap-3 shrink-0">
-            <img 
-              src={product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'} 
-              alt={product.name}
-              className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs shrink-0 bg-slate-100 dark:bg-slate-800" 
-            />
+            {product.image && product.image.trim() !== '' ? (
+              <img 
+                src={product.image} 
+                alt={product.name}
+                className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs shrink-0 bg-slate-100 dark:bg-slate-800" 
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 text-slate-400 dark:text-slate-500">
+                <Package className="w-6 h-6 stroke-[1.5]" />
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <span className="text-[11px] font-bold text-brand dark:text-blue-400 uppercase tracking-wider block truncate">
                 {product.category || 'Umumiy'}
