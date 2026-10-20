@@ -2,16 +2,19 @@ import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue } f
 import { 
   Search, ShoppingCart, Plus, X, Trash2, Mic, Minus,
   CreditCard, Banknote, Building2, Phone, Receipt, Printer, FileText, CheckCircle2, AlertCircle,
-  Check, Loader2
+  Check, Loader2, Send
 } from 'lucide-react';
 import type { Product, CartItem, PaymentMethod, SaleRecord } from '../types';
 import { useProducts } from '../context/ProductContext';
 import { useSales } from '../context/SalesContext';
+import { useAuth } from '../context/AuthContext';
 import { useBlockUpdate, useTaskCompletion } from '../context/UpdateContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { KassaProductCard } from '../components/KassaProductCard';
 import { FormattedNumberInput } from '../components/FormattedNumberInput';
 import { formatSum, parseFormattedNumber } from '../utils/format';
+import { telegramService } from '../services/telegramService';
+import { TelegramSettingsModal } from '../components/TelegramSettingsModal';
 
 function formatPhoneLocal(digits: string): string {
   const d = digits.replace(/\D/g, '').slice(0, 9);
@@ -23,6 +26,7 @@ function formatPhoneLocal(digits: string): string {
 }
 
 export function KassaPage() {
+  const { user } = useAuth();
   const { products, categories } = useProducts();
   const { addSale } = useSales();
   const [query, setQuery] = useState('');
@@ -32,6 +36,7 @@ export function KassaPage() {
   const [editingCartProductId, setEditingCartProductId] = useState<string | null>(null);
   const [quantityStr, setQuantityStr] = useState('1');
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isTelegramSettingsOpen, setIsTelegramSettingsOpen] = useState(false);
   const quantityInputRef = useRef<HTMLInputElement>(null);
 
   const markTaskComplete = useTaskCompletion();
@@ -119,6 +124,18 @@ export function KassaPage() {
         note: checkoutNote.trim() || undefined,
       });
 
+      // Telegram botga chek ma'lumotlarini jo'natish (spiska holatda)
+      const cashierName = user?.profile?.full_name || user?.email?.split('@')[0] || 'Kassa';
+      telegramService.sendSaleNotification(created, { cashierName })
+        .then(res => {
+          if (res.success) {
+            showToast(`Chek #${created.saleNumber} Telegram botga yuborildi ✅`);
+          }
+        })
+        .catch(err => {
+          console.warn('[Telegram] Avtomatik xabarnoma yuborishda xatolik:', err);
+        });
+
       setCart([]);
       setIsCheckoutOpen(false);
       setIsCartOpen(false);
@@ -150,7 +167,9 @@ export function KassaPage() {
     customerPhoneDigits, 
     checkoutNote, 
     addSale, 
-    autoPrintAfterSale
+    autoPrintAfterSale,
+    user,
+    showToast
   ]);
 
   // Global Escape & Enter key handler for modals
@@ -1070,6 +1089,30 @@ export function KassaPage() {
                 </span>
               </label>
 
+              {/* 7.1 Telegram Bot Notification Info */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
+                    <Send className="w-4 h-4 -rotate-12 translate-x-0.5" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
+                      Telegram botga chek yuborish
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {telegramService.isConfigured() ? "Sotuv vaqtida avtomatik botga xabar boradi" : "Telegram hali sozlanmagan"}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsTelegramSettingsOpen(true)}
+                  className="px-2.5 py-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-lg transition-colors cursor-pointer"
+                >
+                  {telegramService.isConfigured() ? "Sozlamalar" : "Sozlash"}
+                </button>
+              </div>
+
               {/* 8. Action Buttons */}
               <div className="pt-2 mt-auto border-t border-slate-200 dark:border-slate-800 flex gap-2.5 shrink-0 sticky bottom-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-sm pb-1">
                 <button 
@@ -1117,6 +1160,12 @@ export function KassaPage() {
           autoPrint={autoPrintAfterSale}
         />
       )}
+
+      {/* TELEGRAM SETTINGS MODAL */}
+      <TelegramSettingsModal
+        isOpen={isTelegramSettingsOpen}
+        onClose={() => setIsTelegramSettingsOpen(false)}
+      />
 
     </div>
   );

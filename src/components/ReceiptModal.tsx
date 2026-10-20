@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Printer, X, CheckCircle2, FileText, Receipt as ReceiptIcon } from 'lucide-react';
+import { 
+  Printer, X, CheckCircle2, FileText, Receipt as ReceiptIcon,
+  Send, RefreshCw, Check, AlertCircle, Settings
+} from 'lucide-react';
 import type { SaleRecord } from '../types';
 import { formatSum } from '../utils/format';
+import { telegramService } from '../services/telegramService';
+import { TelegramSettingsModal } from './TelegramSettingsModal';
 
 interface ReceiptModalProps {
   sale: SaleRecord | null;
@@ -37,6 +42,10 @@ function getPaymentMethodLabel(method: string): string {
 export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalProps) {
   const hasAutoPrintedRef = useRef(false);
   const [printLayout, setPrintLayout] = useState<'a4' | 'thermal'>('a4');
+  const [isSendingTelegram, setIsSendingTelegram] = useState(false);
+  const [telegramStatus, setTelegramStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [telegramError, setTelegramError] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     if (sale && autoPrint && !hasAutoPrintedRef.current) {
@@ -58,75 +67,163 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  const handleSendToTelegram = async () => {
+    if (!sale) return;
+    if (!telegramService.isConfigured()) {
+      setIsSettingsOpen(true);
+      return;
+    }
+
+    setIsSendingTelegram(true);
+    setTelegramStatus('idle');
+    setTelegramError(null);
+
+    const result = await telegramService.sendSaleNotification(sale, { force: true });
+    setIsSendingTelegram(false);
+
+    if (result.success) {
+      setTelegramStatus('success');
+      setTimeout(() => setTelegramStatus('idle'), 3500);
+    } else {
+      setTelegramStatus('error');
+      setTelegramError(result.error || 'Xatolik yuz berdi');
+      setTimeout(() => {
+        setTelegramStatus('idle');
+        setTelegramError(null);
+      }, 5000);
+    }
+  };
+
   if (!sale) return null;
 
   const formattedDate = formatReceiptDateTime(sale.createdAt);
 
   return (
-    <div 
-      className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[90] flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Savdo cheki va nakladnaya"
-    >
-      <div className="w-full max-w-3xl flex flex-col my-auto max-h-[96dvh] sm:max-h-[96vh]">
-        
-        {/* On-Screen Action Toolbar (Hidden during printing) */}
-        <div className="no-print bg-slate-900 text-white px-4 sm:px-5 py-3 rounded-t-2xl flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 shadow-lg shrink-0">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-            <span className="font-bold text-xs sm:text-sm md:text-base">
-              Chek: <span className="font-mono text-brand-light">{sale.saleNumber}</span>
-            </span>
-          </div>
-
-          {/* Print format switchers & actions */}
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center bg-slate-800 p-0.5 rounded-xl border border-slate-700">
-              <button
-                type="button"
-                onClick={() => setPrintLayout('a4')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                  printLayout === 'a4' ? 'bg-brand text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                }`}
-                title="Standart A4 nakladnaya formati"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>A4</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintLayout('thermal')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                  printLayout === 'thermal' ? 'bg-brand text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                }`}
-                title="58mm / 80mm termal kassa lentalari formati"
-              >
-                <ReceiptIcon className="w-3.5 h-3.5" />
-                <span>Kassa lenti (80mm)</span>
-              </button>
+    <>
+      <div 
+        className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[90] flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Savdo cheki va nakladnaya"
+      >
+        <div className="w-full max-w-3xl flex flex-col my-auto max-h-[96dvh] sm:max-h-[96vh]">
+          
+          {/* On-Screen Action Toolbar (Hidden during printing) */}
+          <div className="no-print bg-slate-900 text-white px-4 sm:px-5 py-3 rounded-t-2xl flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 shadow-lg shrink-0">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <span className="font-bold text-xs sm:text-sm md:text-base">
+                Chek: <span className="font-mono text-brand-light">{sale.saleNumber}</span>
+              </span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="min-h-[40px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
-              title="Chekni chop etish (Ctrl + P)"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Chop etish</span>
-            </button>
+            {/* Print format switchers & actions */}
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center bg-slate-800 p-0.5 rounded-xl border border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setPrintLayout('a4')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    printLayout === 'a4' ? 'bg-brand text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Standart A4 nakladnaya formati"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>A4</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintLayout('thermal')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    printLayout === 'thermal' ? 'bg-brand text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="58mm / 80mm termal kassa lentalari formati"
+                >
+                  <ReceiptIcon className="w-3.5 h-3.5" />
+                  <span>Kassa lenti (80mm)</span>
+                </button>
+              </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95 min-h-[40px] min-w-[40px] flex items-center justify-center"
-              aria-label="Yopish"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              {/* Telegramga yuborish tugmasi */}
+              <button
+                type="button"
+                onClick={handleSendToTelegram}
+                disabled={isSendingTelegram}
+                className={`min-h-[40px] px-3.5 py-2 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
+                  telegramStatus === 'success'
+                    ? 'bg-emerald-600 hover:bg-emerald-500'
+                    : telegramStatus === 'error'
+                    ? 'bg-rose-600 hover:bg-rose-500'
+                    : 'bg-sky-600 hover:bg-sky-500'
+                }`}
+                title="Chekni Telegram botga yuborish"
+              >
+                {isSendingTelegram ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : telegramStatus === 'success' ? (
+                  <Check className="w-4 h-4" />
+                ) : telegramStatus === 'error' ? (
+                  <AlertCircle className="w-4 h-4" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                <span>
+                  {isSendingTelegram
+                    ? "Yuborilmoqda..."
+                    : telegramStatus === 'success'
+                    ? "Yuborildi!"
+                    : telegramStatus === 'error'
+                    ? "Xatolik"
+                    : "Telegram"}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95 min-h-[40px] min-w-[40px] flex items-center justify-center"
+                title="Telegram sozlamalari"
+                aria-label="Telegram sozlamalari"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="min-h-[40px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+                title="Chekni chop etish (Ctrl + P)"
+              >
+                <Printer className="w-4 h-4" />
+                <span className="hidden sm:inline">Chop etish</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95 min-h-[40px] min-w-[40px] flex items-center justify-center"
+                aria-label="Yopish"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-        </div>
+
+          {telegramError && (
+            <div className="no-print bg-rose-600 text-white px-4 py-2 text-xs flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Telegramga yuborishda xatolik: {telegramError}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="underline font-bold hover:text-rose-100 cursor-pointer"
+              >
+                Sozlamalarni tekshirish
+              </button>
+            </div>
+          )}
 
         {/* Scrollable Container for Preview */}
         <div className="bg-slate-200 dark:bg-slate-950 p-2 sm:p-6 overflow-y-auto shadow-2xl flex justify-center transition-colors">
@@ -298,5 +395,11 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
 
       </div>
     </div>
+
+    <TelegramSettingsModal
+      isOpen={isSettingsOpen}
+      onClose={() => setIsSettingsOpen(false)}
+    />
+  </>
   );
 }

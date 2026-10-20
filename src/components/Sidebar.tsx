@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Package, History, X, LogIn, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, History, X, LogIn, LogOut, Send } from 'lucide-react';
 import { MenuButton } from './MenuButton';
 import { ThemeToggle } from './ThemeToggle';
+import { TelegramSettingsModal } from './TelegramSettingsModal';
 import { useAuth } from '../context/AuthContext';
 import logoMobile from '../assets/logo/logo-mobile.webp';
 
@@ -12,6 +13,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const [isTelegramModalOpen, setIsTelegramModalOpen] = useState(false);
   const { user, isAuthenticated, signOut } = useAuth();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -125,6 +127,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             to="/tarix" 
             onClick={onClose} 
           />
+
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              setIsTelegramModalOpen(true);
+            }}
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all text-white font-bold text-left cursor-pointer active:scale-98"
+          >
+            <Send className="w-7 h-7 text-sky-400 p-1.5 bg-sky-500/20 rounded-xl shrink-0 -rotate-12" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-base font-bold text-white">Telegram Bot</span>
+              <span className="text-xs text-slate-400 font-normal">Sotuv cheklari xabarnomasi</span>
+            </div>
+          </button>
+
           <div className="mt-2 pt-2 border-t border-white/10">
             <ThemeToggle showLabel className="w-full justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border-white/10 text-white rounded-2xl" />
           </div>
@@ -170,6 +188,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           )}
         </div>
       </div>
+
+      <TelegramSettingsModal
+        isOpen={isTelegramModalOpen}
+        onClose={() => setIsTelegramModalOpen(false)}
+      />
     </>
   );
 }

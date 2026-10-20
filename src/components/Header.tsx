@@ -1,7 +1,10 @@
-import { Menu, LayoutDashboard, Package, History, LogIn, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { Menu, LayoutDashboard, Package, History, LogIn, LogOut, Send } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
+import { TelegramSettingsModal } from './TelegramSettingsModal';
+import { telegramService } from '../services/telegramService';
 import logoWeb from '../assets/logo/logo-web.webp';
 import logoMobile from '../assets/logo/logo-mobile.webp';
 
@@ -10,6 +13,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const [isTelegramModalOpen, setIsTelegramModalOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, signOut } = useAuth();
 
@@ -110,8 +114,22 @@ export function Header({ onMenuClick }: HeaderProps) {
         </nav>
       </div>
 
-      {/* RIGHT AREA: Theme Toggle & Status Indicator & Auth */}
+      {/* RIGHT AREA: Theme Toggle & Telegram & Auth */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Telegram Bot Button */}
+        <button
+          type="button"
+          onClick={() => setIsTelegramModalOpen(true)}
+          className="relative w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700 shadow-xs"
+          title="Telegram Bot sozlamalari (Sotuv cheklari)"
+          aria-label="Telegram Bot sozlamalari"
+        >
+          <Send className="w-4 h-4 text-sky-500 -rotate-12 translate-x-0.5" />
+          {telegramService.isConfigured() && (
+            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+          )}
+        </button>
+
         {/* Theme Toggle Button */}
         <ThemeToggle />
 
@@ -141,6 +159,11 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Link>
         )}
       </div>
+
+      <TelegramSettingsModal
+        isOpen={isTelegramModalOpen}
+        onClose={() => setIsTelegramModalOpen(false)}
+      />
     </header>
   );
 }
