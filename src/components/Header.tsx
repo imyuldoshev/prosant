@@ -120,13 +120,13 @@ export function Header({ onMenuClick }: HeaderProps) {
         <button
           type="button"
           onClick={() => setIsTelegramModalOpen(true)}
-          className="relative w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700 shadow-xs"
+          className="relative h-10 w-10 min-w-[40px] min-h-[40px] rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 flex items-center justify-center text-slate-700 dark:text-slate-200 transition-all cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs select-none"
           title="Telegram Bot sozlamalari (Sotuv cheklari)"
           aria-label="Telegram Bot sozlamalari"
         >
-          <Send className="w-4 h-4 text-sky-500 -rotate-12 translate-x-0.5" />
+          <Send className="w-4 h-4 sm:w-5 sm:h-5 text-sky-500 stroke-[2.2] shrink-0" />
           {telegramService.isConfigured() && (
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 pointer-events-none" />
           )}
         </button>
 

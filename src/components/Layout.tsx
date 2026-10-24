@@ -9,7 +9,7 @@ export function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
+    <div className="h-screen h-[100dvh] flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       
       <Header onMenuClick={() => setIsMenuOpen(true)} />

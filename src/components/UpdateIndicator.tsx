@@ -24,7 +24,7 @@ export function UpdateIndicator() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 max-w-sm bg-slate-900/95 backdrop-blur-md text-white border border-slate-700/80 rounded-2xl shadow-2xl p-3.5 sm:p-4 animate-in fade-in slide-in-from-bottom-4 duration-300 pointer-events-auto"
+      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 right-4 sm:right-6 z-40 max-w-sm bg-slate-900/95 backdrop-blur-md text-white border border-slate-700/80 rounded-2xl shadow-2xl p-3.5 sm:p-4 animate-in fade-in slide-in-from-bottom-4 duration-300 pointer-events-auto"
     >
       <div className="flex items-start gap-3">
         {/* Glowing badge icon */}

@@ -149,7 +149,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                 type="button"
                 onClick={handleSendToTelegram}
                 disabled={isSendingTelegram}
-                className={`min-h-[40px] px-3.5 py-2 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
+                className={`min-h-[40px] px-3.5 py-2 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
                   telegramStatus === 'success'
                     ? 'bg-emerald-600 hover:bg-emerald-500'
                     : telegramStatus === 'error'
@@ -159,13 +159,13 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                 title="Chekni Telegram botga yuborish"
               >
                 {isSendingTelegram ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin shrink-0" />
                 ) : telegramStatus === 'success' ? (
-                  <Check className="w-4 h-4" />
+                  <Check className="w-4 h-4 shrink-0" />
                 ) : telegramStatus === 'error' ? (
-                  <AlertCircle className="w-4 h-4" />
+                  <AlertCircle className="w-4 h-4 shrink-0" />
                 ) : (
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4 shrink-0" />
                 )}
                 <span>
                   {isSendingTelegram
@@ -181,30 +181,30 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95 min-h-[40px] min-w-[40px] flex items-center justify-center"
+                className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95 flex items-center justify-center shrink-0"
                 title="Telegram sozlamalari"
                 aria-label="Telegram sozlamalari"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-4 h-4 shrink-0" />
               </button>
 
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="min-h-[40px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+                className="min-h-[40px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
                 title="Chekni chop etish (Ctrl + P)"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Chop etish</span>
               </button>
 
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95 min-h-[40px] min-w-[40px] flex items-center justify-center"
+                className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer active:scale-95 flex items-center justify-center shrink-0"
                 aria-label="Yopish"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 shrink-0" />
               </button>
             </div>
           </div>

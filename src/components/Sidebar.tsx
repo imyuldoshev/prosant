@@ -136,7 +136,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             }}
             className="w-full flex items-center gap-4 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all text-white font-bold text-left cursor-pointer active:scale-98"
           >
-            <Send className="w-7 h-7 text-sky-400 p-1.5 bg-sky-500/20 rounded-xl shrink-0 -rotate-12" />
+            <div className="w-11 h-11 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+              <Send className="w-5 h-5 shrink-0" />
+            </div>
             <div className="flex flex-col min-w-0">
               <span className="text-base font-bold text-white">Telegram Bot</span>
               <span className="text-xs text-slate-400 font-normal">Sotuv cheklari xabarnomasi</span>

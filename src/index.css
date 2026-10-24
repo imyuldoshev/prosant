@@ -30,12 +30,28 @@
   button, [role="button"], input, select, textarea {
     touch-action: manipulation;
   }
+
+  /* Prevent iOS Safari 110% auto-zoom on input focus (requires >= 16px font-size) */
+  @media screen and (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @layer utilities {
   .touch-target {
     min-width: 44px;
     min-height: 44px;
+  }
+
+  /* iOS Safe Area Utilities */
+  .pb-safe {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .pt-safe {
+    padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
   }
 
   .scrollbar-hide {

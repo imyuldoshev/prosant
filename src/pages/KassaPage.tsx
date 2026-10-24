@@ -437,7 +437,7 @@ export function KassaPage() {
                 placeholder="Mahsulot qidirish (Masalan: tr 20)"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                autoFocus
+                autoFocus={typeof window !== 'undefined' && window.innerWidth >= 768}
               />
               <button 
                 onClick={() => showToast('Ovozli qidiruv funksiyasi tez orada ishga tushadi')}
@@ -1092,8 +1092,8 @@ export function KassaPage() {
               {/* 7.1 Telegram Bot Notification Info */}
               <div className="flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
-                    <Send className="w-4 h-4 -rotate-12 translate-x-0.5" />
+                  <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
+                    <Send className="w-4 h-4 shrink-0" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
@@ -1107,7 +1107,7 @@ export function KassaPage() {
                 <button
                   type="button"
                   onClick={() => setIsTelegramSettingsOpen(true)}
-                  className="px-2.5 py-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-lg transition-colors cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
                 >
                   {telegramService.isConfigured() ? "Sozlamalar" : "Sozlash"}
                 </button>

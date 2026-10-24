@@ -80,7 +80,7 @@ export function TelegramSettingsModal({ isOpen, onClose }: TelegramSettingsModal
         <div className="px-5 py-4 bg-gradient-to-r from-sky-500/10 via-blue-500/5 to-transparent border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center shadow-md shadow-sky-500/25 shrink-0">
-              <Send className="w-5 h-5 -rotate-12 translate-x-0.5" />
+              <Send className="w-5 h-5 shrink-0" />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -304,12 +304,12 @@ export function TelegramSettingsModal({ isOpen, onClose }: TelegramSettingsModal
             type="button"
             onClick={handleTestConnection}
             disabled={isTesting || !config.botToken.trim() || !config.chatId.trim()}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
           >
             {isTesting ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-500" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-500 shrink-0" />
             ) : (
-              <MessageSquare className="w-3.5 h-3.5 text-sky-500" />
+              <MessageSquare className="w-3.5 h-3.5 text-sky-500 shrink-0" />
             )}
             <span>{isTesting ? "Yuborilmoqda..." : "Sinab ko'rish"}</span>
           </button>
@@ -318,7 +318,7 @@ export function TelegramSettingsModal({ isOpen, onClose }: TelegramSettingsModal
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer flex items-center justify-center"
             >
               Bekor qilish
             </button>
@@ -326,11 +326,11 @@ export function TelegramSettingsModal({ isOpen, onClose }: TelegramSettingsModal
             <button
               type="button"
               onClick={handleSave}
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 active:scale-95 transition-all shadow-md shadow-sky-600/20 flex items-center gap-2 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 active:scale-95 transition-all shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 cursor-pointer"
             >
               {saveSuccess ? (
                 <>
-                  <Check className="w-4 h-4" />
+                  <Check className="w-4 h-4 shrink-0" />
                   <span>Saqlandi!</span>
                 </>
               ) : (
