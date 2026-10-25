@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProductProvider } from './context/ProductContext';
+import { ContactProvider } from './context/ContactContext';
 import { SalesProvider } from './context/SalesContext';
 import { UpdateProvider } from './context/UpdateContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -27,26 +28,28 @@ export default function App() {
         {/* UpdateProvider coordinates silent deferred updates across routes */}
         <UpdateProvider>
           <ProductProvider>
-            <SalesProvider>
-              <Suspense fallback={<PageLoading />}>
-                <Routes>
-                  {/* Ochiq marshrut — Tizimga kirish sahifasi */}
-                  <Route path="/login" element={<LoginPage />} />
+            <ContactProvider>
+              <SalesProvider>
+                <Suspense fallback={<PageLoading />}>
+                  <Routes>
+                    {/* Ochiq marshrut — Tizimga kirish sahifasi */}
+                    <Route path="/login" element={<LoginPage />} />
 
-                  {/* Himoyalangan marshrutlar — faqat login qilganlar uchun */}
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/" element={<Layout />}>
-                      <Route index element={<KassaPage />} />
-                      <Route path="tovarlar" element={<TovarlarPage />} />
-                      <Route path="tarix" element={<TarixPage />} />
+                    {/* Himoyalangan marshrutlar — faqat login qilganlar uchun */}
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/" element={<Layout />}>
+                        <Route index element={<KassaPage />} />
+                        <Route path="tovarlar" element={<TovarlarPage />} />
+                        <Route path="tarix" element={<TarixPage />} />
+                      </Route>
                     </Route>
-                  </Route>
 
-                  {/* Noma'lum manzillarni bosh sahifaga yo'naltirish */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Suspense>
-            </SalesProvider>
+                    {/* Noma'lum manzillarni bosh sahifaga yo'naltirish */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
+              </SalesProvider>
+            </ContactProvider>
           </ProductProvider>
         </UpdateProvider>
       </ThemeProvider>

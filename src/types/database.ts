@@ -51,6 +51,17 @@ export type CustomerRow = {
   created_at: string;
 };
 
+export type ContactRow = {
+  id: string;
+  name: string;
+  store_name: string | null;
+  phone: string | null;
+  address: string | null;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SaleRow = {
   id: string;
   sale_number: number;
@@ -58,6 +69,8 @@ export type SaleRow = {
   customer_id: string | null;
   customer_name: string | null;
   customer_phone: string | null;
+  contact_id?: string | null;
+  contact_name?: string | null;
   payment_method: PaymentMethodDb;
   subtotal: number;
   discount: number;
@@ -135,6 +148,17 @@ export type CustomerInsert = {
   created_at?: string;
 };
 
+export type ContactInsert = {
+  id?: string;
+  name: string;
+  store_name?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  note?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type SaleInsert = {
   id?: string;
   sale_number?: number;
@@ -142,6 +166,8 @@ export type SaleInsert = {
   customer_id?: string | null;
   customer_name?: string | null;
   customer_phone?: string | null;
+  contact_id?: string | null;
+  contact_name?: string | null;
   payment_method: PaymentMethodDb;
   subtotal?: number;
   discount?: number;
@@ -206,6 +232,12 @@ export type Database = {
         Row: CustomerRow;
         Insert: CustomerInsert;
         Update: Partial<CustomerInsert>;
+        Relationships: [];
+      };
+      contacts: {
+        Row: ContactRow;
+        Insert: ContactInsert;
+        Update: Partial<ContactInsert>;
         Relationships: [];
       };
       sales: {

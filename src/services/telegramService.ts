@@ -142,12 +142,15 @@ export const telegramService = {
     lines.push(`📅 <b>Sana va vaqt:</b> ${escapeHtml(formattedDate)}`);
     lines.push(`👤 <b>Sotuvchi/Kassir:</b> ${escapeHtml(cashier)}`);
 
-    // 2. Xaridor
+    // 2. Xaridor va Do'kon
+    if (sale.contactName) {
+      lines.push(`🏬 <b>Diler / Do'kon:</b> ${escapeHtml(sale.contactName)}`);
+    }
     if (sale.customerName || sale.customerPhone) {
       const custName = escapeHtml(sale.customerName || 'Mijoz');
       const custPhone = sale.customerPhone ? ` (${escapeHtml(sale.customerPhone)})` : '';
-      lines.push(`👥 <b>Xaridor:</b> ${custName}${custPhone}`);
-    } else {
+      lines.push(`👥 <b>Mijoz:</b> ${custName}${custPhone}`);
+    } else if (!sale.contactName) {
       lines.push(`👥 <b>Xaridor:</b> Chakana xaridor`);
     }
 

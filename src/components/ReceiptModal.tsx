@@ -267,7 +267,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                     Xaridor:
                   </span>
                   <span className="font-bold text-slate-900 text-xs sm:text-sm truncate">
-                    {sale.customerName ? sale.customerName : 'Chakana xaridor'}
+                    {sale.contactName ? `${sale.contactName}` : (sale.customerName ? sale.customerName : 'Chakana xaridor')}
                     {sale.customerPhone ? ` (${sale.customerPhone})` : ''}
                   </span>
                 </div>

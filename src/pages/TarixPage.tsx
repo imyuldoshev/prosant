@@ -5,7 +5,7 @@ import {
   CreditCard, Banknote, Building2, FileText, 
   X, AlertCircle, ShoppingBag, TrendingUp, DollarSign,
   User, Phone, Clock, ChevronDown, Lock, EyeOff,
-  Loader2, CheckCircle2, ArrowRight, ArrowLeft, KeyRound, Send
+  Loader2, CheckCircle2, ArrowRight, ArrowLeft, KeyRound, Send, Store
 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { useProducts } from '../context/ProductContext';
@@ -16,6 +16,7 @@ import { DateRangePicker } from '../components/DateRangePicker';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { CustomSelect } from '../components/CustomSelect';
 import { TelegramSettingsModal } from '../components/TelegramSettingsModal';
+import { ContactHistorySection } from '../components/ContactHistorySection';
 import { toISODate, formatDateTime, formatToDMY } from '../utils/dateUtils';
 import { formatSum } from '../utils/format';
 import { telegramService } from '../services/telegramService';
@@ -37,6 +38,7 @@ export function TarixPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrderType>('newest');
+  const [tarixTab, setTarixTab] = useState<'umumiy' | 'contact'>('umumiy');
 
   // Progressive rendering limit
   const [visibleCount, setVisibleCount] = useState(30);
@@ -701,10 +703,59 @@ export function TarixPage() {
         </div>
       </div>
 
-      {/* 4. MAIN SALES DATA (MOBILE CARDS & DESKTOP TABLE) */}
-      
-      {/* MOBILE VIEW (md:hidden): Compact Cards with Expandable Details (NO X-SCROLL!) */}
-      <div className="md:hidden flex flex-col gap-3">
+      {/* 3.5 SEKSIYA TANLOVI BUTTONLARI (1-Umumiy, 2-Contact) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:min-w-[380px]">
+          <button
+            type="button"
+            onClick={() => setTarixTab('umumiy')}
+            className={`py-3 px-4 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 ${
+              tarixTab === 'umumiy'
+                ? 'bg-brand dark:bg-blue-600 text-white shadow-md shadow-brand/30 ring-2 ring-brand/30'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+          >
+            <History className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>1. Umumiy</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTarixTab('contact')}
+            className={`py-3 px-4 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 ${
+              tarixTab === 'contact'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-2 ring-indigo-500/30'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+          >
+            <Store className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
+            <span>2. Contact</span>
+          </button>
+        </div>
+
+        <span className="hidden sm:inline text-xs font-bold text-slate-400 dark:text-slate-500 px-3">
+          {tarixTab === 'umumiy' 
+            ? "Barcha sotuvlar tarixi va cheklar jurnali" 
+            : "Dilerlik do'konlari hisob-kitoblari va oylik spiskalar"}
+        </span>
+      </div>
+
+      {tarixTab === 'contact' ? (
+        <ContactHistorySection
+          sales={sales}
+          onViewReceipt={sale => setSelectedSale(sale)}
+          onPrintReceipt={sale => {
+            setSelectedSale(sale);
+            setShouldPrint(true);
+          }}
+          onSendTelegram={sale => handleSendSaleToTelegram(sale)}
+        />
+      ) : (
+        <>
+          {/* 4. MAIN SALES DATA (MOBILE CARDS & DESKTOP TABLE) */}
+          
+          {/* MOBILE VIEW (md:hidden): Compact Cards with Expandable Details (NO X-SCROLL!) */}
+          <div className="md:hidden flex flex-col gap-3">
         {filteredSales.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200 dark:border-slate-800 shadow-xs">
             <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
@@ -1138,6 +1189,9 @@ export function TarixPage() {
             <span>Ko'proq ko'rsatish (+{filteredSales.length - visibleCount} ta)</span>
           </button>
         </div>
+      )}
+
+        </>
       )}
 
       {/* 5. NAKLADNAYA / RECEIPT MODAL (MATCHES USER PHOTO) */}

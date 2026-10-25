@@ -2,11 +2,12 @@ import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue } f
 import { 
   Search, ShoppingCart, Plus, X, Trash2, Mic, Minus,
   CreditCard, Banknote, Building2, Phone, Receipt, Printer, FileText, CheckCircle2, AlertCircle,
-  Check, Loader2, Send
+  Check, Loader2, Send, Store, ChevronDown
 } from 'lucide-react';
-import type { Product, CartItem, PaymentMethod, SaleRecord } from '../types';
+import type { Product, CartItem, PaymentMethod, SaleRecord, Contact } from '../types';
 import { useProducts } from '../context/ProductContext';
 import { useSales } from '../context/SalesContext';
+import { useContacts } from '../context/ContactContext';
 import { useAuth } from '../context/AuthContext';
 import { useBlockUpdate, useTaskCompletion } from '../context/UpdateContext';
 import { ReceiptModal } from '../components/ReceiptModal';
@@ -40,6 +41,15 @@ export function KassaPage() {
   const quantityInputRef = useRef<HTMLInputElement>(null);
 
   const markTaskComplete = useTaskCompletion();
+
+  // Contact state
+  const { contacts, addContact } = useContacts();
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  const [selectedContactName, setSelectedContactName] = useState<string>('');
+  const [isQuickAddContactOpen, setIsQuickAddContactOpen] = useState(false);
+  const [quickStoreName, setQuickStoreName] = useState('');
+  const [quickPersonName, setQuickPersonName] = useState('');
+  const [quickPhoneDigits, setQuickPhoneDigits] = useState('');
 
   // Checkout modal holatlari
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -119,6 +129,8 @@ export function KassaPage() {
         paymentMethod,
         customerName: customerName.trim() || undefined,
         customerPhone: customerPhoneDigits ? `+998 ${formatPhoneLocal(customerPhoneDigits)}` : undefined,
+        contactId: selectedContactId || undefined,
+        contactName: selectedContactName || undefined,
         receivedAmount: receivedNum,
         changeAmount: change,
         note: checkoutNote.trim() || undefined,
@@ -143,6 +155,8 @@ export function KassaPage() {
 
       setCustomerName('');
       setCustomerPhoneDigits('');
+      setSelectedContactId(null);
+      setSelectedContactName('');
       setReceivedCashStr('');
       setCheckoutNote('');
       setPaymentMethod('naqd');
@@ -165,12 +179,58 @@ export function KassaPage() {
     receivedCashStr, 
     customerName, 
     customerPhoneDigits, 
+    selectedContactId,
+    selectedContactName,
     checkoutNote, 
     addSale, 
     autoPrintAfterSale,
     user,
     showToast
   ]);
+
+  const handleSelectContact = useCallback((contact: Contact | null) => {
+    if (!contact) {
+      setSelectedContactId(null);
+      setSelectedContactName('');
+      return;
+    }
+    setSelectedContactId(contact.id);
+    const fullName = contact.storeName 
+      ? `${contact.storeName} (${contact.name})` 
+      : contact.name;
+    setSelectedContactName(fullName);
+
+    if (!customerName.trim()) {
+      setCustomerName(contact.name);
+    }
+    if (!customerPhoneDigits && contact.phone) {
+      const rawDigits = contact.phone.replace(/\D/g, '');
+      const cleanDigits = rawDigits.startsWith('998') ? rawDigits.slice(3) : rawDigits;
+      setCustomerPhoneDigits(cleanDigits.slice(0, 9));
+    }
+  }, [customerName, customerPhoneDigits]);
+
+  const handleQuickCreateContact = useCallback(async () => {
+    if (!quickPersonName.trim() && !quickStoreName.trim()) {
+      showToast("Do'kon yoki sotuvchi ismini kiriting");
+      return;
+    }
+    const nameToUse = quickPersonName.trim() || quickStoreName.trim();
+    const phoneFormatted = quickPhoneDigits ? `+998 ${formatPhoneLocal(quickPhoneDigits)}` : undefined;
+
+    const newContact = await addContact({
+      name: nameToUse,
+      storeName: quickStoreName.trim() || undefined,
+      phone: phoneFormatted,
+    });
+
+    handleSelectContact(newContact);
+    setIsQuickAddContactOpen(false);
+    setQuickStoreName('');
+    setQuickPersonName('');
+    setQuickPhoneDigits('');
+    showToast(`"${newContact.name}" diler sifatida saqlandi va tanlandi! ✅`);
+  }, [quickPersonName, quickStoreName, quickPhoneDigits, addContact, handleSelectContact, showToast]);
 
   // Global Escape & Enter key handler for modals
   useEffect(() => {
@@ -239,6 +299,9 @@ export function KassaPage() {
     setReceivedCashStr(formatSum(totalCartSum));
     setCustomerPhoneDigits('');
     setCustomerName('');
+    setSelectedContactId(null);
+    setSelectedContactName('');
+    setIsQuickAddContactOpen(false);
     setCheckoutNote('');
     setIsCheckoutOpen(true);
     setTimeout(() => {
@@ -992,6 +1055,123 @@ export function KassaPage() {
                   ) : null}
                 </div>
               )}
+
+              {/* 3.1 Diler / Do'kon (Contact) Tanlash — Toza Select Option */}
+              <div className="p-3.5 rounded-2xl border-2 border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-slate-900 shadow-xs">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="dealer-contact-select" className="text-xs font-bold uppercase text-indigo-900 dark:text-indigo-300 tracking-wider flex items-center gap-1.5 cursor-pointer">
+                    <Store className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span>Dilerlik / Do'kon (Contact):</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickAddContactOpen(prev => !prev)}
+                    className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Yangi do'kon</span>
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <select
+                    id="dealer-contact-select"
+                    value={selectedContactId || ''}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      if (!id) {
+                        handleSelectContact(null);
+                      } else {
+                        const found = contacts.find(c => c.id === id);
+                        handleSelectContact(found || null);
+                      }
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-xs cursor-pointer appearance-none pr-10 transition-all"
+                  >
+                    <option value="" className="text-slate-500 font-normal">
+                      -- Umumiy mijoz (Kontakt bog'lanmagan) --
+                    </option>
+                    {contacts.map((c) => (
+                      <option key={c.id} value={c.id} className="text-slate-900 dark:text-white font-semibold">
+                        {c.storeName ? `${c.storeName} (${c.name})` : c.name} {c.phone ? `— ${c.phone}` : ''}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+
+                {/* Agar kontakt tanlangan bo'lsa, qisqa xulosa */}
+                {selectedContactId && (
+                  <div className="mt-2 flex items-center justify-between text-xs text-indigo-800 dark:text-indigo-200 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 px-3 py-1.5 rounded-xl animate-in fade-in">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <span className="truncate">
+                        Sotuv <b>{selectedContactName}</b> hisobiga yoziladi
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectContact(null)}
+                      className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline shrink-0 ml-2 cursor-pointer"
+                    >
+                      Yechish
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick Add Form inline */}
+                {isQuickAddContactOpen && (
+                  <div className="mt-2.5 p-3.5 bg-slate-50 dark:bg-slate-800/90 rounded-xl border border-indigo-200 dark:border-indigo-800 flex flex-col gap-2.5 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                        <Plus className="w-3.5 h-3.5 text-indigo-500" /> Yangi do'kon / diler qo'shish:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickAddContactOpen(false)}
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Do'kon nomi (masalan: Qo'yliq 12-do'kon)"
+                        value={quickStoreName}
+                        onChange={e => setQuickStoreName(e.target.value)}
+                        className="px-3 py-2 text-xs bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Mas'ul shaxs ismi (masalan: Rustam)"
+                        value={quickPersonName}
+                        onChange={e => setQuickPersonName(e.target.value)}
+                        className="px-3 py-2 text-xs bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="tel"
+                        placeholder="Telefon raqami (ixtiyoriy)"
+                        value={quickPhoneDigits}
+                        onChange={e => setQuickPhoneDigits(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                        className="flex-1 px-3 py-2 text-xs font-mono bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleQuickCreateContact}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg active:scale-95 transition-all cursor-pointer shadow-xs"
+                      >
+                        Saqlash & Tanlash
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* 4. Customer Phone (+998 Mask) */}
               <div className="p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">

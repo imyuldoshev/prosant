@@ -28,6 +28,8 @@ export function dbToSale(row: SaleRow & { sale_items?: SaleItemRow[] }): SaleRec
     paymentMethod: row.payment_method as PaymentMethod,
     customerName: row.customer_name ?? undefined,
     customerPhone: row.customer_phone ?? undefined,
+    contactId: row.contact_id ?? undefined,
+    contactName: row.contact_name ?? undefined,
     discount: Number(row.discount) || 0,
     receivedAmount: row.received_amount != null ? Number(row.received_amount) : undefined,
     changeAmount: row.change_amount != null ? Number(row.change_amount) : undefined,
@@ -92,6 +94,8 @@ export const saleService = {
     paymentMethod: PaymentMethod;
     customerName?: string;
     customerPhone?: string;
+    contactId?: string;
+    contactName?: string;
     discount?: number;
     receivedAmount?: number;
     changeAmount?: number;
@@ -107,6 +111,8 @@ export const saleService = {
       total: params.total,
       customer_name: params.customerName?.trim() || null,
       customer_phone: params.customerPhone?.trim() || null,
+      contact_id: isValidUuid(params.contactId) ? params.contactId : null,
+      contact_name: params.contactName?.trim() || null,
       received_amount: params.receivedAmount ?? null,
       change_amount: params.changeAmount ?? null,
       note: params.note?.trim() || null,

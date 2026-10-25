@@ -30,6 +30,17 @@ export interface SaleItem {
   artikul?: string;
 }
 
+export interface Contact {
+  id: string;
+  name: string;
+  storeName?: string;
+  phone?: string;
+  address?: string;
+  note?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface SaleRecord {
   id: string;
   saleNumber: string;
@@ -39,8 +50,11 @@ export interface SaleRecord {
   paymentMethod: PaymentMethod;
   customerName?: string;
   customerPhone?: string;
+  contactId?: string;
+  contactName?: string;
   discount?: number;
   receivedAmount?: number;
   changeAmount?: number;
   note?: string;
 }
+

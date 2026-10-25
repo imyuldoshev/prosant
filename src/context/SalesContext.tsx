@@ -12,6 +12,8 @@ interface AddSaleParams {
   paymentMethod: SaleRecord['paymentMethod'];
   customerName?: string;
   customerPhone?: string;
+  contactId?: string;
+  contactName?: string;
   discount?: number;
   receivedAmount?: number;
   changeAmount?: number;
@@ -46,8 +48,10 @@ function generateDemoSales(): SaleRecord[] {
       id: 'sale_1012_01',
       saleNumber: '#1054',
       createdAt: formatDateOffset(0.5), // 30 daqiqa oldin
-      customerName: 'Jahongir aka (Usta)',
+      customerName: 'Farhod (Usta)',
       customerPhone: '+998 90 123 45 67',
+      contactId: 'contact_demo_01',
+      contactName: 'Farhod bozori 12-do\'kon',
       paymentMethod: 'naqd',
       discount: 25000,
       total: 1250000,
@@ -97,8 +101,10 @@ function generateDemoSales(): SaleRecord[] {
       id: 'sale_1012_02',
       saleNumber: '#1053',
       createdAt: formatDateOffset(2), // 2 soat oldin
-      customerName: 'Dilshodbek',
+      customerName: 'Bobur Mirzo',
       customerPhone: '+998 97 888 77 66',
+      contactId: 'contact_demo_02',
+      contactName: 'Chorsu Santexnika Markazi',
       paymentMethod: 'karta',
       discount: 0,
       total: 750000,
@@ -480,6 +486,8 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
       paymentMethod: params.paymentMethod,
       customerName: params.customerName?.trim() || undefined,
       customerPhone: params.customerPhone?.trim() || undefined,
+      contactId: params.contactId,
+      contactName: params.contactName?.trim() || undefined,
       discount: params.discount || 0,
       receivedAmount: params.receivedAmount,
       changeAmount: params.changeAmount,
@@ -504,6 +512,8 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
       paymentMethod: params.paymentMethod,
       customerName: params.customerName,
       customerPhone: params.customerPhone,
+      contactId: params.contactId,
+      contactName: params.contactName,
       discount: params.discount,
       receivedAmount: params.receivedAmount,
       changeAmount: params.changeAmount,
