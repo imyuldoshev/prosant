@@ -73,8 +73,26 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           if (payload.eventType === 'INSERT') {
             const newProd = dbToProduct(payload.new as any);
             setProducts(prev => {
-              if (prev.some(p => p.id === newProd.id || (p.name.trim().toLowerCase() === newProd.name.trim().toLowerCase() && p.id.startsWith('prod_')))) {
-                return prev.map(p => (p.name.trim().toLowerCase() === newProd.name.trim().toLowerCase() && p.id.startsWith('prod_')) ? (newProd as Product) : p);
+              const exists = prev.some(
+                p => p.id === newProd.id ||
+                (p.name.trim().toLowerCase() === newProd.name.trim().toLowerCase() && p.id.startsWith('prod_'))
+              );
+              if (exists) {
+                return prev.map(p => {
+                  const isMatch = p.id === newProd.id ||
+                    (p.name.trim().toLowerCase() === newProd.name.trim().toLowerCase() && p.id.startsWith('prod_'));
+                  if (isMatch) {
+                    return {
+                      ...p,
+                      ...newProd,
+                      // Realtime WAL dan kelganda kategoriya yoki TOAST rasm bo'sh bo'lsa, optimistik qiymatni saqlab qolish
+                      category: newProd.category || p.category,
+                      image: newProd.image || p.image,
+                      costPrice: newProd.costPrice ?? p.costPrice,
+                    } as Product;
+                  }
+                  return p;
+                });
               }
               return [newProd as Product, ...prev];
             });
@@ -84,7 +102,18 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
               if (payload.new.is_active === false) {
                 return prev.filter(p => p.id !== updated.id);
               }
-              return prev.map(p => p.id === updated.id ? (updated as Product) : p);
+              return prev.map(p => {
+                if (p.id === updated.id) {
+                  return {
+                    ...p,
+                    ...updated,
+                    category: updated.category || p.category,
+                    image: updated.image || p.image,
+                    costPrice: updated.costPrice ?? p.costPrice,
+                  } as Product;
+                }
+                return p;
+              });
             });
           } else if (payload.eventType === 'DELETE') {
             const deletedId = (payload.old as any)?.id;
@@ -218,7 +247,19 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     })
       .then(saved => {
         if (saved && saved.id) {
-          setProducts(prev => prev.map(p => (p.id === tempId ? (saved as Product) : p)));
+          setProducts(prev => prev.map(p => {
+            const isMatch = p.id === tempId || p.id === saved.id || (p.name.trim().toLowerCase() === saved.name.trim().toLowerCase() && p.id.startsWith('prod_'));
+            if (isMatch) {
+              return {
+                ...p,
+                ...(saved as Product),
+                image: (saved as Product).image || p.image,
+                category: (saved as Product).category || p.category,
+                costPrice: (saved as Product).costPrice ?? p.costPrice,
+              };
+            }
+            return p;
+          }));
         }
       })
       .catch(err => {

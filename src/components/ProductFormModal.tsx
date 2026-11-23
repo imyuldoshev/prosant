@@ -57,15 +57,17 @@ export function ProductFormModal({
   const [error, setError] = useState<string | null>(null);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const prevIsOpenRef = useRef(false);
 
   // Ensure category is available
   const availableCategories = useMemo(() => {
     return categories.filter(c => c !== 'Barchasi');
   }, [categories]);
 
-  // Sync state on open/edit
+  // Sync state only when modal opens or target product changes
   useEffect(() => {
-    if (isOpen) {
+    const isOpening = isOpen && !prevIsOpenRef.current;
+    if (isOpening) {
       if (productToEdit) {
         setName(productToEdit.name);
         setCategory(productToEdit.category || availableCategories[0] || 'Umumiy');
@@ -95,6 +97,7 @@ export function ProductFormModal({
         nameInputRef.current?.focus();
       }, 50);
     }
+    prevIsOpenRef.current = isOpen;
   }, [isOpen, productToEdit, availableCategories]);
 
   // Debounced duplicate check (150ms) to eliminate keystroke jank

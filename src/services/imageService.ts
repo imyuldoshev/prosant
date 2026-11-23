@@ -50,10 +50,13 @@ export const imageService = {
   ): Promise<{ url: string; key: string }> => {
     let fileToUpload: File;
 
-    const cleanBaseName = (fileName || 'product')
+    const rawClean = (fileName || 'product')
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '')
       .slice(0, 30);
+    const cleanBaseName = rawClean || 'product';
 
     if (typeof fileOrDataUrl === 'string') {
       if (fileOrDataUrl.startsWith('http://') || fileOrDataUrl.startsWith('https://')) {
@@ -81,14 +84,15 @@ export const imageService = {
       console.warn('[ImageService] Rasm siqishda ogohlantirish, asl fayl ishlatiladi:', compressErr);
     }
 
-    // 2. Cloudflare R2 sozlanmagan bo'lsa fallback
+    // 2. Cloudflare R2 sozlanmagan bo'lsa fallback (doim siqilgan variantni qaytarish)
     if (!s3Client || !isR2Configured) {
-      console.warn('[ImageService] Cloudflare R2 kalitlari topilmadi, vaqtincha maʼlumot ishlatiladi.');
-      if (typeof fileOrDataUrl === 'string') {
-        return { url: fileOrDataUrl, key: '' };
+      console.warn('[ImageService] Cloudflare R2 kalitlari topilmadi, siqilgan maʼlumot ishlatiladi.');
+      try {
+        const base64Fallback = await imageCompression.getDataUrlFromFile(fileToUpload);
+        return { url: base64Fallback, key: '' };
+      } catch {
+        return { url: typeof fileOrDataUrl === 'string' ? fileOrDataUrl : '', key: '' };
       }
-      const base64Fallback = await imageCompression.getDataUrlFromFile(fileToUpload);
-      return { url: base64Fallback, key: '' };
     }
 
     // 3. Cloudflare R2 ga yuklash
@@ -113,15 +117,12 @@ export const imageService = {
       return { url: fullUrl, key };
     } catch (uploadErr) {
       console.error('[ImageService] Cloudflare R2 ga yuklashda xatolik:', uploadErr);
-      // Agar R2 xato bersa, tovar saqlanishi to'xtab qolmasligi uchun base64/faylni qaytaramiz
-      if (typeof fileOrDataUrl === 'string') {
-        return { url: fileOrDataUrl, key: '' };
-      }
+      // Agar R2 xato bersa, tovar saqlanishi to'xtab qolmasligi uchun siqilgan base64 qaytaramiz
       try {
         const base64Fallback = await imageCompression.getDataUrlFromFile(fileToUpload);
         return { url: base64Fallback, key: '' };
       } catch {
-        return { url: '', key: '' };
+        return { url: typeof fileOrDataUrl === 'string' ? fileOrDataUrl : '', key: '' };
       }
     }
   },
