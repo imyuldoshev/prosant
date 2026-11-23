@@ -36,6 +36,7 @@ const SalesContext = createContext<SalesContextType | undefined>(undefined);
 
 // Boshlang'ich realistik namunaviy sotuvlar (Tarix sahifasi bo'sh ko'rinmasligi uchun)
 function generateDemoSales(): SaleRecord[] {
+  return [];
   const now = new Date();
   
   const formatDateOffset = (hoursAgo: number) => {
@@ -350,6 +351,7 @@ export function deduplicateSales(list: SaleRecord[]): SaleRecord[] {
 
   for (const sale of list) {
     if (!sale || !sale.id) continue;
+    if (sale.id.startsWith('sale_1012_')) continue;
     if (seenIds.has(sale.id)) continue;
     seenIds.add(sale.id);
 

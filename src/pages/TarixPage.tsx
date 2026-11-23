@@ -25,7 +25,7 @@ type SortOrderType = 'newest' | 'oldest' | 'highest' | 'lowest';
 
 export function TarixPage() {
   const { user, verifyPassword } = useAuth();
-  const { sales, deleteSale, clearAllSales, resetToDemoSales } = useSales();
+  const { sales, deleteSale, clearAllSales } = useSales();
   const { products } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -769,16 +769,6 @@ export function TarixPage() {
             <p className="text-slate-400 dark:text-slate-500 text-xs mt-1 max-w-xs mx-auto">
               Qidiruv yoki sana parametrlarini o'zgartirib ko'ring yoki yangi sotuv amalga oshiring.
             </p>
-            {sales.length === 0 ? (
-              <button
-                type="button"
-                onClick={() => resetToDemoSales()}
-                className="mt-4 px-4 py-2 bg-brand text-white font-bold rounded-xl text-xs inline-flex items-center gap-1.5 active:scale-95 cursor-pointer mx-auto"
-              >
-                <History className="w-3.5 h-3.5" />
-                <span>Demo sotuvlarni tiklash</span>
-              </button>
-            ) : null}
           </div>
         ) : (
           <>
@@ -1135,16 +1125,7 @@ export function TarixPage() {
                           ? `${formatToDMY(startDate)} — ${formatToDMY(endDate)} sanalari oralig'ida hech qanday sotuv yoki chek topilmadi.`
                           : "Qidiruv mezonlariga mos keladigan cheklar mavjud emas yoki hali xaridlar amalga oshirilmagan."}
                       </p>
-                      {sales.length === 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => resetToDemoSales()}
-                          className="px-5 py-2.5 rounded-xl bg-brand hover:bg-brand/90 text-white font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-                        >
-                          <History className="w-4 h-4" />
-                          Demo sotuvlarni tiklash
-                        </button>
-                      ) : (searchQuery || (startDate && endDate) || paymentFilter !== 'all') ? (
+                      {searchQuery || (startDate && endDate) || paymentFilter !== 'all' ? (
                         <button
                           type="button"
                           onClick={() => {

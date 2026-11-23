@@ -121,11 +121,25 @@ export const saleService = {
     };
 
     // 2. Sales jadvaliga kiritish
-    const { data: saleRow, error: saleError } = await supabase
+    let { data: saleRow, error: saleError } = await supabase
       .from('sales')
       .insert(saleInsert)
       .select('*, sale_items(*)')
       .single();
+
+    // Agar bazada contact_id yoki contact_name ustunlari hali bo'lmasa, ularsiz qayta urinish (fallback)
+    if (saleError && (saleError.message?.includes('contact_id') || saleError.message?.includes('contact_name'))) {
+      const fallbackInsert = { ...saleInsert };
+      delete fallbackInsert.contact_id;
+      delete fallbackInsert.contact_name;
+      const fallbackRes = await supabase
+        .from('sales')
+        .insert(fallbackInsert)
+        .select('*, sale_items(*)')
+        .single();
+      saleRow = fallbackRes.data;
+      saleError = fallbackRes.error;
+    }
 
     if (saleError || !saleRow) {
       throw saleError || new Error('Sotuvni saqlashda xatolik yuz berdi');

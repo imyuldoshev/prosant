@@ -168,4 +168,25 @@ export const contactService = {
       return false;
     }
   },
+
+  /** Barcha kontaktlarni tozalash */
+  deleteAll: async (): Promise<boolean> => {
+    if (!isSupabaseConfigured) return false;
+
+    try {
+      const { error } = await supabase
+        .from('contacts')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+
+      if (error) {
+        console.warn('[Supabase] Contact deleteAll error:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('[Supabase] Contact deleteAll exception:', err);
+      return false;
+    }
+  },
 };

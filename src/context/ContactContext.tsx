@@ -27,53 +27,12 @@ interface ContactContextType {
   addContact: (params: AddContactParams) => Promise<Contact>;
   updateContact: (id: string, params: UpdateContactParams) => Promise<Contact | null>;
   deleteContact: (id: string) => Promise<boolean>;
+  clearAllContacts: () => Promise<void>;
   getContactById: (id: string) => Contact | undefined;
   syncWithSupabase: () => Promise<void>;
 }
 
 const ContactContext = createContext<ContactContextType | undefined>(undefined);
-
-// Boshlang'ich namunaviy kontaktlar va do'konlar (tizim bo'sh ko'rinmasligi va offlayn ishlashi uchun)
-function getInitialDemoContacts(): Contact[] {
-  return [
-    {
-      id: 'contact_demo_01',
-      name: 'Farhod (Usta)',
-      storeName: 'Farhod bozori 12-do\'kon',
-      phone: '+998 90 123 45 67',
-      address: 'Chilonzor, Farhod bozori',
-      note: 'Doimiy dilerlik mijoz, har oy 5-sanasida hisob-kitob',
-      createdAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
-    },
-    {
-      id: 'contact_demo_02',
-      name: 'Bobur Mirzo',
-      storeName: 'Chorsu Santexnika Markazi',
-      phone: '+998 97 888 77 66',
-      address: 'Shayxontohur, Chorsu',
-      note: 'Katta do\'kon, smesitel va trubalar oladi',
-      createdAt: new Date(Date.now() - 25 * 24 * 3600 * 1000).toISOString(),
-    },
-    {
-      id: 'contact_demo_03',
-      name: 'Akmal aka',
-      storeName: 'Qo\'yliq 45-do\'kon',
-      phone: '+998 93 555 44 33',
-      address: 'Qo\'yliq qurilish bozori',
-      note: 'Katta partiya bilan xarid qiladi',
-      createdAt: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString(),
-    },
-    {
-      id: 'contact_demo_04',
-      name: 'Jasur usta',
-      storeName: 'Yunusobod Usta Servis',
-      phone: '+998 99 333 22 11',
-      address: 'Yunusobod 14-mavze',
-      note: 'Isitish qozonlari va radiatorlar',
-      createdAt: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
-    },
-  ];
-}
 
 export function ContactProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -83,20 +42,20 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem(CONTACTS_STORAGE_KEY);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.filter((c: Contact) => !c.id.startsWith('contact_demo_'));
         }
       }
     } catch (e) {
       console.error('Failed to load contacts from localStorage', e);
     }
-    return getInitialDemoContacts();
+    return [];
   });
 
   // LocalStorage saqlash
   useEffect(() => {
     try {
-      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(contacts));
+      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(contacts.filter(c => !c.id.startsWith('contact_demo_'))));
     } catch (e) {
       console.error('Failed to save contacts to localStorage', e);
     }
@@ -109,10 +68,9 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const serverContacts = await contactService.getAll();
-      if (serverContacts && serverContacts.length > 0) {
-        setContacts(serverContacts);
-        localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(serverContacts));
-      }
+      const cleanContacts = (serverContacts || []).filter((c: Contact) => !c.id.startsWith('contact_demo_'));
+      setContacts(cleanContacts);
+      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(cleanContacts));
     } catch (err) {
       console.warn('[Supabase] Kontaktlarni sinxronlashda xatolik:', err);
     } finally {
@@ -252,6 +210,21 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, []);
 
+  const clearAllContacts = useCallback(async (): Promise<void> => {
+    setContacts([]);
+    try {
+      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify([]));
+    } catch (e) {
+      console.error('Failed to clear contacts from localStorage:', e);
+    }
+
+    if (isSupabaseConfigured) {
+      contactService.deleteAll().catch(err => {
+        console.error('[Supabase] Barcha kontaktlarni tozalashda xatolik:', err);
+      });
+    }
+  }, []);
+
   const getContactById = useCallback((id: string): Contact | undefined => {
     return contacts.find(c => c.id === id);
   }, [contacts]);
@@ -262,6 +235,7 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
     addContact,
     updateContact,
     deleteContact,
+    clearAllContacts,
     getContactById,
     syncWithSupabase,
   }), [
@@ -270,6 +244,7 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
     addContact,
     updateContact,
     deleteContact,
+    clearAllContacts,
     getContactById,
     syncWithSupabase,
   ]);

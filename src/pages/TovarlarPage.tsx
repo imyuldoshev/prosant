@@ -738,7 +738,7 @@ export function TovarlarPage() {
 
             <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Barcha tovarlarni tozalash</h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-              Haqiqatan ham ombordagi barcha demo tovar kartalarini (<strong className="text-slate-800 dark:text-slate-200">{products.length} ta</strong>) tozalab tashlamoqchimisiz?
+              Haqiqatan ham ombordagi barcha tovar kartalarini (<strong className="text-slate-800 dark:text-slate-200">{products.length} ta</strong>) tozalab tashlamoqchimisiz?
             </p>
 
             <div className="flex gap-2">

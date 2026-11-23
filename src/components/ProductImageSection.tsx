@@ -158,7 +158,6 @@ export const ProductImageSection = memo(function ProductImageSection({
                   width={96}
                   height={96}
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-700 shadow-xs bg-white dark:bg-slate-800"
-                  onError={() => onChange('')}
                 />
                 <button
                   type="button"
