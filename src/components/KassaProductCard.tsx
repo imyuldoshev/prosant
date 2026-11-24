@@ -103,8 +103,8 @@ export const KassaProductCard = memo(function KassaProductCard({
       <div className={`p-3 sm:p-3.5 flex flex-col justify-between grow gap-2.5 ${!hasImage ? 'rounded-2xl' : 'rounded-b-2xl'}`}>
         <div>
           {/* Top row if no image: Category + Quick Add Button (40x40px) */}
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-slate-400 dark:text-slate-500 truncate block">
+          <div className="flex items-start justify-between gap-2 mb-1.5">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-400 dark:text-slate-400 truncate block">
               {product.category && product.category.trim() !== '' ? product.category : 'Kategoriyasiz'}
             </span>
 
@@ -137,12 +137,12 @@ export const KassaProductCard = memo(function KassaProductCard({
             )}
           </div>
 
-          {/* Product Name */}
+          {/* Product Name (Kattaroq, ravshan va tez o'qiladigan shrift) */}
           <h3
-            className={`font-bold text-xs sm:text-sm leading-snug line-clamp-2 transition-colors ${
+            className={`font-black text-sm sm:text-base lg:text-[17px] leading-snug line-clamp-2 transition-colors min-h-[40px] flex items-center ${
               isOutOfStock
                 ? 'text-slate-400 dark:text-slate-500'
-                : 'text-slate-800 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-blue-400'
+                : 'text-slate-900 dark:text-white group-hover:text-brand dark:group-hover:text-blue-400'
             }`}
             title={product.name}
           >
@@ -151,9 +151,9 @@ export const KassaProductCard = memo(function KassaProductCard({
         </div>
 
         {/* Bottom row: Price & Stock indicator */}
-        <div className="pt-2 mt-auto border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5">
+        <div className="pt-2.5 mt-auto border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5">
           {/* Price */}
-          <div className={`font-black text-sm sm:text-base tracking-tight ${
+          <div className={`font-black text-base sm:text-lg tracking-tight ${
             isOutOfStock ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
           }`}>
             {formatSum(product.price)} <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">UZS</span>
