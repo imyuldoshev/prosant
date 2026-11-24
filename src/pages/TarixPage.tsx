@@ -421,6 +421,9 @@ export function TarixPage() {
               <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px] sm:text-xs rounded-full whitespace-nowrap border border-slate-200 dark:border-slate-700">
                 {sales.length} ta chek
               </span>
+              <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-brand/10 dark:bg-blue-900/30 text-brand dark:text-blue-400 font-bold text-xs rounded-full border border-brand/20 dark:border-blue-800/40">
+                {dateRangeBadgeText}
+              </span>
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-0.5 line-clamp-1 sm:line-clamp-none">
               Barcha amalga oshirilgan xaridlar, cheklar va moliyaviy hisobotlar
@@ -429,16 +432,6 @@ export function TarixPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setIsTelegramSettingsOpen(true)}
-            className="px-4 py-2.5 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-bold text-sm rounded-xl transition-all border border-sky-200/80 dark:border-sky-800 flex items-center justify-center gap-2 active:scale-95 cursor-pointer shadow-xs hover:shadow-sm"
-            title="Telegram bot sozlamalari va sinovi"
-          >
-            <Send className="w-4 h-4 text-sky-500 shrink-0" />
-            <span>Telegram Bot</span>
-          </button>
-
           <button
             type="button"
             onClick={handleExportCSV}
@@ -464,76 +457,72 @@ export function TarixPage() {
         </div>
       </div>
 
-      {/* 2. STATS OVERVIEW CARDS: 2 KATTA TITLE (JAMI TUSHUM & FOYDA) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+      {/* 2. STATS OVERVIEW CARDS: 2 IXCHAM KARTA (JAMI TUSHUM & FOYDA ~120-130px) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         
-        {/* KATTA TITLE 1: JAMI TUSHUM */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl shadow-indigo-900/20 border border-white/10 group transition-all hover:shadow-2xl">
-          <div className="absolute -right-8 -bottom-8 w-44 h-44 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute right-5 top-5 w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md border border-white/10 shadow-inner">
-            <DollarSign className="w-6 h-6 text-blue-200" />
+        {/* IXCHAM KARTA 1: JAMI TUSHUM */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white p-3.5 sm:p-4 rounded-2xl shadow-lg shadow-indigo-900/15 border border-white/10 group transition-all hover:shadow-xl">
+          <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute right-3.5 top-3.5 w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-white backdrop-blur-md border border-white/10 shadow-inner">
+            <DollarSign className="w-5 h-5 text-blue-200" />
           </div>
 
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-black uppercase tracking-widest text-blue-200/90 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-xs">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-blue-200/90 bg-white/10 px-2.5 py-0.5 rounded-md backdrop-blur-xs">
               Jami tushum
             </span>
-            <span className="text-[11px] font-bold text-blue-200/70">
-              • {dateRangeBadgeText}
-            </span>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-2 flex-wrap">
-            <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white drop-shadow-xs">
+          <div className="mt-1.5 flex items-baseline gap-2 flex-wrap">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-xs">
               {formatSum(stats.totalRevenue)}
             </span>
-            <span className="text-base sm:text-lg font-bold text-blue-200">
+            <span className="text-sm sm:text-base font-bold text-blue-200">
               UZS
             </span>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-blue-100/90 font-semibold flex-wrap gap-2">
+          <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-xs text-blue-100/90 font-medium flex-wrap gap-2">
             <span className="flex items-center gap-1.5">
-              <ShoppingBag className="w-4 h-4 text-blue-300" />
-              <span>{stats.totalCount} ta chek bo'yicha savdo</span>
+              <ShoppingBag className="w-3.5 h-3.5 text-blue-300" />
+              <span>{stats.totalCount} ta chek savdosi</span>
             </span>
-            <span className="bg-white/15 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white">
-              {startDate && endDate ? `${formatToDMY(startDate)} — ${formatToDMY(endDate)}` : 'Barcha davrlar'}
-            </span>
+            {startDate && endDate && (
+              <span className="bg-white/15 px-2 py-0.5 rounded-full text-[11px] font-bold text-white">
+                {formatToDMY(startDate)} — {formatToDMY(endDate)}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* KATTA TITLE 2: FOYDA (Belgilangan narxdan tannarx chegirilgan sof foyda) */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl shadow-teal-900/20 border border-white/10 group transition-all hover:shadow-2xl">
-          <div className="absolute -right-8 -bottom-8 w-44 h-44 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute right-5 top-5 w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md border border-white/10 shadow-inner">
-            <TrendingUp className="w-6 h-6 text-emerald-200" />
+        {/* IXCHAM KARTA 2: SOF FOYDA */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 text-white p-3.5 sm:p-4 rounded-2xl shadow-lg shadow-teal-900/15 border border-white/10 group transition-all hover:shadow-xl">
+          <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-400/10 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute right-3.5 top-3.5 w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-white backdrop-blur-md border border-white/10 shadow-inner">
+            <TrendingUp className="w-5 h-5 text-emerald-200" />
           </div>
 
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-200/90 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-xs">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-emerald-200/90 bg-white/10 px-2.5 py-0.5 rounded-md backdrop-blur-xs">
               Sof Foyda
             </span>
-            <span className="text-[11px] font-bold text-emerald-200/70">
-              • {dateRangeBadgeText}
-            </span>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-2 flex-wrap">
-            <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white drop-shadow-xs">
+          <div className="mt-1.5 flex items-baseline gap-2 flex-wrap">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-xs">
               {stats.totalProfit >= 0 ? '+' : ''}{formatSum(stats.totalProfit)}
             </span>
-            <span className="text-base sm:text-lg font-bold text-emerald-200">
+            <span className="text-sm sm:text-base font-bold text-emerald-200">
               UZS
             </span>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-emerald-100/90 font-semibold flex-wrap gap-2">
+          <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-xs text-emerald-100/90 font-medium flex-wrap gap-2">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-              <span>Belgilangan narxdan qolgan foyda</span>
+              <span>Belgilangan narxdan qolgan sof foyda</span>
             </span>
-            <span className="bg-emerald-400/20 text-emerald-200 border border-emerald-300/30 px-2.5 py-0.5 rounded-full text-[11px] font-black">
+            <span className="bg-emerald-400/20 text-emerald-200 border border-emerald-300/30 px-2 py-0.5 rounded-full text-[11px] font-black">
               {stats.profitMargin}% rentabellik
             </span>
           </div>
@@ -541,11 +530,11 @@ export function TarixPage() {
 
       </div>
 
-      {/* TO'LOV TURLARI BO'YICHA TAQSIMOT (Filtrlangan sana bo'yicha) */}
-      <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      {/* TO'LOV TURLARI BO'YICHA TAQSIMOT */}
+      <div className="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">
           <CreditCard className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-          <span>To'lov turlari bo'yicha tushum ({dateRangeBadgeText}):</span>
+          <span>To'lov turlari bo'yicha tushum:</span>
         </div>
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
           <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border border-emerald-100 dark:border-emerald-800 rounded-xl text-xs font-bold">
@@ -707,7 +696,7 @@ export function TarixPage() {
             }`}
           >
             <History className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>1. Umumiy</span>
+            <span>Umumiy</span>
           </button>
 
           <button
@@ -720,7 +709,7 @@ export function TarixPage() {
             }`}
           >
             <Store className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
-            <span>2. Contact</span>
+            <span>Dilerlar</span>
           </button>
         </div>
 

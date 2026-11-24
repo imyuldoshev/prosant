@@ -774,10 +774,18 @@ export function ContactHistorySection({
           {/* STORE CARDS GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
             {filteredContactStats.length === 0 ? (
-              <div className="col-span-full bg-white dark:bg-slate-900 p-8 rounded-3xl text-center border border-slate-200 dark:border-slate-800 text-slate-400">
-                <Store className="w-8 h-8 mx-auto mb-2 opacity-40 text-indigo-500" />
-                <p className="font-bold text-sm">Hech qanday diler yoki do'kon topilmadi</p>
-                <p className="text-xs text-slate-400 mt-1">Yangi do'kon qo'shish uchun yuqoridagi tugmani bosing</p>
+              <div className="col-span-full bg-white dark:bg-slate-900 p-8 rounded-3xl text-center border border-slate-200 dark:border-white/[0.08] text-slate-400">
+                <Store className="w-9 h-9 mx-auto mb-2 opacity-40 text-indigo-500" />
+                <p className="font-bold text-sm text-slate-700 dark:text-slate-200">Hech qanday diler topilmadi</p>
+                <p className="text-xs text-slate-400 mt-1">Yangi diler yoki do'kon qo'shish uchun tugmani bosing</p>
+                <button
+                  type="button"
+                  onClick={() => handleOpenModal()}
+                  className="mt-4 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md shadow-indigo-600/25 inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Yangi do'kon qo'shish</span>
+                </button>
               </div>
             ) : (
               filteredContactStats.map(item => {

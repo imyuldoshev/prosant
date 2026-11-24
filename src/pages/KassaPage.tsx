@@ -550,7 +550,7 @@ export function KassaPage() {
 
         {/* Product Grid Area */}
         <div className="flex-1 overflow-y-auto p-3.5 sm:p-5">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 pb-20 xl:pb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3 sm:gap-3.5 pb-20 xl:pb-6">
             {visibleProducts.map(product => (
               <KassaProductCard
                 key={product.id}
@@ -890,10 +890,14 @@ export function KassaPage() {
               type="button"
               disabled={cart.length === 0}
               onClick={openCheckoutModal}
-              className="col-span-2 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black rounded-2xl active:scale-95 transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
+              className={`col-span-2 py-3.5 px-4 font-black rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 text-sm sm:text-base ${
+                cart.length === 0
+                  ? 'bg-[#10B981] opacity-50 cursor-not-allowed text-white shadow-none'
+                  : 'bg-[#10B981] hover:bg-[#059669] active:scale-95 text-white shadow-emerald-500/25 cursor-pointer ring-1 ring-emerald-300/30'
+              }`}
             >
-              <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Sotish & Chek</span>
+              <Receipt className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
+              <span className="text-white tracking-wide">Sotish & Chek</span>
             </button>
           </div>
         </div>
@@ -1317,7 +1321,11 @@ export function KassaPage() {
                   type="button"
                   disabled={isSubmitting || cart.length === 0}
                   onClick={handleCompleteSale}
-                  className="flex-[2] py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 active:scale-95 text-base cursor-pointer"
+                  className={`flex-[2] py-3.5 font-black rounded-2xl transition-all flex items-center justify-center gap-2 text-base ${
+                    isSubmitting || cart.length === 0
+                      ? 'bg-[#10B981] opacity-50 cursor-not-allowed text-white shadow-none'
+                      : 'bg-[#10B981] hover:bg-[#059669] active:scale-95 text-white shadow-lg shadow-emerald-500/25 cursor-pointer ring-1 ring-emerald-300/30'
+                  }`}
                   title="Sotishni tasdiqlash (Ctrl+Enter)"
                 >
                   {isSubmitting ? (

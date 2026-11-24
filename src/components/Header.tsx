@@ -138,23 +138,23 @@ export function Header({ onMenuClick }: HeaderProps) {
           {currentTitle}
         </div>
 
-        {/* Auth Action */}
+        {/* Auth Action: Kichikroq va kamroq ko'zga tashlanadigan ghost/outline uslubida */}
         {isAuthenticated ? (
           <button
             onClick={() => signOut()}
             title="Tizimdan chiqish"
-            className="h-10 px-3 sm:px-3.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 active:bg-rose-200/80 text-rose-600 dark:text-rose-400 border border-rose-200/90 dark:border-rose-900/60 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all active:scale-95 shadow-xs shrink-0 cursor-pointer select-none"
+            className="h-9 px-2.5 sm:px-3 bg-transparent hover:bg-rose-50/80 dark:hover:bg-rose-950/30 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 border border-slate-200/80 dark:border-white/[0.08] hover:border-rose-200 dark:hover:border-rose-900/40 rounded-xl font-semibold text-xs flex items-center gap-1.5 transition-all active:scale-95 shrink-0 cursor-pointer select-none"
             aria-label="Tizimdan chiqish"
           >
-            <LogOut className="w-4 h-4 shrink-0 stroke-[2.2]" />
+            <LogOut className="w-3.5 h-3.5 shrink-0 stroke-[2]" />
             <span className="whitespace-nowrap">Chiqish</span>
           </button>
         ) : (
           <Link
             to="/login"
-            className="h-10 px-3.5 sm:px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm shadow-blue-500/20 active:scale-95 transition-all shrink-0 cursor-pointer select-none"
+            className="h-9 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-blue-500/20 active:scale-95 transition-all shrink-0 cursor-pointer select-none"
           >
-            <LogIn className="w-4 h-4 stroke-[2.2]" />
+            <LogIn className="w-3.5 h-3.5 stroke-[2.2]" />
             <span className="whitespace-nowrap">Kirish</span>
           </Link>
         )}

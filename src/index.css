@@ -61,6 +61,44 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
   }
+
+  /* Dark rejimda kartalar va bloklar chegarasi fondan aniq ajralishi uchun */
+  .dark .dark\:border-slate-800,
+  .dark .dark\:border-slate-700,
+  .dark .border-slate-800,
+  .dark [class*="border-slate-800"],
+  .dark [class*="border-slate-700"] {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Minimal shrift o'lchami 13px */
+  .text-\[9px\],
+  .text-\[10px\],
+  .text-\[11px\],
+  .text-\[12px\],
+  .text-xs {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  /* Barcha interaktiv elementlarda aniq focus-visible */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid #1d4ed8;
+    outline-offset: 2px;
+  }
+
+  .dark button:focus-visible,
+  .dark a:focus-visible,
+  .dark input:focus-visible,
+  .dark select:focus-visible,
+  .dark [role="button"]:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
 }
 
 /* PRINT STYLESHEET FOR NAKLADNAYA / RECEIPT */

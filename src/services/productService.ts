@@ -8,13 +8,25 @@ import { categoryService } from './categoryService';
 
 // Frontend Product tipiga mos o'girish
 export function dbToProduct(row: ProductRow) {
+  let categoryName = '';
+  if (row.categories) {
+    if (Array.isArray(row.categories) && row.categories.length > 0) {
+      categoryName = (row.categories[0] as any)?.name ?? '';
+    } else if (typeof row.categories === 'object' && 'name' in (row.categories as any)) {
+      categoryName = (row.categories as any).name ?? '';
+    }
+  }
+  if (!categoryName && (row as any).category) {
+    categoryName = String((row as any).category).trim();
+  }
+
   return {
     id: row.id,
     name: row.name,
     costPrice: row.cost_price != null ? Number(row.cost_price) : undefined,
     price: Number(row.price),
     unit: row.unit,
-    category: (row.categories as { name: string } | null)?.name ?? (row as any).category ?? '',
+    category: categoryName,
     image: row.image_url ?? row.image_key ?? '',
     stock: row.stock,
     minStock: row.min_stock,

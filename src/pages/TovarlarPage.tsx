@@ -11,7 +11,9 @@ import {
   Layers,
   CheckCircle2,
   X,
-  Loader2
+  Loader2,
+  MoreVertical,
+  MoreHorizontal
 } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useBlockUpdate, useTaskCompletion } from '../context/UpdateContext';
@@ -60,6 +62,28 @@ export function TovarlarPage() {
 
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Sarlavhadagi "⋯" menyusi
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+  const headerMenuRef = useRef<HTMLDivElement>(null);
+
+  // Jadval qatoridagi "⋯" amallar menyusi ID si
+  const [activeRowMenuId, setActiveRowMenuId] = useState<string | null>(null);
+  const rowMenuRef = useRef<HTMLDivElement>(null);
+
+  // Tashqariga bosganda menyularni yopish
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(event.target as Node)) {
+        setIsHeaderMenuOpen(false);
+      }
+      if (rowMenuRef.current && !rowMenuRef.current.contains(event.target as Node)) {
+        setActiveRowMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   const markTaskComplete = useTaskCompletion();
 
@@ -232,29 +256,47 @@ export function TovarlarPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 self-stretch sm:self-auto flex-wrap">
-            {products.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setIsConfirmClearAllOpen(true)}
-                className="min-h-[40px] sm:min-h-[46px] px-3.5 sm:px-4 py-2 sm:py-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl border border-rose-200/80 dark:border-rose-900/60 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-xs"
-                title="Barcha tovar kartalarini tozalash"
-              >
-                <Trash2 className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline">Barchasini tozalash</span>
-                <span className="sm:hidden">Tozalash</span>
-              </button>
-            )}
-
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 self-stretch sm:self-auto">
             {/* Touch-Friendly Add Product Button */}
             <button
               onClick={handleOpenAddModal}
-              className="min-h-[40px] sm:min-h-[46px] px-3.5 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-brand to-sky-600 hover:from-sky-600 hover:to-sky-700 active:scale-95 text-white font-bold text-xs sm:text-base rounded-xl sm:rounded-2xl shadow-md shadow-brand/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 flex-1 sm:flex-initial cursor-pointer"
+              className="min-h-[40px] sm:min-h-[46px] px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-brand to-sky-600 hover:from-sky-600 hover:to-sky-700 active:scale-95 text-white font-bold text-xs sm:text-base rounded-xl sm:rounded-2xl shadow-md shadow-brand/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 shrink-0 flex-1 sm:flex-initial cursor-pointer"
               aria-label="Yangi mahsulot qo'shish"
             >
-              <Plus className="hidden sm:inline-block w-4.5 h-4.5 stroke-[3]" />
+              <Plus className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[3]" />
               <span>Mahsulot qo'shish</span>
             </button>
+
+            {/* Sarlavhadagi "⋯" more menyusi: xavfli tozalash tugmasi shu yerda xavfsiz saqlanadi */}
+            <div className="relative" ref={headerMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsHeaderMenuOpen(prev => !prev)}
+                className="min-h-[40px] sm:min-h-[46px] min-w-[40px] sm:min-w-[46px] px-2.5 py-2 rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-xs"
+                title="Qo'shimcha amallar"
+                aria-label="Qo'shimcha amallar"
+                aria-expanded={isHeaderMenuOpen}
+              >
+                <MoreVertical className="w-5 h-5" />
+              </button>
+
+              {isHeaderMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsHeaderMenuOpen(false);
+                      setIsConfirmClearAllOpen(true);
+                    }}
+                    disabled={products.length === 0}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 className="w-4 h-4 shrink-0" />
+                    <span>Barchasini tozalash...</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -458,11 +500,17 @@ export function TovarlarPage() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-brand dark:text-blue-400 bg-brand/10 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
-                          {product.category}
-                        </span>
+                        {product.category && product.category.trim() !== '' ? (
+                          <span className="text-[11px] font-bold text-brand dark:text-blue-400 bg-brand/10 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-full border border-brand/20 dark:border-blue-800/30">
+                            {product.category}
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+                            Kategoriyasiz
+                          </span>
+                        )}
                         {isLowStock && (
-                          <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/50 px-2 py-0.5 rounded-full">
+                          <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/50 px-2.5 py-0.5 rounded-full border border-amber-300/40 dark:border-amber-800/40">
                             Kam qoldi
                           </span>
                         )}
@@ -476,7 +524,7 @@ export function TovarlarPage() {
                             {formatSum(product.price)} <span className="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">UZS / {product.unit}</span>
                           </span>
                           {product.costPrice ? (
-                            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">
+                            <span className="text-[13px] text-emerald-600/90 dark:text-emerald-400/90 font-medium mt-0.5">
                               Asl: {formatSum(product.costPrice)} UZS
                             </span>
                           ) : null}
@@ -494,12 +542,12 @@ export function TovarlarPage() {
                     </div>
                   </div>
 
-                  {/* Action buttons (Touch-first: >= 40px target) */}
-                  <div className="grid grid-cols-6 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  {/* Action buttons (Touch-first: >= 40px target, gap >= 12px) */}
+                  <div className="grid grid-cols-6 gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
                     {/* Kirim qilish button */}
                     <button
                       onClick={() => handleOpenStockIn(product)}
-                      className="col-span-4 min-h-[38px] sm:min-h-[42px] px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-95 text-emerald-700 dark:text-emerald-300 font-extrabold rounded-xl border border-emerald-200/80 dark:border-emerald-800 transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm cursor-pointer"
+                      className="col-span-4 min-h-[40px] px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-95 text-emerald-700 dark:text-emerald-300 font-extrabold rounded-xl border border-emerald-200/80 dark:border-emerald-800 transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm cursor-pointer"
                       title="Kirim qilish"
                     >
                       <ArrowUpRight className="hidden sm:inline-block w-4 h-4 stroke-[3]" />
@@ -509,17 +557,17 @@ export function TovarlarPage() {
                     {/* Edit button */}
                     <button
                       onClick={() => handleOpenEditModal(product)}
-                      className="col-span-1 min-h-[38px] sm:min-h-[42px] min-w-[38px] sm:min-w-[42px] p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                      className="col-span-1 min-h-[40px] p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 rounded-xl transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-300 dark:hover:border-slate-600"
                       title="Tahrirlash"
                       aria-label={`${product.name}ni tahrirlash`}
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
 
-                    {/* Delete button */}
+                    {/* Delete button (tasdiq modali ochiladi) */}
                     <button
                       onClick={() => handleOpenDelete(product)}
-                      className="col-span-1 min-h-[38px] sm:min-h-[42px] min-w-[38px] sm:min-w-[42px] p-2 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 active:scale-95 text-rose-600 dark:text-rose-400 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                      className="col-span-1 min-h-[40px] p-2 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 active:scale-95 text-rose-600 dark:text-rose-400 rounded-xl transition-all flex items-center justify-center cursor-pointer border border-rose-200/50 dark:border-rose-900/50"
                       title="O'chirish"
                       aria-label={`${product.name}ni o'chirish`}
                     >
@@ -588,9 +636,15 @@ export function TovarlarPage() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                            {product.category}
-                          </span>
+                          {product.category && product.category.trim() !== '' ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/50 text-brand dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/40">
+                              {product.category}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+                              Kategoriyasiz
+                            </span>
+                          )}
                         </td>
                         <td className="p-4">
                           <div className="flex flex-col">
@@ -601,8 +655,8 @@ export function TovarlarPage() {
                               </span>
                             </span>
                             {product.costPrice ? (
-                              <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
-                                <span className="text-slate-400 dark:text-slate-500 font-normal">Asl:</span>
+                              <span className="text-[13px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center gap-1 mt-0.5">
+                                <span className="text-slate-400 dark:text-slate-500">Asl:</span>
                                 <span>{formatSum(product.costPrice)} UZS</span>
                               </span>
                             ) : null}
@@ -624,7 +678,7 @@ export function TovarlarPage() {
                           </div>
                         </td>
                         <td className="p-4 pr-6 text-right">
-                          <div className="inline-flex items-center gap-2">
+                          <div className="inline-flex items-center gap-3">
                             {/* Kirim qilish button (Touch-friendly >= 44px) */}
                             <button
                               onClick={() => handleOpenStockIn(product)}
@@ -638,22 +692,42 @@ export function TovarlarPage() {
                             {/* Edit button */}
                             <button
                               onClick={() => handleOpenEditModal(product)}
-                              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center cursor-pointer"
+                              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-300 dark:hover:border-slate-600"
                               title="Tahrirlash"
                               aria-label={`${product.name}ni tahrirlash`}
                             >
                               <Edit3 className="w-4 h-4" />
                             </button>
 
-                            {/* Delete button */}
-                            <button
-                              onClick={() => handleOpenDelete(product)}
-                              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 active:scale-95 text-rose-600 dark:text-rose-400 transition-all flex items-center justify-center cursor-pointer"
-                              title="O'chirish"
-                              aria-label={`${product.name}ni o'chirish`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {/* Row Actions "⋯" Menu: O'chirish tahrirlashdan yashirilgan */}
+                            <div className="relative" ref={activeRowMenuId === product.id ? rowMenuRef : undefined}>
+                              <button
+                                type="button"
+                                onClick={() => setActiveRowMenuId(prev => prev === product.id ? null : product.id)}
+                                className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-600 dark:text-slate-300 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-300 dark:hover:border-slate-600"
+                                title="Ko'proq amallar"
+                                aria-label="Ko'proq amallar"
+                                aria-expanded={activeRowMenuId === product.id}
+                              >
+                                <MoreHorizontal className="w-4 h-4" />
+                              </button>
+
+                              {activeRowMenuId === product.id && (
+                                <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveRowMenuId(null);
+                                      handleOpenDelete(product);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors text-left cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4 shrink-0" />
+                                    <span>O'chirish</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -739,12 +813,12 @@ export function TovarlarPage() {
               <Trash2 className="w-8 h-8" />
             </div>
 
-            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Barcha tovarlarni tozalash</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Ishonchingiz komilmi?</h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-              Haqiqatan ham ombordagi barcha tovar kartalarini (<strong className="text-slate-800 dark:text-slate-200">{products.length} ta</strong>) tozalab tashlamoqchimisiz?
+              Barcha tovarlar o'chiriladi.
             </p>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               <button
                 type="button"
                 disabled={isClearingAll}
@@ -762,10 +836,10 @@ export function TovarlarPage() {
                 {isClearingAll ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Tozalanmoqda...</span>
+                    <span>O'chirilmoqda...</span>
                   </>
                 ) : (
-                  <span>Ha, tozalash</span>
+                  <span>Ha, o'chirish</span>
                 )}
               </button>
             </div>
