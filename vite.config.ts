@@ -83,6 +83,9 @@ export default defineConfig({
           if (id.includes('@supabase/supabase-js')) {
             return 'vendor-supabase';
           }
+          if (id.includes('@aws-sdk')) {
+            return 'vendor-aws';
+          }
         },
       },
     },

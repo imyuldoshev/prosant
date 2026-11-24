@@ -40,8 +40,16 @@ export function TovarlarPage() {
 
   // Progressive loading limit for optimal DOM weight
   const [visibleCount, setVisibleCount] = useState(30);
+  const [prevFilter, setPrevFilter] = useState({ searchQuery, selectedCategory, onlyLowStock });
 
-  // Modals state
+  if (
+    prevFilter.searchQuery !== searchQuery ||
+    prevFilter.selectedCategory !== selectedCategory ||
+    prevFilter.onlyLowStock !== onlyLowStock
+  ) {
+    setPrevFilter({ searchQuery, selectedCategory, onlyLowStock });
+    setVisibleCount(30);
+  }
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isConfirmClearAllOpen, setIsConfirmClearAllOpen] = useState(false);
@@ -90,11 +98,6 @@ export function TovarlarPage() {
 
   // Deferred search to decouple typing latency from list filtering
   const deferredSearch = useDeferredValue(searchQuery);
-
-  // Reset pagination limit on search or category filter change
-  useEffect(() => {
-    setVisibleCount(30);
-  }, [searchQuery, selectedCategory, onlyLowStock]);
 
   // Filtered products list
   const filteredProducts = useMemo(() => {

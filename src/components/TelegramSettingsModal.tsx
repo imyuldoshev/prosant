@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   X, Send, Bot, CheckCircle2, AlertCircle, Eye, EyeOff, 
   HelpCircle, RefreshCw, Power, Check, ExternalLink, MessageSquare
@@ -19,14 +19,17 @@ export function TelegramSettingsModal({ isOpen, onClose }: TelegramSettingsModal
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const prevIsOpenRef = useRef(false);
 
-  // Har safar modal ochilganda konfiguratsiyani qayta yuklash
+  // Faqat modal yangi ochilganda konfiguratsiyani qayta yuklash
   useEffect(() => {
-    if (isOpen) {
+    const isOpening = isOpen && !prevIsOpenRef.current;
+    if (isOpening) {
       setConfig(telegramService.getConfig());
       setTestResult(null);
       setSaveSuccess(false);
     }
+    prevIsOpenRef.current = isOpen;
   }, [isOpen]);
 
   // Escape klavishasi bilan yopish

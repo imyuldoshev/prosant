@@ -67,10 +67,25 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
 
     setIsLoading(true);
     try {
-      const serverContacts = await contactService.getAll();
-      const cleanContacts = (serverContacts || []).filter((c: Contact) => !c.id.startsWith('contact_demo_'));
-      setContacts(cleanContacts);
-      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(cleanContacts));
+      const { data: serverContacts, error: fetchError } = await contactService.getAll();
+      if (fetchError || serverContacts === null) {
+        console.warn('[Supabase] Kontaktlarni olishda xatolik, mahalliy kesh saqlanadi:', fetchError);
+        return;
+      }
+      const cleanContacts = serverContacts.filter((c: Contact) => !c.id.startsWith('contact_demo_'));
+      setContacts(prev => {
+        const pending = prev.filter(c =>
+          c.id.startsWith('contact_') &&
+          !cleanContacts.some(sc => sc.id === c.id || (sc.name.trim().toLowerCase() === c.name.trim().toLowerCase() && sc.storeName === c.storeName))
+        );
+        const merged = [...pending, ...cleanContacts];
+        try {
+          localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(merged));
+        } catch (e) {
+          console.error(e);
+        }
+        return merged;
+      });
     } catch (err) {
       console.warn('[Supabase] Kontaktlarni sinxronlashda xatolik:', err);
     } finally {

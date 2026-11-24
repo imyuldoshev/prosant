@@ -15,10 +15,12 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
   const [amountStr, setAmountStr] = useState('10');
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevIsOpenRef = useRef(false);
 
   // Auto-focus and auto-select on open for fast computer typing
   useEffect(() => {
-    if (isOpen && product) {
+    const isOpening = isOpen && !prevIsOpenRef.current;
+    if (isOpening && product) {
       setAmountStr('10');
       setError(null);
       setTimeout(() => {
@@ -28,7 +30,8 @@ export function StockInModal({ product, isOpen, onClose, onConfirm }: StockInMod
         }
       }, 50);
     }
-  }, [isOpen, product?.id]);
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, product]);
 
   const currentStock = product ? (Number(product.stock) || 0) : 0;
   const parsedAmount = parseFormattedNumber(amountStr);

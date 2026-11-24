@@ -70,17 +70,20 @@ export function ContactHistorySection({
     setTimeout(() => setToastMessage(null), 3000);
   }, []);
 
+  const [currentMonthPrefix] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+
   // Har bir kontakt bo'yicha sotuvlarni hisoblash va bog'lash
   const contactStatsList = useMemo(() => {
-    const now = new Date();
-    const currentMonthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
     return contacts.map(contact => {
-      // Sotuvlarni kontaktga moslashtirish (ID yoki nom bo'yicha)
+      // Sotuvlarni kontaktga moslashtirish (ID yoki aniq nom/do'kon bo'yicha)
       const matchedSales = sales.filter(s => {
         if (s.contactId && s.contactId === contact.id) return true;
-        if (s.contactName && contact.storeName && s.contactName.includes(contact.storeName)) return true;
-        if (s.customerName && contact.name && s.customerName.toLowerCase().includes(contact.name.toLowerCase())) return true;
+        if (s.contactName && contact.storeName && s.contactName.toLowerCase().includes(contact.storeName.toLowerCase())) return true;
+        if (s.contactName && s.contactName.trim().toLowerCase() === contact.name.trim().toLowerCase()) return true;
+        if (s.customerName && s.customerName.trim().toLowerCase() === contact.name.trim().toLowerCase()) return true;
         return false;
       });
 
@@ -102,7 +105,7 @@ export function ContactHistorySection({
         lastSaleDate: lastSale?.createdAt || null,
       };
     });
-  }, [contacts, sales]);
+  }, [contacts, sales, currentMonthPrefix]);
 
   // Umumiy kontaktlar bo'yicha statistika
   const globalContactStats = useMemo(() => {

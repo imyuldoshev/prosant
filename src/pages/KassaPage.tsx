@@ -58,7 +58,14 @@ export function KassaPage() {
   const [customerPhoneDigits, setCustomerPhoneDigits] = useState('');
   const [receivedCashStr, setReceivedCashStr] = useState<string>('');
   const [checkoutNote, setCheckoutNote] = useState('');
-  const [autoPrintAfterSale, setAutoPrintAfterSale] = useState(false);
+  const [autoPrintAfterSale, setAutoPrintAfterSale] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('santexpro_auto_print');
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch {
+      return true;
+    }
+  });
   const [completedSale, setCompletedSale] = useState<SaleRecord | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
@@ -160,12 +167,8 @@ export function KassaPage() {
       setReceivedCashStr('');
       setCheckoutNote('');
       setPaymentMethod('naqd');
-
-      if (autoPrintAfterSale) {
-        setTimeout(() => {
-          window.print();
-        }, 400);
-      }
+      // DIQQAT: window.print() endi KassaPage da emas, faqat ReceiptModal ochilganda xavfsiz chaqiriladi.
+      // Bu printerga 2-3 ta ortiqcha nusxa yuborilishining oldini oladi.
     } finally {
       setTimeout(() => {
         isSubmittingRef.current = false;
@@ -183,7 +186,6 @@ export function KassaPage() {
     selectedContactName,
     checkoutNote, 
     addSale, 
-    autoPrintAfterSale,
     user,
     showToast
   ]);
@@ -260,6 +262,23 @@ export function KassaPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isCheckoutOpen, completedSale, selectedProduct, handleCompleteSale]);
 
+  const handlePaymentMethodSelect = useCallback((method: PaymentMethod) => {
+    setPaymentMethod(method);
+    if (method === 'naqd') {
+      if (!receivedCashStr) {
+        setReceivedCashStr(formatSum(totalCartSum));
+      }
+      setTimeout(() => {
+        cashInputRef.current?.focus();
+      }, 50);
+    } else {
+      setReceivedCashStr(formatSum(totalCartSum));
+      setTimeout(() => {
+        customerPhoneInputRef.current?.focus();
+      }, 50);
+    }
+  }, [receivedCashStr, totalCartSum]);
+
   // Hotkeys 1, 2, 3, 4 to switch payment method when Checkout Modal is open
   useEffect(() => {
     if (!isCheckoutOpen) return;
@@ -275,24 +294,7 @@ export function KassaPage() {
     };
     window.addEventListener('keydown', handleMethodHotkeys);
     return () => window.removeEventListener('keydown', handleMethodHotkeys);
-  }, [isCheckoutOpen]);
-
-  const handlePaymentMethodSelect = (method: PaymentMethod) => {
-    setPaymentMethod(method);
-    if (method === 'naqd') {
-      if (!receivedCashStr) {
-        setReceivedCashStr(formatSum(totalCartSum));
-      }
-      setTimeout(() => {
-        cashInputRef.current?.focus();
-      }, 50);
-    } else {
-      setReceivedCashStr(formatSum(totalCartSum));
-      setTimeout(() => {
-        customerPhoneInputRef.current?.focus();
-      }, 50);
-    }
-  };
+  }, [isCheckoutOpen, handlePaymentMethodSelect]);
 
   const openCheckoutModal = () => {
     if (cart.length === 0) return;
@@ -343,10 +345,12 @@ export function KassaPage() {
 
   // Progressive rendering: initial 24 items to keep DOM lightweight and load instantly
   const [visibleCount, setVisibleCount] = useState(24);
+  const [prevFilter, setPrevFilter] = useState({ query, selectedCategory });
 
-  useEffect(() => {
+  if (prevFilter.query !== query || prevFilter.selectedCategory !== selectedCategory) {
+    setPrevFilter({ query, selectedCategory });
     setVisibleCount(24);
-  }, [query, selectedCategory]);
+  }
 
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
@@ -1260,7 +1264,13 @@ export function KassaPage() {
                 <input 
                   type="checkbox"
                   checked={autoPrintAfterSale}
-                  onChange={e => setAutoPrintAfterSale(e.target.checked)}
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    setAutoPrintAfterSale(checked);
+                    try {
+                      localStorage.setItem('santexpro_auto_print', JSON.stringify(checked));
+                    } catch {}
+                  }}
                   className="w-5 h-5 text-brand rounded focus:ring-brand cursor-pointer"
                 />
                 <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 select-none">

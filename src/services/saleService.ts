@@ -48,7 +48,7 @@ export const saleService = {
   // --------------------------------------------------------
 
   /** Barcha o'chirilmagan sotuvlarni olish (eng yangilari birinchi) */
-  getAll: async (page = 0, limit = 500): Promise<{ data: SaleRecord[]; count: number }> => {
+  getAll: async (page = 0, limit = 500): Promise<{ data: SaleRecord[] | null; count: number; error?: any }> => {
     const { data, error, count } = await supabase
       .from('sales')
       .select('*, sale_items(*)', { count: 'exact' })
@@ -58,7 +58,7 @@ export const saleService = {
 
     if (error) {
       console.warn('[Supabase] Sales fetch error:', error.message);
-      return { data: [], count: 0 };
+      return { data: null, count: 0, error };
     }
 
     return {

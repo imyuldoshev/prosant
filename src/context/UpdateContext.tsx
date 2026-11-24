@@ -125,18 +125,14 @@ export function useUpdate(): UpdateContextValue {
  */
 export function useBlockUpdate(isBlocked: boolean, reason: string = 'Active user task'): void {
   const { registerBusyLock } = useUpdate();
-  const lockIdRef = useRef<string>('');
-
-  if (!lockIdRef.current) {
-    lockIdRef.current = 'lock_' + Math.random().toString(36).substring(2, 9);
-  }
+  const [lockId] = useState(() => 'lock_' + Math.random().toString(36).substring(2, 9));
 
   useEffect(() => {
     if (isBlocked) {
-      const cleanup = registerBusyLock(lockIdRef.current, reason);
+      const cleanup = registerBusyLock(lockId, reason);
       return cleanup;
     }
-  }, [isBlocked, reason, registerBusyLock]);
+  }, [isBlocked, reason, registerBusyLock, lockId]);
 }
 
 /**

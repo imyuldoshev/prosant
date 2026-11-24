@@ -40,22 +40,48 @@ function getPaymentMethodLabel(method: string): string {
 }
 
 export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalProps) {
-  const hasAutoPrintedRef = useRef(false);
-  const [printLayout, setPrintLayout] = useState<'a4' | 'thermal'>('a4');
+  const isPrintingRef = useRef(false);
+  const [printLayout, setPrintLayout] = useState<'a4' | 'thermal'>(() => {
+    try {
+      return (localStorage.getItem('santexpro_print_layout') as 'a4' | 'thermal') || 'thermal';
+    } catch {
+      return 'thermal';
+    }
+  });
+
+  const handleSetPrintLayout = (layout: 'a4' | 'thermal') => {
+    setPrintLayout(layout);
+    try {
+      localStorage.setItem('santexpro_print_layout', layout);
+    } catch {}
+  };
+
   const [isSendingTelegram, setIsSendingTelegram] = useState(false);
   const [telegramStatus, setTelegramStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [telegramError, setTelegramError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
-    if (sale && autoPrint && !hasAutoPrintedRef.current) {
-      hasAutoPrintedRef.current = true;
+    if (sale && autoPrint && !isPrintingRef.current) {
+      isPrintingRef.current = true;
       const timer = setTimeout(() => {
         window.print();
-      }, 400);
+        setTimeout(() => {
+          isPrintingRef.current = false;
+        }, 1500);
+      }, 350);
       return () => clearTimeout(timer);
     }
   }, [sale, autoPrint]);
+
+  const handleManualPrint = () => {
+    if (isPrintingRef.current) return;
+    isPrintingRef.current = true;
+    window.print();
+    setTimeout(() => {
+      isPrintingRef.current = false;
+    }, 1500);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -122,7 +148,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
               <div className="hidden sm:flex items-center bg-slate-800 p-0.5 rounded-xl border border-slate-700">
                 <button
                   type="button"
-                  onClick={() => setPrintLayout('a4')}
+                  onClick={() => handleSetPrintLayout('a4')}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
                     printLayout === 'a4' ? 'bg-brand text-white shadow-xs' : 'text-slate-400 hover:text-white'
                   }`}
@@ -133,7 +159,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPrintLayout('thermal')}
+                  onClick={() => handleSetPrintLayout('thermal')}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
                     printLayout === 'thermal' ? 'bg-brand text-white shadow-xs' : 'text-slate-400 hover:text-white'
                   }`}
@@ -190,7 +216,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
 
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={handleManualPrint}
                 className="min-h-[40px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
                 title="Chekni chop etish (Ctrl + P)"
               >

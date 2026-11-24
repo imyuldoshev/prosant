@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { Product } from '../types';
-import { PRODUCTS as INITIAL_PRODUCTS, CATEGORIES as INITIAL_CATEGORIES } from '../mockData';
 import { productService, dbToProduct } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 import { supabase } from '../lib/supabase';
-import { useProductsRealtime } from '../hooks/useRealtime';
+
+const DEFAULT_CATEGORIES = ['Barchasi', 'Trubalar', 'Fitinglar', 'Smesitellar', 'Isitish', 'Nasoslar', 'Katta tovarlar', 'Aksessuarlar'];
 
 interface ProductContextType {
   products: Product[];
@@ -29,9 +29,6 @@ const CATEGORIES_KEY = 'santexpro_categories_v2';
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export function ProductProvider({ children }: { children: React.ReactNode }) {
-  // Realtime o'zgarishlarni eshitish (barcha terminallarda stock yangilanishi)
-  useProductsRealtime();
-
   const [categories, setCategories] = useState<string[]>(() => {
     try {
       localStorage.removeItem('santexpro_categories_v1');
@@ -43,7 +40,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Failed to load categories from localStorage', e);
     }
-    return INITIAL_CATEGORIES;
+    return DEFAULT_CATEGORIES;
   });
 
   const [products, setProducts] = useState<Product[]>(() => {
@@ -103,7 +100,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
                 return prev.filter(p => p.id !== updated.id);
               }
               return prev.map(p => {
-                if (p.id === updated.id) {
+                const isMatch = p.id === updated.id ||
+                  (p.id.startsWith('prod_') && p.name.trim().toLowerCase() === updated.name.trim().toLowerCase());
+                if (isMatch) {
                   return {
                     ...p,
                     ...updated,
@@ -145,7 +144,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // 1. Supabase bilan to'liq sinxronlash (Fetch & Auto-seed if empty)
+  // 1. Supabase bilan to'liq sinxronlash (Fetch & Merging with optimistic products)
   const syncWithSupabase = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -162,16 +161,43 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Mahsulotlarni olish
-      const { data: serverProducts } = await productService.getAll(0, 500);
+      const { data: serverProducts, error: fetchError } = await productService.getAll(0, 500);
 
-      // Agar bazada mahsulot bo'lsa — bazadagidan foydalanamiz
-      if (serverProducts && serverProducts.length > 0) {
-        setProducts(serverProducts as Product[]);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(serverProducts));
+      // Agar xatolik bo'lsa yoki serverProducts null bo'lsa — hech qachon mavjud mahsulotlarni o'chirmaslik!
+      if (fetchError || serverProducts === null) {
+        console.warn('[Supabase] Tovar maʼlumotlarini olishda xatolik yuz berdi, mahalliy kesh saqlanadi:', fetchError);
+        return;
+      }
+
+      // Agar bazada mahsulot bo'lsa — bazadagidan foydalanamiz va hali saqlanmagan optimistic tovarlarni qo'shib saqlaymiz
+      if (serverProducts.length > 0) {
+        setProducts(prev => {
+          const pendingLocal = prev.filter(p =>
+            p.id.startsWith('prod_') &&
+            !serverProducts.some(sp => sp.id === p.id || sp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
+          );
+          const merged = [...pendingLocal, ...serverProducts];
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          } catch (e) {
+            console.error('Failed to save products to localStorage', e);
+          }
+          return merged;
+        });
       } else {
-        // Agar bazada mahsulot bo'lmasa — toza 0 holatga keltiramiz
-        setProducts([]);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+        // Agar bazada 0 ta tovar kelsa, lekin mahalliy xotirada pending tovarlar bo'lsa, ularni yo'qotmaslik
+        setProducts(prev => {
+          const pendingLocal = prev.filter(p => p.id.startsWith('prod_'));
+          if (pendingLocal.length > 0) {
+            return pendingLocal;
+          }
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+          } catch (e) {
+            console.error(e);
+          }
+          return [];
+        });
       }
     } catch (err) {
       console.warn('[Supabase] Sinxronlashda xatolik yuz berdi, mahalliy kesh ishlatiladi:', err);
@@ -396,8 +422,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resetToDefaults = useCallback(() => {
-    setProducts(INITIAL_PRODUCTS);
-    setCategories(INITIAL_CATEGORIES);
+    setProducts([]);
+    setCategories(DEFAULT_CATEGORIES);
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(CATEGORIES_KEY);
     syncWithSupabase();

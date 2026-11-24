@@ -29,7 +29,7 @@ class UpdateManager {
 
   private config: Required<UpdateManagerConfig> = {
     checkIntervalMs: 5 * 60 * 1000, // 5 minutes
-    idleTimeoutMs: 5 * 60 * 1000,    // 5 minutes
+    idleTimeoutMs: 15 * 60 * 1000,   // 15 minutes idle before quiet reload
     minReloadIntervalMs: 15 * 1000,  // 15 seconds loop guard
     showIndicator: true,
   };

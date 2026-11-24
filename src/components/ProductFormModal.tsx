@@ -102,11 +102,11 @@ export function ProductFormModal({
 
   // Debounced duplicate check (150ms) to eliminate keystroke jank
   useEffect(() => {
-    if (!name.trim()) {
-      setDuplicateMatch(null);
-      return;
-    }
     const timer = setTimeout(() => {
+      if (!name.trim()) {
+        setDuplicateMatch(null);
+        return;
+      }
       const match = checkDuplicate(name.trim(), productToEdit?.id);
       setDuplicateMatch(match || null);
     }, 150);

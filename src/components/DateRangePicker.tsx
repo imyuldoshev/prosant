@@ -56,9 +56,12 @@ export function DateRangePicker({
   const [tempEnd, setTempEnd] = useState<string>(endDate);
   const [hoverDate, setHoverDate] = useState<string | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [todayStr] = useState(() => toISODate(new Date()));
 
   // Sync temp values whenever props change or popover opens
-  useEffect(() => {
+  const [prevSync, setPrevSync] = useState({ startDate, endDate, isOpen });
+  if (prevSync.startDate !== startDate || prevSync.endDate !== endDate || prevSync.isOpen !== isOpen) {
+    setPrevSync({ startDate, endDate, isOpen });
     setTempStart(startDate);
     setTempEnd(endDate);
     setIsSelecting(false);
@@ -70,7 +73,7 @@ export function DateRangePicker({
         setViewMonth(parts[1] - 1);
       }
     }
-  }, [startDate, endDate, isOpen]);
+  }
 
   // Close on outside click
   useEffect(() => {
@@ -205,8 +208,6 @@ export function DateRangePicker({
       isToday: boolean;
     }> = [];
 
-    const todayStr = toISODate(new Date());
-
     // Previous month padding
     for (let i = firstDayIndex - 1; i >= 0; i--) {
       const dayNum = daysInPrevMonth - i;
@@ -248,7 +249,7 @@ export function DateRangePicker({
     }
 
     return days;
-  }, [viewYear, viewMonth]);
+  }, [viewYear, viewMonth, todayStr]);
 
   // Calculate active range limits for styling
   const activeRange = useMemo(() => {

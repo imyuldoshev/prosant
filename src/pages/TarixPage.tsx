@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useDeferredValue } from 'react';
+import { useState, useMemo, useCallback, useDeferredValue } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
   History, Search, Calendar, Download, Trash2, Eye, Printer, 
@@ -58,23 +58,12 @@ export function TarixPage() {
     });
   }, []);
 
-  // Date Range state synced with URL search params (?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD)
-  const [startDate, setStartDate] = useState(() => searchParams.get('startDate') || '');
-  const [endDate, setEndDate] = useState(() => searchParams.get('endDate') || '');
-
-  // Keep state in sync if URL query parameters change externally
-  useEffect(() => {
-    const s = searchParams.get('startDate') || '';
-    const e = searchParams.get('endDate') || '';
-    setStartDate(s);
-    setEndDate(e);
-  }, [searchParams]);
+  // Date Range state derived directly from URL search params (?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD)
+  const startDate = searchParams.get('startDate') || '';
+  const endDate = searchParams.get('endDate') || '';
 
   // Synchronize date range state and URL query params
   const handleDateRangeChange = useCallback((start: string, end: string) => {
-    setStartDate(start);
-    setEndDate(end);
-
     const newParams = new URLSearchParams(searchParams);
     if (start && end) {
       newParams.set('startDate', start);
@@ -109,24 +98,27 @@ export function TarixPage() {
     }
   }, [handleDateRangeChange]);
 
+  const [todayDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  });
+
   // Calculate which preset is active
   const currentPreset = useMemo(() => {
     if (!startDate && !endDate) return 'all';
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayStr = toISODate(today);
+    const todayStr = toISODate(todayDate);
 
     if (startDate === todayStr && endDate === todayStr) return 'today';
-    const yStr = toISODate(new Date(today.getTime() - 24 * 3600 * 1000));
+    const yStr = toISODate(new Date(todayDate.getTime() - 24 * 3600 * 1000));
     if (startDate === yStr && endDate === yStr) return 'yesterday';
-    const wStr = toISODate(new Date(today.getTime() - 6 * 24 * 3600 * 1000));
+    const wStr = toISODate(new Date(todayDate.getTime() - 6 * 24 * 3600 * 1000));
     if (startDate === wStr && endDate === todayStr) return 'week';
-    const mStr = toISODate(new Date(today.getTime() - 29 * 24 * 3600 * 1000));
+    const mStr = toISODate(new Date(todayDate.getTime() - 29 * 24 * 3600 * 1000));
     if (startDate === mStr && endDate === todayStr) return 'month';
-    const firstDay = toISODate(new Date(today.getFullYear(), today.getMonth(), 1));
+    const firstDay = toISODate(new Date(todayDate.getFullYear(), todayDate.getMonth(), 1));
     if (startDate === firstDay && endDate === todayStr) return 'month';
     return 'custom';
-  }, [startDate, endDate]);
+  }, [startDate, endDate, todayDate]);
 
   // Dynamic user-friendly date range badge text
   const dateRangeBadgeText = useMemo(() => {
@@ -236,21 +228,20 @@ export function TarixPage() {
     'Sotuvlar tarixi modal oynasi ochiq'
   );
 
-  // Trigger print safely once selectedSale is set and rendered
-  useEffect(() => {
-    if (shouldPrint && selectedSale) {
-      window.print();
-      setShouldPrint(false);
-    }
-  }, [shouldPrint, selectedSale]);
-
   // Decoupled search input to eliminate input lag
   const deferredSearch = useDeferredValue(searchQuery);
 
-  // Reset pagination limit on filter change
-  useEffect(() => {
+  const [prevFilter, setPrevFilter] = useState({ searchQuery, startDate, endDate, paymentFilter, sortOrder });
+  if (
+    prevFilter.searchQuery !== searchQuery ||
+    prevFilter.startDate !== startDate ||
+    prevFilter.endDate !== endDate ||
+    prevFilter.paymentFilter !== paymentFilter ||
+    prevFilter.sortOrder !== sortOrder
+  ) {
+    setPrevFilter({ searchQuery, startDate, endDate, paymentFilter, sortOrder });
     setVisibleCount(30);
-  }, [searchQuery, startDate, endDate, paymentFilter, sortOrder]);
+  }
 
   // Filtered & Sorted Sales
   const filteredSales = useMemo(() => {

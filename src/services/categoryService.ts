@@ -28,30 +28,40 @@ export const categoryService = {
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9\u0400-\u04FF-]/g, '');
 
-    // 1. Avval mavjudligini tekshiramiz
-    const { data: existing } = await supabase
+    // 1. Avval nom bo'yicha mavjudligini tekshiramiz
+    const { data: existingByName } = await supabase
       .from('categories')
       .select('id')
-      .or(`name.eq."${trimmed}",slug.eq."${slug}"`)
+      .eq('name', trimmed)
       .maybeSingle();
 
-    if (existing?.id) return existing.id;
+    if (existingByName?.id) return existingByName.id;
+
+    if (slug) {
+      const { data: existingBySlug } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (existingBySlug?.id) return existingBySlug.id;
+    }
 
     // 2. Yangi qo'shamiz
     const { data: inserted, error: insertError } = await supabase
       .from('categories')
-      .insert({ name: trimmed, slug })
+      .insert({ name: trimmed, slug: slug || trimmed })
       .select('id')
       .maybeSingle();
 
     if (inserted?.id) return inserted.id;
 
-    // 3. Agar boshqa so'rov bilan conflict bo'lgan bo'lsa, qayta o'qish
+    // 3. Agar parallel so'rov bilan conflict bo'lgan bo'lsa, qayta o'qish
     if (insertError) {
       const { data: retry } = await supabase
         .from('categories')
         .select('id')
-        .or(`name.eq."${trimmed}",slug.eq."${slug}"`)
+        .eq('name', trimmed)
         .maybeSingle();
       return retry?.id ?? null;
     }

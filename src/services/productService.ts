@@ -14,7 +14,7 @@ export function dbToProduct(row: ProductRow) {
     costPrice: row.cost_price != null ? Number(row.cost_price) : undefined,
     price: Number(row.price),
     unit: row.unit,
-    category: (row.categories as { name: string } | null)?.name ?? '',
+    category: (row.categories as { name: string } | null)?.name ?? (row as any).category ?? '',
     image: row.image_url ?? row.image_key ?? '',
     stock: row.stock,
     minStock: row.min_stock,
@@ -34,46 +34,96 @@ export const productService = {
   // --------------------------------------------------------
 
   /** Barcha aktiv mahsulotlarni olish (standart 500 ta — butun do'kon) */
-  getAll: async (page = 0, limit = 500) => {
-    const { data, error, count } = await supabase
-      .from('products')
+  getAll: async (page = 0, limit = 500): Promise<{ data: ReturnType<typeof dbToProduct>[] | null; error: string | null; count: number }> => {
+    // 1. Avval categories join orqali faol yoki is_active null bo'lgan tovarlarni olamiz
+    let res: any = await (supabase
+      .from('products') as any)
       .select('*, categories(name)', { count: 'exact' })
-      .eq('is_active', true)
+      .or('is_active.is.null,is_active.eq.true')
       .order('name', { ascending: true })
       .range(page * limit, (page + 1) * limit - 1);
 
-    if (error) {
-      console.warn('Products fetch error:', error.message);
-      return { data: [], count: 0 };
+    // 2. Agar join xatolik bersa (masalan, schema cache yoki relation muammosi), oddiy select bilan fallback
+    if (res.error) {
+      console.warn('Products fetch with join error, falling back to plain select:', res.error.message);
+      res = await (supabase
+        .from('products') as any)
+        .select('*', { count: 'exact' })
+        .or('is_active.is.null,is_active.eq.true')
+        .order('name', { ascending: true })
+        .range(page * limit, (page + 1) * limit - 1);
     }
-    return { data: (data ?? []).map(dbToProduct), count: count ?? 0 };
+
+    if (res.error) {
+      console.warn('Products fetch error:', res.error.message);
+      return { data: null, error: res.error.message, count: 0 };
+    }
+
+    // Kategoriyalar xaritasini olamiz (agar join bo'lmagan bo'lsa nomlarini to'ldirish uchun)
+    let categoryMap = new Map<string, string>();
+    try {
+      const { data: catList } = await (supabase.from('categories') as any).select('id, name');
+      if (catList) {
+        catList.forEach((c: any) => categoryMap.set(c.id, c.name));
+      }
+    } catch {
+      // ignore
+    }
+
+    const prods = (res.data ?? []).map((row: any) => {
+      const prod = dbToProduct(row as ProductRow);
+      if (!prod.category && prod.categoryId && categoryMap.has(prod.categoryId)) {
+        prod.category = categoryMap.get(prod.categoryId)!;
+      }
+      return prod;
+    });
+
+    return { data: prods, error: null, count: res.count ?? 0 };
   },
 
   /** ID bo'yicha bitta mahsulot */
   getById: async (id: string) => {
-    const { data, error } = await supabase
-      .from('products')
+    let res: any = await (supabase
+      .from('products') as any)
       .select('*, categories(name)')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
-    return dbToProduct(data);
+    if (res.error) {
+      res = await (supabase
+        .from('products') as any)
+        .select('*')
+        .eq('id', id)
+        .single();
+    }
+
+    if (res.error) throw res.error;
+    return res.data ? dbToProduct(res.data as ProductRow) : null;
   },
 
   /** Tez qidiruv (ILIKE) — 30 ta natija */
   search: async (query: string) => {
     if (!query.trim()) return [];
-    const { data, error } = await supabase
-      .from('products')
+    let res: any = await (supabase
+      .from('products') as any)
       .select('*, categories(name)')
-      .eq('is_active', true)
+      .or('is_active.is.null,is_active.eq.true')
       .or(`name.ilike.%${query.trim()}%,artikul.ilike.%${query.trim()}%`)
       .order('name')
       .limit(30);
 
-    if (error) throw error;
-    return (data ?? []).map(dbToProduct);
+    if (res.error) {
+      res = await (supabase
+        .from('products') as any)
+        .select('*')
+        .or('is_active.is.null,is_active.eq.true')
+        .or(`name.ilike.%${query.trim()}%,artikul.ilike.%${query.trim()}%`)
+        .order('name')
+        .limit(30);
+    }
+
+    if (res.error) throw res.error;
+    return (res.data ?? []).map((r: any) => dbToProduct(r));
   },
 
   /** Full-text qidiruv (PostgreSQL FTS + trigram) */

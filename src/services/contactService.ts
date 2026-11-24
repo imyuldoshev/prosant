@@ -25,8 +25,8 @@ function isValidUuid(id?: string): boolean {
 
 export const contactService = {
   /** Barcha kontaktlarni olish (eng yangilari birinchi) */
-  getAll: async (): Promise<Contact[]> => {
-    if (!isSupabaseConfigured) return [];
+  getAll: async (): Promise<{ data: Contact[] | null; error?: any }> => {
+    if (!isSupabaseConfigured) return { data: null, error: new Error('Supabase not configured') };
 
     try {
       const { data, error } = await supabase
@@ -36,13 +36,15 @@ export const contactService = {
 
       if (error) {
         console.warn('[Supabase] Contacts fetch error:', error.message);
-        return [];
+        return { data: null, error };
       }
 
-      return (data ?? []).map(row => dbToContact(row as ContactRow));
+      return {
+        data: (data ?? []).map(row => dbToContact(row as ContactRow)),
+      };
     } catch (err) {
       console.warn('[Supabase] Contacts fetch exception:', err);
-      return [];
+      return { data: null, error: err };
     }
   },
 
