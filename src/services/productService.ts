@@ -20,6 +20,11 @@ export function dbToProduct(row: ProductRow) {
     categoryName = String((row as any).category).trim();
   }
 
+  // Agar bazada kategoriya berilmagan bo'lsa, mahsulot nomidan avtomatik aniqlash
+  if (!categoryName && row.name) {
+    categoryName = inferCategoryFromName(row.name);
+  }
+
   return {
     id: row.id,
     name: row.name,
@@ -38,6 +43,46 @@ export function dbToProduct(row: ProductRow) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+/**
+ * Mahsulot nomidan avtomatik kategoriya aniqlash (frontend avto-katalogi)
+ * Santexnika mahsulotlarining standart nomlariga asoslangan
+ */
+export function inferCategoryFromName(name: string): string {
+  const n = (name || '').toLowerCase().trim();
+  if (!n) return '';
+
+  // 1. Fitinglar (troynik, mufta, ugolnik, krestovina, fiting, otvod va boshqalar)
+  if (/troynik|troyynik|mufta|ugolnik|krestovin|fiting|otvod|amerikank|zaglushk|perehodnik|shtutser|nippel|futorka|koleno|kombinirov/i.test(n)) {
+    return 'Fitinglar';
+  }
+  // 2. Trubalar (quvurlar, shlanglar, gofralar, sifonlar)
+  if (/truba|shlang|gofra|quvur|sliv|kanalizats|polietilen/i.test(n)) {
+    return 'Trubalar';
+  }
+  // 3. Smesitellar (jo'mraklar, kranlar, dushlar, leykalar)
+  if (/smesitel|kran|dush|leyka|jo'mrak|aralashtir|gusak|kartrij/i.test(n)) {
+    return 'Smesitellar';
+  }
+  // 4. Nasoslar (suv nasoslari, pompalar, gidroforlar)
+  if (/nasos|pompa|gidrofor|motor/i.test(n)) {
+    return 'Nasoslar';
+  }
+  // 5. Isitish (radiator, kotyol, termostat, kollektor, boyler)
+  if (/radiator|kotyol|isitish|termostat|kollektor|boyler|tyoply|pechka/i.test(n)) {
+    return 'Isitish';
+  }
+  // 6. Katta tovarlar (vanna, unitaz, rakovina, moyka, bak, bochka)
+  if (/vanna|unitaz|rakovina|moyka|bochka|bak|poddon|kabina|tyulpan/i.test(n)) {
+    return 'Katta tovarlar';
+  }
+  // 7. Aksessuarlar (fum lenta, germetik, klapan, filtr, rezinka, gayka)
+  if (/fum|lenta|germetik|klapan|filtr|podvodka|rezinka|bolt|gayka|aksessuar|izolyats|silikon|prokladk/i.test(n)) {
+    return 'Aksessuarlar';
+  }
+
+  return '';
 }
 
 export const productService = {

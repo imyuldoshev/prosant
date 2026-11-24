@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { Product } from '../types';
-import { productService, dbToProduct } from '../services/productService';
+import { productService, dbToProduct, inferCategoryFromName } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 import { supabase } from '../lib/supabase';
 
@@ -49,7 +49,12 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.map((p: any) => ({
+            ...p,
+            category: p.category && p.category.trim() !== '' ? p.category : inferCategoryFromName(p.name),
+          }));
+        }
       }
     } catch (e) {
       console.error('Failed to load products from localStorage', e);
@@ -176,7 +181,11 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
             p.id.startsWith('prod_') &&
             !serverProducts.some(sp => sp.id === p.id || sp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
           );
-          const merged = [...pendingLocal, ...serverProducts];
+          const normalizedServer = serverProducts.map(sp => ({
+            ...sp,
+            category: sp.category && sp.category.trim() !== '' ? sp.category : inferCategoryFromName(sp.name),
+          }));
+          const merged = [...pendingLocal, ...normalizedServer];
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
           } catch (e) {
@@ -184,6 +193,22 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           }
           return merged;
         });
+
+        // Orqa fonda: kategoriyasi bo'sh bo'lgan tovarlarni Supabase bazasiga ham avtomatik saqlab qo'yish
+        setTimeout(() => {
+          serverProducts.forEach(async (sp) => {
+            if (!sp.category && sp.name) {
+              const inferred = inferCategoryFromName(sp.name);
+              if (inferred) {
+                try {
+                  await productService.update(sp.id, { category: inferred });
+                } catch {
+                  // silent catch
+                }
+              }
+            }
+          });
+        }, 2000);
       } else {
         // Agar bazada 0 ta tovar kelsa, lekin mahalliy xotirada pending tovarlar bo'lsa, ularni yo'qotmaslik
         setProducts(prev => {
