@@ -24,6 +24,7 @@ interface ProductContextType {
 }
 
 const STORAGE_KEY = 'santexpro_products_v2';
+const STORAGE_BACKUP_KEY = 'santexpro_products_backup_v2';
 const CATEGORIES_KEY = 'santexpro_categories_v2';
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -46,10 +47,14 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       localStorage.removeItem('santexpro_products_v1');
-      const saved = localStorage.getItem(STORAGE_KEY);
+      let saved = localStorage.getItem(STORAGE_KEY);
+      // Agar asosiy kesh bo'sh bo'lsa, zaxira nusxasini tekshiramiz
+      if (!saved) {
+        saved = localStorage.getItem(STORAGE_BACKUP_KEY);
+      }
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((p: any) => ({
             ...p,
             category: p.category && p.category.trim() !== '' ? p.category : inferCategoryFromName(p.name),
@@ -188,13 +193,42 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           const merged = [...pendingLocal, ...normalizedServer];
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            localStorage.setItem(STORAGE_BACKUP_KEY, JSON.stringify(merged));
           } catch (e) {
             console.error('Failed to save products to localStorage', e);
           }
           return merged;
         });
 
-        // Orqa fonda: kategoriyasi bo'sh bo'lgan tovarlarni Supabase bazasiga ham avtomatik saqlab qo'yish
+        // Orqa fonda 1: offline/pending tovarlarni avtomatik Supabase ga saqlash
+        setTimeout(() => {
+          setProducts(currentProds => {
+            const pendingToSync = currentProds.filter(p => p.id.startsWith('prod_'));
+            pendingToSync.forEach(async (pending) => {
+              try {
+                const saved = await productService.create({
+                  name: pending.name,
+                  costPrice: pending.costPrice,
+                  price: pending.price,
+                  unit: pending.unit,
+                  category: pending.category,
+                  image: pending.image,
+                  stock: pending.stock,
+                  minStock: pending.minStock,
+                  artikul: pending.artikul,
+                });
+                if (saved && saved.id) {
+                  setProducts(latest => latest.map(p => p.id === pending.id ? { ...p, ...saved } : p));
+                }
+              } catch (e) {
+                console.warn('[Sync] Pending tovar saqlashda xatolik:', e);
+              }
+            });
+            return currentProds;
+          });
+        }, 1000);
+
+        // Orqa fonda 2: kategoriyasi bo'sh bo'lgan tovarlarni Supabase bazasiga ham avtomatik saqlab qo'yish
         setTimeout(() => {
           serverProducts.forEach(async (sp) => {
             if (!sp.category && sp.name) {
@@ -210,16 +244,18 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           });
         }, 2000);
       } else {
-        // Agar bazada 0 ta tovar kelsa, lekin mahalliy xotirada pending tovarlar bo'lsa, ularni yo'qotmaslik
+        // DIQQAT: Agar bazadan 0 ta tovar kelsa, lekin mahalliy keshda tovarlar mavjud bo'lsa,
+        // ularni HECH QACHON O'CHIRMASLIK! Tarmoq yoki auth uzilganda data-loss bo'lishining oldini oladi.
         setProducts(prev => {
-          const pendingLocal = prev.filter(p => p.id.startsWith('prod_'));
-          if (pendingLocal.length > 0) {
-            return pendingLocal;
-          }
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-          } catch (e) {
-            console.error(e);
+          if (prev.length > 0) {
+            console.warn('[Supabase] Serverdan 0 ta tovar keldi, ammo mahalliy keshdagi tovarlar to\'liq saqlanib qolindi!');
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(prev));
+              localStorage.setItem(STORAGE_BACKUP_KEY, JSON.stringify(prev));
+            } catch (e) {
+              console.error(e);
+            }
+            return prev;
           }
           return [];
         });
@@ -248,6 +284,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      if (products.length > 0) {
+        localStorage.setItem(STORAGE_BACKUP_KEY, JSON.stringify(products));
+      }
     } catch (e) {
       console.error('Failed to save products to localStorage', e);
     }
@@ -371,6 +410,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     setProducts([]);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      localStorage.setItem(STORAGE_BACKUP_KEY, JSON.stringify([]));
     } catch (e) {
       console.error('Failed to clear products from localStorage:', e);
     }
