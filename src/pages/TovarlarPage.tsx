@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useBlockUpdate, useTaskCompletion } from '../context/UpdateContext';
-import type { Product } from '../types';
+import { isLowStockProduct, type Product } from '../types';
 import { StockInModal } from '../components/StockInModal';
 import { ProductFormModal } from '../components/ProductFormModal';
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
@@ -127,7 +127,9 @@ export function TovarlarPage() {
   const filteredProducts = useMemo(() => {
     let list = products;
     if (onlyLowStock) {
-      list = list.filter(p => (Number(p?.stock) || 0) <= 5);
+      list = list.filter(p => isLowStockProduct(p));
+      // Kam qolganlar bo'yicha: eng kam qolgan tovarlar (0, 1, 2...) birinchi ko'rinsin
+      list = [...list].sort((a, b) => (Number(a?.stock) || 0) - (Number(b?.stock) || 0));
     }
     if (selectedCategory !== 'Barchasi') {
       list = list.filter(p => p?.category === selectedCategory);
@@ -153,7 +155,7 @@ export function TovarlarPage() {
   }, [products]);
 
   const lowStockCount = useMemo(() => {
-    return products.filter(p => (Number(p?.stock) || 0) <= 5).length;
+    return products.filter(p => isLowStockProduct(p)).length;
   }, [products]);
 
   // Handlers
@@ -345,7 +347,15 @@ export function TovarlarPage() {
           {/* Low stock card - interactive filter */}
           <button
             type="button"
-            onClick={() => setOnlyLowStock(prev => !prev)}
+            onClick={() => {
+              setOnlyLowStock(prev => {
+                const next = !prev;
+                if (next) {
+                  setSelectedCategory('Barchasi');
+                }
+                return next;
+              });
+            }}
             aria-pressed={onlyLowStock}
             className={`col-span-2 sm:col-span-1 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all active:scale-95 flex items-center justify-between gap-2 cursor-pointer ${
               onlyLowStock
@@ -364,7 +374,7 @@ export function TovarlarPage() {
                 <div className={`text-[9px] sm:text-[11px] font-bold uppercase tracking-wider truncate ${
                   onlyLowStock ? 'text-amber-100' : 'text-slate-400 dark:text-slate-500'
                 }`}>
-                  Kam qolgan (≤ 5)
+                  Kam qolganlar
                 </div>
                 <div className="text-sm sm:text-lg lg:text-xl font-black leading-tight truncate mt-0.5">
                   {lowStockCount} <span className={`text-[9px] sm:text-xs font-normal ${onlyLowStock ? 'text-amber-100' : 'text-slate-400 dark:text-slate-500'}`}>ta</span>
@@ -389,13 +399,16 @@ export function TovarlarPage() {
               <div className="flex items-center gap-2.5 min-w-0">
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
                 <span className="text-xs sm:text-sm font-bold truncate">
-                  Faqat qoldig'i 5 yoki undan kam bo'lgan mahsulotlar ko'rsatilmoqda ({filteredProducts.length} ta)
+                  Faqat qoldig'i kam qolgan mahsulotlar ko'rsatilmoqda ({filteredProducts.length} ta)
                 </span>
               </div>
               <button
                 type="button"
-                onClick={() => setOnlyLowStock(false)}
-                className="px-3 py-1.5 min-h-[36px] bg-white dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-extrabold shrink-0 transition-all active:scale-95"
+                onClick={() => {
+                  setOnlyLowStock(false);
+                  setSelectedCategory('Barchasi');
+                }}
+                className="px-3 py-1.5 min-h-[36px] bg-white dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-extrabold shrink-0 transition-all active:scale-95 cursor-pointer"
               >
                 Filtrni bekor qilish ✕
               </button>
@@ -422,7 +435,7 @@ export function TovarlarPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                   aria-label="Qidiruvni tozalash"
                 >
                   <X className="w-4 h-4" />
@@ -437,12 +450,32 @@ export function TovarlarPage() {
               <Filter className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               Kategoriya:
             </span>
+
+            {/* Kam qolganlar tezkor filtri pill */}
+            <button
+              onClick={() => {
+                setOnlyLowStock(prev => !prev);
+                setSelectedCategory('Barchasi');
+              }}
+              className={`min-h-[36px] sm:min-h-[40px] px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 active:scale-95 flex items-center gap-1.5 cursor-pointer ${
+                onlyLowStock
+                  ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20 ring-2 ring-amber-400/40'
+                  : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/50'
+              }`}
+            >
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>Kam qolganlar ({lowStockCount})</span>
+            </button>
+
             {categories.map(category => {
-              const active = selectedCategory === category;
+              const active = !onlyLowStock && selectedCategory === category;
               return (
                 <button
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => {
+                    setOnlyLowStock(false);
+                    setSelectedCategory(category);
+                  }}
                   className={`min-h-[36px] sm:min-h-[40px] px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 active:scale-95 flex items-center gap-1.5 cursor-pointer ${
                     active
                       ? 'bg-brand text-white shadow-md shadow-brand/20'
@@ -479,7 +512,7 @@ export function TovarlarPage() {
             </div>
           ) : (
             visibleProducts.map(product => {
-              const isLowStock = (Number(product.stock) || 0) <= 5;
+              const isLowStock = isLowStockProduct(product);
               return (
                 <div 
                   key={product.id}
@@ -606,7 +639,7 @@ export function TovarlarPage() {
                   </tr>
                 ) : (
                   visibleProducts.map(product => {
-                    const isLowStock = (Number(product.stock) || 0) <= 5;
+                    const isLowStock = isLowStockProduct(product);
                     return (
                       <tr 
                         key={product.id} 

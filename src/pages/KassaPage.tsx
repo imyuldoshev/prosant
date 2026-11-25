@@ -4,7 +4,7 @@ import {
   CreditCard, Banknote, Building2, Phone, Receipt, Printer, FileText, CheckCircle2, AlertCircle,
   Check, Loader2, Send, Store, ChevronDown
 } from 'lucide-react';
-import type { Product, CartItem, PaymentMethod, SaleRecord, Contact } from '../types';
+import { isLowStockProduct, type Product, type CartItem, type PaymentMethod, type SaleRecord, type Contact } from '../types';
 import { useProducts } from '../context/ProductContext';
 import { useSales } from '../context/SalesContext';
 import { useContacts } from '../context/ContactContext';
@@ -330,7 +330,10 @@ export function KassaPage() {
 
   const filteredProducts = useMemo(() => {
     let filtered = products;
-    if (selectedCategory !== 'Barchasi') {
+    if (selectedCategory === 'Kam qolganlar') {
+      filtered = filtered.filter(p => isLowStockProduct(p));
+      filtered = [...filtered].sort((a, b) => (Number(a.stock) || 0) - (Number(b.stock) || 0));
+    } else if (selectedCategory !== 'Barchasi') {
       filtered = filtered.filter(p => p.category === selectedCategory);
     }
     if (deferredQuery.trim()) {
@@ -532,19 +535,38 @@ export function KassaPage() {
           
           {/* Categories */}
           <div className="flex overflow-x-auto gap-2 pb-0.5 scrollbar-hide">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => handleCategoryClick(cat)}
-                className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer min-h-[40px] flex items-center justify-center ${
-                  selectedCategory === cat
-                    ? 'bg-brand text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+            {categories.map(cat => {
+              const isAll = cat === 'Barchasi';
+              const active = selectedCategory === cat;
+              return (
+                <div key={cat} className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleCategoryClick(cat)}
+                    className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer min-h-[40px] flex items-center justify-center ${
+                      active
+                        ? 'bg-brand text-white shadow-sm'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+
+                  {isAll && (
+                    <button
+                      onClick={() => handleCategoryClick('Kam qolganlar')}
+                      className={`px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer min-h-[40px] flex items-center justify-center gap-1.5 ${
+                        selectedCategory === 'Kam qolganlar'
+                          ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-400/40'
+                          : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/50'
+                      }`}
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>Kam qolganlar ({products.filter(isLowStockProduct).length})</span>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 

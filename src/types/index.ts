@@ -11,6 +11,21 @@ export interface Product {
   artikul?: string;
 }
 
+/**
+ * Mahsulotning qoldig'i kam qolganligini aniqlash:
+ * 1. Agar mahsulotda "Eng kam qoldiq" (minStock) belgilangan bo'lsa: stock <= minStock
+ * 2. Aks holda standart chegara: stock <= 5
+ */
+export function isLowStockProduct(p?: Product | null): boolean {
+  if (!p) return false;
+  const stock = Number(p.stock) || 0;
+  const minStock = Number(p.minStock);
+  if (!isNaN(minStock) && minStock > 0) {
+    return stock <= minStock;
+  }
+  return stock <= 5;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;

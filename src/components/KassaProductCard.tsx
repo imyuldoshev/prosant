@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Plus } from 'lucide-react';
-import type { Product } from '../types';
+import { isLowStockProduct, type Product } from '../types';
 import { formatSum } from '../utils/format';
 
 interface KassaProductCardProps {
@@ -18,7 +18,7 @@ export const KassaProductCard = memo(function KassaProductCard({
 }: KassaProductCardProps) {
   const stockNum = Number(product.stock) || 0;
   const isOutOfStock = stockNum <= 0;
-  const isCriticalStock = stockNum > 0 && stockNum <= 5;
+  const isCriticalStock = stockNum > 0 && isLowStockProduct(product);
   const hasImage = Boolean(product.image && product.image.trim() !== '');
 
   // Qoldiq rangi va holati (0 bo'lsa qizil, <= 5 bo'lsa sariq, aks holda yashil)
