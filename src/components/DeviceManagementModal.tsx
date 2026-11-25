@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { deviceService, MAX_ALLOWED_DEVICES } from '../services/deviceService';
 import type { AllowedDeviceRow } from '../types/database';
-import { Shield, Laptop, Smartphone, Trash2, X, RefreshCw, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Shield, Laptop, Smartphone, Trash2, X, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface DeviceManagementModalProps {
   isOpen: boolean;
@@ -15,13 +15,12 @@ export function DeviceManagementModal({ isOpen, onClose }: DeviceManagementModal
   const [devices, setDevices] = useState<AllowedDeviceRow[]>([]);
   const [currentDeviceId, setCurrentDeviceId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // O'chirish uchun PIN tasdiqlash
-  const [deletingDeviceId, setDeletingDeviceId] = useState<string | null>(null);
-  const [adminPin, setAdminPin] = useState('');
-  const [pinError, setPinError] = useState<string | null>(null);
+  // O'chirish tasdig'i
+  const [deletingDevice, setDeletingDevice] = useState<AllowedDeviceRow | null>(null);
 
   const loadDevices = useCallback(async () => {
     setIsLoading(true);
@@ -45,26 +44,23 @@ export function DeviceManagementModal({ isOpen, onClose }: DeviceManagementModal
   }, [isOpen, loadDevices]);
 
   const confirmDelete = async () => {
-    if (!deletingDeviceId) return;
-    if (!deviceService.verifyAdminPin(adminPin)) {
-      setPinError('Admin PIN kodi noto\'g\'ri!');
-      return;
-    }
+    if (!deletingDevice) return;
 
     try {
-      const res = await deviceService.removeDevice(deletingDeviceId);
+      setIsDeleting(true);
+      const res = await deviceService.removeDevice(deletingDevice.device_id);
       if (res.success) {
-        setSuccess('Qurilma ro\'yxatdan muvaffaqiyatli o\'chirildi');
-        setDeletingDeviceId(null);
-        setAdminPin('');
-        setPinError(null);
+        setSuccess(`"${deletingDevice.device_name}" qurilmasi muvaffaqiyatli o'chirildi. Yangi qurilma uchun 1 ta bo'sh slot ochildi!`);
+        setDeletingDevice(null);
         await loadDevices();
-        setTimeout(() => setSuccess(null), 3000);
+        setTimeout(() => setSuccess(null), 4000);
       } else {
-        setPinError(res.message);
+        setError(res.message);
       }
     } catch (e: any) {
-      setPinError(e?.message || 'O\'chirishda xatolik yuz berdi');
+      setError(e?.message || 'O\'chirishda xatolik yuz berdi');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -73,7 +69,7 @@ export function DeviceManagementModal({ isOpen, onClose }: DeviceManagementModal
   const activeCount = devices.filter(d => d.is_approved).length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
@@ -176,13 +172,9 @@ export function DeviceManagementModal({ isOpen, onClose }: DeviceManagementModal
                       {/* O'chirish tugmasi */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setDeletingDeviceId(device.device_id);
-                          setAdminPin('');
-                          setPinError(null);
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-colors shrink-0"
-                        title="Qurilmani o'chirish"
+                        onClick={() => setDeletingDevice(device)}
+                        className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-colors shrink-0 cursor-pointer"
+                        title="Qurilmani ro'yxatdan chiqarish"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -193,37 +185,32 @@ export function DeviceManagementModal({ isOpen, onClose }: DeviceManagementModal
             </div>
           )}
 
-          {/* O'chirishni PIN bilan tasdiqlash bloki */}
-          {deletingDeviceId && (
-            <div className="mt-3 p-3 bg-rose-950/40 border border-rose-800/80 rounded-xl space-y-2.5">
-              <span className="text-xs font-semibold text-rose-300 block">
-                Qurilmani ro'yxatdan o'chirish uchun Admin PIN kiriting:
+          {/* O'chirishni tasdiqlash bloki */}
+          {deletingDevice && (
+            <div className="mt-3 p-3.5 bg-rose-950/40 border border-rose-800/80 rounded-xl space-y-3">
+              <span className="text-xs font-semibold text-rose-300 block leading-relaxed">
+                Haqiqatan ham <strong>"{deletingDevice.device_name}"</strong> qurilmasini ro'yxatdan chiqarmoqchimisiz?
               </span>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={adminPin}
-                  onChange={(e) => setAdminPin(e.target.value)}
-                  placeholder="Admin PIN"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
-                />
-                <KeyRound className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-2.5" />
-              </div>
-              {pinError && <p className="text-[11px] text-rose-400">{pinError}</p>}
-              <div className="flex gap-2">
+              <p className="text-[11px] text-slate-300">
+                Ushbu qurilma o'chirilsa, yangi qurilma ulash uchun <strong>1 ta bo'sh slot</strong> ochiladi.
+              </p>
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setDeletingDeviceId(null)}
-                  className="flex-1 py-1.5 bg-slate-800 text-slate-300 text-xs rounded-lg"
+                  disabled={isDeleting}
+                  onClick={() => setDeletingDevice(null)}
+                  className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl cursor-pointer"
                 >
                   Bekor qilish
                 </button>
                 <button
                   type="button"
+                  disabled={isDeleting}
                   onClick={confirmDelete}
-                  className="flex-1 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-lg transition-colors"
+                  className="flex-1 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  O'chirish
+                  {isDeleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  <span>Ha, chiqarib yuborish</span>
                 </button>
               </div>
             </div>
