@@ -275,15 +275,15 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
               </div>
 
               <div className="flex justify-between items-baseline pt-1">
-                <div className="flex items-baseline gap-1.5">
+                <div className="flex items-baseline gap-1.5 flex-wrap">
                   <span className="font-bold text-slate-700 uppercase tracking-wide text-[10px] sm:text-xs">
                     Sotuvchi:
                   </span>
                   <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                    ProSant
+                    ProSant <span className="font-semibold text-slate-800 text-[10px] sm:text-xs tracking-tight">(+998-91-453-01-08)</span>
                   </span>
                 </div>
-                <div className="text-right text-[10px] sm:text-xs font-semibold text-slate-600">
+                <div className="text-right text-[10px] sm:text-xs font-semibold text-slate-600 shrink-0">
                   <span>Chek raqami: </span>
                   <strong className="text-black font-mono">{sale.saleNumber}</strong>
                 </div>
@@ -403,7 +403,7 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
             {/* 5. Footer Message */}
             <div className="text-center pt-2 pb-1 border-t border-dashed border-black/50 text-[10px] sm:text-xs text-slate-600">
               <p className="font-extrabold text-slate-800">Xaridingiz uchun rahmat!</p>
-              <p className="text-[9px] text-slate-500 mt-0.5">ProSant — Santexnika mahsulotlari</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">ProSant — Santexnika mahsulotlari • Tel: +998-91-453-01-08</p>
             </div>
 
           </div>
