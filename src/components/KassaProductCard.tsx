@@ -13,6 +13,7 @@ interface KassaProductCardProps {
 export const KassaProductCard = memo(function KassaProductCard({
   product,
   isSelected,
+  onSelect,
   onQuickAdd,
 }: KassaProductCardProps) {
   const stockNum = Number(product.stock) || 0;
@@ -39,13 +40,13 @@ export const KassaProductCard = memo(function KassaProductCard({
       tabIndex={isOutOfStock ? -1 : 0}
       onClick={() => {
         if (!isOutOfStock) {
-          onQuickAdd(product);
+          onSelect(product);
         }
       }}
       onKeyDown={(e) => {
         if (!isOutOfStock && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();
-          onQuickAdd(product);
+          onSelect(product);
         }
       }}
       className={`group relative flex flex-col justify-between rounded-2xl border text-left transition-all duration-150 select-none bg-white dark:bg-slate-900 border-slate-200/90 dark:border-white/[0.08] ${

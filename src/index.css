@@ -104,7 +104,7 @@
 /* PRINT STYLESHEET FOR NAKLADNAYA / RECEIPT */
 @media print {
   @page {
-    margin: 3mm;
+    margin: 8mm 10mm;
     size: auto;
   }
 
@@ -129,12 +129,9 @@
   }
 
   #printable-receipt {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     background: #ffffff !important;
     color: #000000 !important;
@@ -142,6 +139,19 @@
     box-shadow: none !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  #printable-receipt.print-a4 {
+    width: 100% !important;
+    max-width: 185mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  #printable-receipt.print-thermal {
+    width: 78mm !important;
+    max-width: 78mm !important;
+    margin: 0 auto !important;
   }
 
   .no-print {

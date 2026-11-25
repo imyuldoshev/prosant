@@ -257,8 +257,10 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
           {/* THE REAL PRINTABLE RECEIPT / INVOICE DOCUMENT */}
           <div 
             id="printable-receipt"
-            className={`receipt-printable bg-white text-black p-4 sm:p-6 rounded-sm shadow-md font-sans text-xs sm:text-sm leading-normal border border-slate-300 dark:border-slate-800 print:border-none print:shadow-none print:p-0 print:m-0 ${
-              printLayout === 'thermal' ? 'max-w-[80mm] w-full text-[11px]' : 'max-w-[210mm] w-full'
+            className={`receipt-printable bg-white text-black p-3.5 sm:p-5 rounded-sm shadow-md font-sans text-xs sm:text-sm leading-normal border border-slate-300 dark:border-slate-800 print:border-none print:shadow-none print:p-0 print:m-0 mx-auto ${
+              printLayout === 'thermal' 
+                ? 'print-thermal max-w-[80mm] w-full text-[11px]' 
+                : 'print-a4 max-w-[185mm] w-full print:max-w-[185mm]'
             }`}
           >
             {/* 1. Header Information */}
@@ -306,17 +308,17 @@ export function ReceiptModal({ sale, onClose, autoPrint = false }: ReceiptModalP
 
             {/* 2. Products Table */}
             <div className="pt-2 pb-2 overflow-x-auto">
-              <table className="w-full border-collapse border border-black text-[10px] sm:text-xs">
+              <table className="w-full border-collapse border border-black text-[10px] sm:text-xs print:text-[11px] table-auto">
                 <thead>
-                  <tr className="bg-slate-100 font-bold border-b border-black text-center">
-                    <th className="border border-black py-1 px-1 w-6 sm:w-8">№</th>
+                  <tr className="bg-slate-100 font-bold border-b border-black text-center print:bg-slate-50">
+                    <th className="border border-black py-1 px-1 w-6 sm:w-8 print:w-7">№</th>
                     {printLayout === 'a4' && (
-                      <th className="border border-black py-1 px-1.5 w-20">Artikul</th>
+                      <th className="border border-black py-1 px-1.5 w-16 sm:w-20 print:w-18">Artikul</th>
                     )}
                     <th className="border border-black py-1 px-1.5 text-left">Mahsulot nomi</th>
-                    <th className="border border-black py-1 px-1.5 w-16 sm:w-20 text-center">Miqdori</th>
-                    <th className="border border-black py-1 px-1.5 w-20 sm:w-24 text-right">Narxi</th>
-                    <th className="border border-black py-1 px-1.5 w-24 sm:w-28 text-right">Jami</th>
+                    <th className="border border-black py-1 px-1 w-14 sm:w-20 print:w-16 text-center">Miqdori</th>
+                    <th className="border border-black py-1 px-1.5 w-18 sm:w-24 print:w-20 text-right">Narxi</th>
+                    <th className="border border-black py-1 px-1.5 w-20 sm:w-28 print:w-22 text-right">Jami</th>
                   </tr>
                 </thead>
                 <tbody>
