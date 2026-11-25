@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Package, History, X, LogIn, LogOut, Send } from 'lucide-react';
+import { LayoutDashboard, Package, History, X, LogIn, LogOut, Send, Shield } from 'lucide-react';
 import { MenuButton } from './MenuButton';
 import { ThemeToggle } from './ThemeToggle';
 import { TelegramSettingsModal } from './TelegramSettingsModal';
+import { DeviceManagementModal } from './DeviceManagementModal';
 import { useAuth } from '../context/AuthContext';
 import logoMobile from '../assets/logo/logo-mobile.webp';
 
@@ -14,6 +15,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [isTelegramModalOpen, setIsTelegramModalOpen] = useState(false);
+  const [isDevicesModalOpen, setIsDevicesModalOpen] = useState(false);
   const { user, isAuthenticated, signOut } = useAuth();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -145,6 +147,23 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           </button>
 
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              setIsDevicesModalOpen(true);
+            }}
+            className="w-full flex items-center gap-4 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all text-white font-bold text-left cursor-pointer active:scale-98"
+          >
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 shrink-0" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-base font-bold text-white">Ulangan Qurilmalar</span>
+              <span className="text-xs text-slate-400 font-normal">2 ta Laptop va 1 ta Telefon</span>
+            </div>
+          </button>
+
           <div className="mt-2 pt-2 border-t border-white/10">
             <ThemeToggle showLabel className="w-full justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border-white/10 text-white rounded-2xl" />
           </div>
@@ -194,6 +213,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       <TelegramSettingsModal
         isOpen={isTelegramModalOpen}
         onClose={() => setIsTelegramModalOpen(false)}
+      />
+
+      <DeviceManagementModal
+        isOpen={isDevicesModalOpen}
+        onClose={() => setIsDevicesModalOpen(false)}
       />
     </>
   );

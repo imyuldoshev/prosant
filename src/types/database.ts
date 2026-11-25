@@ -113,6 +113,28 @@ export type ProfileRow = {
   created_at: string;
 };
 
+export type AllowedDeviceRow = {
+  id: string;
+  device_id: string;
+  device_name: string;
+  device_type: 'laptop' | 'mobile' | 'other';
+  browser_info: string | null;
+  is_approved: boolean;
+  registered_at: string;
+  last_seen_at: string;
+};
+
+export type AllowedDeviceInsert = {
+  id?: string;
+  device_id: string;
+  device_name: string;
+  device_type?: 'laptop' | 'mobile' | 'other';
+  browser_info?: string | null;
+  is_approved?: boolean;
+  registered_at?: string;
+  last_seen_at?: string;
+};
+
 // ============================================================
 // Insert types
 // ============================================================
@@ -262,6 +284,12 @@ export type Database = {
         Row: ProfileRow;
         Insert: ProfileInsert;
         Update: Partial<ProfileInsert>;
+        Relationships: [];
+      };
+      allowed_devices: {
+        Row: AllowedDeviceRow;
+        Insert: AllowedDeviceInsert;
+        Update: Partial<AllowedDeviceInsert>;
         Relationships: [];
       };
     };
